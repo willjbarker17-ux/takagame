@@ -21,6 +21,7 @@ model User {
   username     String         @unique
   verified     Boolean        @default(false)
   elo          Int            @default(200)
+  onboardingComplete Boolean @default(false)
   RefreshToken RefreshToken[]
 }
 

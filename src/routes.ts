@@ -6,6 +6,8 @@ import {
   logout,
   refreshToken,
 } from "./controllers/auth.controller";
+import { completeOnboarding } from "./controllers/onboarding.controller";
+import requireUser from "./middleware/requireUser";
 
 const routes = (app: Express) => {
   app.get("/", (_req: Request, res: Response) => {
@@ -18,6 +20,9 @@ const routes = (app: Express) => {
   app.post("/auth/email/verify_otp", emailVerifyOtp);
   app.get("/auth/logout", logout);
   app.post("/auth/refresh_token", refreshToken);
+
+  // Onboarding routes
+  app.post("/onboarding/complete", requireUser, completeOnboarding);
 
   app.get("/*splat", (_req: Request, res: Response) => {
     res.status(404).send();
