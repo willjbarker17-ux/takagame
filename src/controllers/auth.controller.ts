@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { RouteHandler } from "../types";
-import { prisma } from "../database";
+import prisma from "@/database";
 import config from "../config";
 import { sendMagicLinkEmail } from "../utils/email";
 import {

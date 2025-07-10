@@ -1,5 +1,5 @@
 import type { RouteHandler } from "../types";
-import { prisma } from "../database";
+import prisma from "@/database";
 
 /**
  * Middleware to ensure user has completed onboarding before accessing protected routes

@@ -1,10 +1,10 @@
 import { z } from "zod";
 import type { RouteHandler } from "../types";
-import { prisma } from "../database";
+import prisma from "@/database";
 
 const SKILL_LEVELS = ["beginner", "intermediate", "advanced"] as const;
 
-const ELO_MAP: Record<typeof SKILL_LEVELS[number], number> = {
+const ELO_MAP: Record<(typeof SKILL_LEVELS)[number], number> = {
   beginner: 200,
   intermediate: 500,
   advanced: 1000,
