@@ -1,4 +1,4 @@
-import type { RouteHandler } from "../types";
+import type { RouteHandler } from "@/types";
 import prisma from "@/database";
 
 /**

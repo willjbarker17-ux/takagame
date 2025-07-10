@@ -1,5 +1,5 @@
-import type { RouteHandler } from "../types";
-import { verifyToken } from "../utils/tokens";
+import type { RouteHandler } from "@/types";
+import { verifyToken } from "@/utils/tokens";
 
 /**
  * Require a user to be authenticated

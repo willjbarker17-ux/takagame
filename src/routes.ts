@@ -4,9 +4,9 @@ import {
   emailVerifyOtp,
   logout,
   refreshToken,
-} from "./controllers/auth.controller";
-import { completeOnboarding } from "./controllers/onboarding.controller";
-import requireUser from "./middleware/requireUser";
+} from "@/controllers/auth.controller";
+import { completeOnboarding } from "@/controllers/onboarding.controller";
+import requireUser from "@/middleware/requireUser";
 
 const routes = (app: Express) => {
   app.get("/", (_req: Request, res: Response) => {

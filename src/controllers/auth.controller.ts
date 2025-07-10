@@ -1,13 +1,13 @@
 import { z } from "zod";
-import type { RouteHandler } from "../types";
+import type { RouteHandler } from "@/types";
 import prisma from "@/database";
-import config from "../config";
-import { sendMagicLinkEmail } from "../utils/email";
+import config from "@/config";
+import { sendMagicLinkEmail } from "@/utils/email";
 import {
   createAccessToken,
   createRefreshToken,
   verifyToken,
-} from "../utils/tokens";
+} from "@/utils/tokens";
 import ms from "ms";
 import type { CookieOptions } from "express";
 

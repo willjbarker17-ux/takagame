@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import type { Payload } from "../utils/tokens";
+import type { Payload } from "@/utils/tokens";
 
 export type RouteHandler = (
   req: Request & { user?: Payload },

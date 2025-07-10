@@ -1,4 +1,4 @@
-import type { ErrorHandler } from "../types";
+import type { ErrorHandler } from "@/types";
 import { ZodError, type ZodIssue } from "zod";
 
 const zodErrorHandler: ErrorHandler = (err, _req, res, next) => {

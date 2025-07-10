@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { RouteHandler } from "../types";
+import type { RouteHandler } from "@/types";
 import prisma from "@/database";
 
 const SKILL_LEVELS = ["beginner", "intermediate", "advanced"] as const;
