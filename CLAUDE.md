@@ -149,6 +149,7 @@ Configuration is validated with Zod schemas in `src/config.ts`. Required variabl
 **Coverage**: Configured with 80% thresholds for branches, functions, lines, and statements.
 
 **Testing Guidelines:**
+
 - When testing, be very intelligent with the tests you write. Make sure the tests are actually useful, and you aren't just testing random stuff
 
 ## Package Management

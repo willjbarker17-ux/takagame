@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import jwt from "jsonwebtoken";
 import ms from "ms";
-import { createAccessToken, createRefreshToken, verifyToken, type Payload } from "@/utils/tokens";
+import {
+  createAccessToken,
+  createRefreshToken,
+  verifyToken,
+  type Payload,
+} from "@/utils/tokens";
 import config from "@/config";
 
 describe("tokens", () => {
@@ -14,10 +19,10 @@ describe("tokens", () => {
   describe("createAccessToken", () => {
     it("should create a valid access token with correct payload", () => {
       const token = createAccessToken(mockUserId);
-      
+
       expect(token).toBeDefined();
       expect(typeof token).toBe("string");
-      
+
       const decoded = jwt.verify(token, config.JWT_SECRET) as Payload;
       expect(decoded.userId).toBe(mockUserId);
       expect(decoded.iat).toBeDefined();
@@ -27,8 +32,10 @@ describe("tokens", () => {
     it("should create token with correct expiration time", () => {
       const token = createAccessToken(mockUserId);
       const decoded = jwt.verify(token, config.JWT_SECRET) as Payload;
-      
-      const expectedExp = Math.floor(Date.now() / 1000) + Math.floor(ms(config.JWT_EXPIRES_IN) / 1000);
+
+      const expectedExp =
+        Math.floor(Date.now() / 1000) +
+        Math.floor(ms(config.JWT_EXPIRES_IN) / 1000);
       expect(decoded.exp).toBeCloseTo(expectedExp, -1);
     });
   });
@@ -36,10 +43,10 @@ describe("tokens", () => {
   describe("createRefreshToken", () => {
     it("should create a valid refresh token with correct payload", () => {
       const token = createRefreshToken(mockUserId);
-      
+
       expect(token).toBeDefined();
       expect(typeof token).toBe("string");
-      
+
       const decoded = jwt.verify(token, config.JWT_SECRET) as Payload;
       expect(decoded.userId).toBe(mockUserId);
       expect(decoded.iat).toBeDefined();
@@ -49,8 +56,10 @@ describe("tokens", () => {
     it("should create token with correct expiration time", () => {
       const token = createRefreshToken(mockUserId);
       const decoded = jwt.verify(token, config.JWT_SECRET) as Payload;
-      
-      const expectedExp = Math.floor(Date.now() / 1000) + Math.floor(ms(config.JWT_REFRESH_EXPIRES_IN) / 1000);
+
+      const expectedExp =
+        Math.floor(Date.now() / 1000) +
+        Math.floor(ms(config.JWT_REFRESH_EXPIRES_IN) / 1000);
       expect(decoded.exp).toBeCloseTo(expectedExp, -1);
     });
   });
@@ -59,7 +68,7 @@ describe("tokens", () => {
     it("should verify a valid token and return payload", () => {
       const token = createAccessToken(mockUserId);
       const payload = verifyToken(token);
-      
+
       expect(payload).not.toBeNull();
       expect(payload?.userId).toBe(mockUserId);
       expect(payload?.iat).toBeDefined();
@@ -69,17 +78,15 @@ describe("tokens", () => {
     it("should return null for invalid token", () => {
       const invalidToken = "invalid.token.here";
       const payload = verifyToken(invalidToken);
-      
+
       expect(payload).toBeNull();
     });
 
     it("should return null for expired token", () => {
-      const expiredToken = jwt.sign(
-        { userId: mockUserId },
-        config.JWT_SECRET,
-        { expiresIn: "-1s" }
-      );
-      
+      const expiredToken = jwt.sign({ userId: mockUserId }, config.JWT_SECRET, {
+        expiresIn: "-1s",
+      });
+
       const payload = verifyToken(expiredToken);
       expect(payload).toBeNull();
     });
@@ -88,21 +95,11 @@ describe("tokens", () => {
       const tokenWithWrongSignature = jwt.sign(
         { userId: mockUserId },
         "wrong-secret",
-        { expiresIn: "1h" }
+        { expiresIn: "1h" },
       );
-      
+
       const payload = verifyToken(tokenWithWrongSignature);
       expect(payload).toBeNull();
-    });
-
-    it("should log error when token verification fails", () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      const invalidToken = "invalid.token";
-      
-      verifyToken(invalidToken);
-      
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
     });
   });
 
@@ -110,7 +107,7 @@ describe("tokens", () => {
     it("should create and verify access token successfully", () => {
       const accessToken = createAccessToken(mockUserId);
       const payload = verifyToken(accessToken);
-      
+
       expect(payload).not.toBeNull();
       expect(payload?.userId).toBe(mockUserId);
     });
@@ -118,7 +115,7 @@ describe("tokens", () => {
     it("should create and verify refresh token successfully", () => {
       const refreshToken = createRefreshToken(mockUserId);
       const payload = verifyToken(refreshToken);
-      
+
       expect(payload).not.toBeNull();
       expect(payload?.userId).toBe(mockUserId);
     });

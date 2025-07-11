@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 /**
  * Sends an email using nodemailer and SMTP configuration.
  * If EMAIL_STUB_ENABLED is true, logs the email to the console instead of sending.
- * 
+ *
  * @param to - The recipient's email address
  * @param subject - The email subject line
  * @param html - The HTML content of the email
@@ -50,12 +50,12 @@ async function sendEmail(
  * Sends a magic link email for passwordless authentication.
  * Creates a login URL with the provided token and sends it to the user.
  * The magic link expires in 15 minutes.
- * 
+ *
  * @param to - The recipient's email address
  * @param token - The authentication token to include in the magic link
  * @returns Promise that resolves when the magic link email is sent
  * @throws Will throw an error if email sending fails (when not in stub mode)
- * 
+ *
  * @example
  * ```typescript
  * const token = createAccessToken(userId);
