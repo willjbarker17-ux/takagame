@@ -1,8 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import type { Payload } from "@/utils/tokens";
 
+export type RequestWithUser = Request & { user?: Payload };
+
 export type RouteHandler = (
-  req: Request & { user?: Payload },
+  req: RequestWithUser,
   res: Response,
   next: NextFunction,
 ) => Promise<void> | void;

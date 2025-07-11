@@ -1,7 +1,7 @@
 import { vi } from "vitest";
-import mockPrisma from "@tests/mocks/prisma";
+import mockDatabase from "@tests/mocks/database";
 
-vi.mock("@/database", () => ({ default: mockPrisma }));
+vi.mock("@/database", () => ({ default: mockDatabase }));
 
 vi.mock("@/utils/email", () => ({
   sendMagicLinkEmail: vi.fn().mockResolvedValue(undefined),
