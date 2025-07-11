@@ -45,7 +45,6 @@ npx prisma generate       # Generate Prisma client
 npx prisma studio         # Open Prisma Studio
 ```
 
-
 ## Architecture Overview
 
 This is a **Node.js Express API** built with **TypeScript** and **Bun** runtime, designed as a soccer/sports application backend.
@@ -163,7 +162,8 @@ This is a **soccer board game app backend** that allows users to play against ot
 - Never bypass linter rules. Always fix the root cause
 
 # important-instruction-reminders
+
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.
