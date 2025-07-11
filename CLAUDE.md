@@ -49,7 +49,8 @@ npx prisma studio         # Open Prisma Studio
 ## Development Best Practices
 
 - Always run format and lint after changes are complete to make sure your code is up to style
-- Never disable linting rules to get around lint errors
+- NEVER disable linting rules to get around lint errors
+- Never bypass linter rules. Always fix the root cause
 
 ## Architecture Overview
 
@@ -147,6 +148,9 @@ Configuration is validated with Zod schemas in `src/config.ts`. Required variabl
 
 **Coverage**: Configured with 80% thresholds for branches, functions, lines, and statements.
 
+**Testing Guidelines:**
+- When testing, be very intelligent with the tests you write. Make sure the tests are actually useful, and you aren't just testing random stuff
+
 ## Package Management
 
 - Use context7 when installing packages to get their latest docs.
@@ -154,4 +158,4 @@ Configuration is validated with Zod schemas in `src/config.ts`. Required variabl
 
 ## Coding Guidelines
 
-- Never use any
+- Never use the any type
