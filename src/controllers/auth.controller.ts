@@ -251,11 +251,6 @@ export const refreshToken: RouteHandler = async (req, res, next) => {
 
     const accessToken = createAccessToken(payload.userId);
 
-    if (!accessToken) {
-      res.status(401).json({ error: "Invalid refresh token" });
-      return;
-    }
-
     res.json({ accessToken });
   } catch (error) {
     return next(error);
