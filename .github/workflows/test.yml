@@ -7,7 +7,7 @@ on:
 env:
   NODE_ENV: test
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/taka_test
-  
+
 jobs:
   test:
     name: Tests
@@ -62,18 +62,13 @@ jobs:
         run: bun run test
 
   lint:
-    name: Lint & Format
+    name: Lint & Format Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.head_ref }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -91,26 +86,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Format code
-        run: bunx prettier --write .
-
-      - name: Check for formatting changes
-        id: format-check
-        run: |
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "changes=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit formatting changes
-        if: steps.format-check.outputs.changes == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Auto-format code with Prettier"
-          git push
+      - name: Check code formatting
+        run: bunx prettier --check .
 
       - name: Run linter
         run: bun run lint
