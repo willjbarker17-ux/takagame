@@ -2,7 +2,12 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import ms from "ms";
 
+// Load base .env file first
 dotenv.config();
+
+// Then load environment-specific .env file if it exists
+const nodeEnv = process.env["NODE_ENV"] || "development";
+dotenv.config({ path: `.env.${nodeEnv}`, override: true });
 
 // Zod schema for ms.StringValue, validates that the string is a valid ms format
 const msStringSchema = z.string().refine(

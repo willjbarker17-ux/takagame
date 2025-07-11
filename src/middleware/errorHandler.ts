@@ -1,4 +1,4 @@
-import type { ErrorHandler } from "../types";
+import type { ErrorHandler } from "@/types";
 
 // This noinspection is here because TypeScript doesn't like the next() function being passed, but
 // it is required on an express error handler

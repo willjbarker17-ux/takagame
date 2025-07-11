@@ -1,14 +1,14 @@
-import config from "./config";
-import routes from "./routes";
+import config from "@/config";
+import routes from "@/routes";
 import cors from "cors";
-import errorHandler from "./middleware/errorHandler";
+import errorHandler from "@/middleware/errorHandler";
 import express from "express";
 import * as Sentry from "@sentry/node";
 import helmet from "helmet";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
-import zodErrorHandler from "./middleware/zodErrorHandler";
-import noCache from "./middleware/noCache";
+import zodErrorHandler from "@/middleware/zodErrorHandler";
+import noCache from "@/middleware/noCache";
 
 const app = express();
 

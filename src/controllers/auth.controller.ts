@@ -1,13 +1,13 @@
 import { z } from "zod";
-import type { RouteHandler } from "../types";
-import { prisma } from "../database";
-import config from "../config";
-import { sendMagicLinkEmail } from "../utils/email";
+import type { RouteHandler } from "@/types";
+import prisma from "@/database";
+import config from "@/config";
+import { sendMagicLinkEmail } from "@/utils/email";
 import {
   createAccessToken,
   createRefreshToken,
   verifyToken,
-} from "../utils/tokens";
+} from "@/utils/tokens";
 import ms from "ms";
 import type { CookieOptions } from "express";
 
@@ -29,7 +29,8 @@ const emailRequestOtpSchema = z
   .strict();
 
 /**
- * Request an OTP for an email to sign in. This route should be called from the frontend.
+ * Request a magic link for an email to sign in or sign up. This route should be called from the frontend.
+ * Works for both new users (signup) and existing users (login).
  */
 export const emailRequestOtp: RouteHandler = async (req, res, next) => {
   try {
@@ -37,7 +38,7 @@ export const emailRequestOtp: RouteHandler = async (req, res, next) => {
 
     // Create verification token
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getMinutes() + 15); // Expires in 15 minutes
+    expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Expires in 15 minutes
 
     const { code } = await prisma.verificationToken.create({
       data: {
@@ -62,6 +63,8 @@ const emailVerifyOtpSchema = z
 
 /**
  * Verify the OTP after sending it to email. This route should be called from the frontend.
+ * If user exists and has completed onboarding, they get logged in.
+ * If user exists but hasn't completed onboarding, they get a token but need to complete onboarding.
  */
 export const emailVerifyOtp: RouteHandler = async (req, res, next) => {
   try {
@@ -89,18 +92,24 @@ export const emailVerifyOtp: RouteHandler = async (req, res, next) => {
       },
     });
 
-    // If no user exists, this is an invalid state since sign-up/login creates one.
+    // If no user exists, create one but don't complete onboarding yet
     if (!user) {
-      res.status(404).json({ error: "User not found" });
-      return;
-    }
-
-    // If user is not verified, verify them.
-    if (!user.verified) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { verified: true },
+      user = await prisma.user.create({
+        data: {
+          email: token.email,
+          username: `user_${Date.now()}`, // Temporary username, will be updated during onboarding
+          verified: true,
+          onboardingComplete: false,
+        },
       });
+    } else {
+      // If user exists but is not verified, verify them
+      if (!user.verified) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { verified: true },
+        });
+      }
     }
 
     await prisma.verificationToken.delete({
@@ -164,7 +173,10 @@ export const emailVerifyOtp: RouteHandler = async (req, res, next) => {
       setRefreshTokenCookieConfig,
     );
 
-    res.json({ accessToken });
+    res.json({
+      accessToken,
+      needsOnboarding: !user.onboardingComplete,
+    });
   } catch (error) {
     return next(error);
   }
@@ -239,112 +251,7 @@ export const refreshToken: RouteHandler = async (req, res, next) => {
 
     const accessToken = createAccessToken(payload.userId);
 
-    if (!accessToken) {
-      res.status(401).json({ error: "Invalid refresh token" });
-      return;
-    }
-
     res.json({ accessToken });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-const signUpSchema = z
-  .object({
-    email: z.string().email("Email is invalid"),
-    username: z
-      .string()
-      .min(3, "Username is required")
-      .max(32)
-      .regex(/^[a-zA-Z0-9_]+$/, "Username must be alphanumeric or underscore"),
-  })
-  .strict();
-
-export const signUp: RouteHandler = async (req, res, next) => {
-  try {
-    const { email, username } = signUpSchema.parse(req.body);
-
-    const existingUserWithEmail = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUserWithEmail) {
-        if (existingUserWithEmail.verified) {
-            res.status(409).json({ error: "An account with this email already exists." });
-            return;
-        }
-        res.status(409).json({ error: "An account with this email is pending verification." });
-        return;
-    }
-    
-    const existingUserWithUsername = await prisma.user.findUnique({
-        where: { username },
-    });
-
-    if (existingUserWithUsername) {
-        res.status(409).json({ error: "This username is already taken." });
-        return;
-    }
-
-    await prisma.user.create({
-      data: { email, username },
-    });
-
-    // Create verification token
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Expires in 15 minutes
-
-    const { code } = await prisma.verificationToken.create({
-      data: {
-        email,
-        expiresAt,
-      },
-    });
-
-    await sendMagicLinkEmail(email, code);
-
-    res.sendStatus(200);
-  } catch (error) {
-    return next(error);
-  }
-};
-
-const loginSchema = z
-  .object({
-    email: z.string().email("Email is invalid"),
-  })
-  .strict();
-
-/**
- * Request an OTP for an email to sign in. This route should be called from the frontend.
- */
-export const login: RouteHandler = async (req, res, next) => {
-  try {
-    const { email } = loginSchema.parse(req.body);
-
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user || !user.verified) {
-      res.status(403).json({ error: "User not found or not verified" });
-      return;
-    }
-
-    // Create verification token
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Expires in 15 minutes
-
-    const { code } = await prisma.verificationToken.create({
-      data: {
-        email,
-        expiresAt,
-      },
-    });
-
-    await sendMagicLinkEmail(email, code);
-
-    res.sendStatus(200);
   } catch (error) {
     return next(error);
   }
