@@ -37,7 +37,6 @@ bun run format        # Format code with Prettier
 ```bash
 bun run test              # Run tests once
 vitest                    # Run tests in watch mode
-vitest run --coverage     # Run tests with coverage report
 vitest run path/to/test   # Run a specific test file
 ```
 
@@ -143,7 +142,7 @@ Configuration is validated with Zod schemas in `src/config.ts`. Required variabl
 - `tests/helpers/jwt.ts` - JWT token helpers
 - `tests/mocks/prisma.ts` - Prisma client mocks
 
-**Coverage**: Configured with 80% thresholds for branches, functions, lines, and statements.
+
 
 **Testing Guidelines:**
 
@@ -209,7 +208,6 @@ bun run format        # Format code with Prettier
 ```bash
 bun run test              # Run tests once
 vitest                    # Run tests in watch mode
-vitest run --coverage     # Run tests with coverage report
 vitest run path/to/test   # Run a specific test file
 ```
 
@@ -314,8 +312,6 @@ Configuration is validated with Zod schemas in `src/config.ts`. Required variabl
 - `tests/helpers/testApp.ts` - Express app factory for testing
 - `tests/helpers/jwt.ts` - JWT token helpers
 - `tests/mocks/prisma.ts` - Prisma client mocks
-
-**Coverage**: Configured with 80% thresholds for branches, functions, lines, and statements.
 
 **Testing Guidelines:**
 
