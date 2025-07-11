@@ -1,17 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
 import requireOnboarding from "@/middleware/requireOnboarding";
-import prisma from "@tests/mocks/database";
-import type { RequestWithUser } from "@/types";
+import type { AuthenticatedRequest } from "@/types";
 
 describe("requireOnboarding middleware", () => {
-  let req: Partial<RequestWithUser>;
+  let req: Partial<AuthenticatedRequest>;
   let res: Partial<Response>;
   let next: NextFunction;
 
+  const mockUser = {
+    id: "test-user-id",
+    email: "test@example.com",
+    username: "testuser",
+    verified: true,
+    elo: 1200,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    onboardingComplete: true,
+  };
+
   beforeEach(() => {
     req = {
-      user: { userId: "test-user-id" },
+      user: mockUser,
     };
     res = {
       status: vi.fn().mockReturnThis(),
@@ -22,23 +32,8 @@ describe("requireOnboarding middleware", () => {
   });
 
   it("should call next() if user has completed onboarding", async () => {
-    prisma.user.findUnique.mockResolvedValue({
-      id: "test-user-id",
-      email: "test@example.com",
-      username: "testuser",
-      onboardingComplete: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      verified: true,
-      elo: 1200,
-    });
-
     await requireOnboarding(req as Request, res as Response, next);
 
-    expect(prisma.user.findUnique).toHaveBeenCalledWith({
-      where: { id: "test-user-id" },
-      select: { onboardingComplete: true },
-    });
     expect(next).toHaveBeenCalledTimes(1);
     expect(next).toHaveBeenCalledWith();
     expect(res.status).not.toHaveBeenCalled();
@@ -46,16 +41,7 @@ describe("requireOnboarding middleware", () => {
   });
 
   it("should return 403 if user has not completed onboarding", async () => {
-    prisma.user.findUnique.mockResolvedValue({
-      id: "test-user-id",
-      email: "test@example.com",
-      username: "testuser",
-      onboardingComplete: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      verified: true,
-      elo: 1200,
-    });
+    req.user = { ...mockUser, onboardingComplete: false };
 
     await requireOnboarding(req as Request, res as Response, next);
 
@@ -67,36 +53,15 @@ describe("requireOnboarding middleware", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("should return 404 if user from token is not found in database", async () => {
-    prisma.user.findUnique.mockResolvedValue(null);
-
-    await requireOnboarding(req as Request, res as Response, next);
-
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ error: "User not found" });
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  it("should return 401 if req.user is missing", async () => {
+  it("should throw error if req.user is missing (middleware used incorrectly)", () => {
     req.user = undefined;
 
-    await requireOnboarding(req as Request, res as Response, next);
+    expect(() => requireOnboarding(req as Request, res as Response, next)).toThrow(
+      "req.user should exist, but doesn't"
+    );
 
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ error: "Authentication required" });
-    expect(next).not.toHaveBeenCalled();
-    expect(prisma.user.findUnique).not.toHaveBeenCalled();
-  });
-
-  it("should pass error to next() if prisma throws an error", async () => {
-    const dbError = new Error("Database connection failed");
-    prisma.user.findUnique.mockRejectedValue(dbError);
-
-    await requireOnboarding(req as Request, res as Response, next);
-
-    expect(next).toHaveBeenCalledTimes(1);
-    expect(next).toHaveBeenCalledWith(dbError);
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
   });
 });
