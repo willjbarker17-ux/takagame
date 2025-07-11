@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
 import requireOnboarding from "@/middleware/requireOnboarding";
 import type { AuthenticatedRequest } from "@/types";
+import mockDatabase from "@tests/mocks/database";
+
+vi.mock("@/database", () => ({ default: mockDatabase }));
 
 describe("requireOnboarding middleware", () => {
   let req: Partial<AuthenticatedRequest>;
@@ -56,9 +59,9 @@ describe("requireOnboarding middleware", () => {
   it("should throw error if req.user is missing (middleware used incorrectly)", () => {
     req.user = undefined;
 
-    expect(() => requireOnboarding(req as Request, res as Response, next)).toThrow(
-      "req.user should exist, but doesn't"
-    );
+    expect(() =>
+      requireOnboarding(req as Request, res as Response, next),
+    ).toThrow("req.user should exist, but doesn't");
 
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();

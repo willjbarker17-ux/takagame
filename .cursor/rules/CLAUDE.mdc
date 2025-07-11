@@ -142,8 +142,6 @@ Configuration is validated with Zod schemas in `src/config.ts`. Required variabl
 - `tests/helpers/jwt.ts` - JWT token helpers
 - `tests/mocks/prisma.ts` - Prisma client mocks
 
-
-
 **Testing Guidelines:**
 
 - When testing, be very intelligent with the tests you write. Make sure the tests are actually useful, and you aren't just testing random stuff

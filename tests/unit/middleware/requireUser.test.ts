@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import mockDatabase from "@tests/mocks/database";
+
+vi.mock("@/database", () => ({ default: mockDatabase }));
+
 import type { Response, NextFunction } from "express";
 import requireUser from "@/middleware/requireUser";
 import { verifyToken } from "@/utils/tokens";
-import mockDatabase from "@tests/mocks/database";
 import type { AuthenticatedRequest } from "@/types";
 
 vi.mock("@/utils/tokens", () => ({

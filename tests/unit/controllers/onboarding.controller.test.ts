@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import mockDatabase from "@tests/mocks/database";
+
+vi.mock("@/database", () => ({ default: mockDatabase }));
+
 import type { Response, NextFunction } from "express";
 import { completeOnboarding } from "@/controllers/onboarding.controller";
-import mockDatabase from "@tests/mocks/database";
 import type { AuthenticatedRequest } from "@/types";
 
 describe("onboarding.controller: completeOnboarding", () => {
