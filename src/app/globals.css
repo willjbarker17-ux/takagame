@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 1.2s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animate-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animate-delay-600 {
+  animation-delay: 600ms;
+}
+
+.animate-delay-800 {
+  animation-delay: 800ms;
+}
+
+.animate-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+.animate-delay-1200 {
+  animation-delay: 1200ms;
+}
+
+.animate-delay-1400 {
+  animation-delay: 1400ms;
+}
+
+.animate-delay-1600 {
+  animation-delay: 1600ms;
+}
+
+.animate-delay-1800 {
+  animation-delay: 1800ms;
+}
+
+.animate-delay-2000 {
+  animation-delay: 2000ms;
+}
+
+.animate-delay-2200 {
+  animation-delay: 2200ms;
+}
+
+.animate-delay-2400 {
+  animation-delay: 2400ms;
+}
+
+.animate-delay-2600 {
+  animation-delay: 2600ms;
+}
+
+.animate-delay-2800 {
+  animation-delay: 2800ms;
+}
+
+.animate-delay-3000 {
+  animation-delay: 3000ms;
+}
+
+.animate-delay-3200 {
+  animation-delay: 3200ms;
+}
+
+.animate-delay-3400 {
+  animation-delay: 3400ms;
+}
+
+.animate-delay-3600 {
+  animation-delay: 3600ms;
+}
+
+.animate-delay-3800 {
+  animation-delay: 3800ms;
+}
+
+.animate-delay-4000 {
+  animation-delay: 4000ms;
+}
+
+.animate-delay-4200 {
+  animation-delay: 4200ms;
+}
+
+.animate-delay-4400 {
+  animation-delay: 4400ms;
+}
+
+.animate-delay-4600 {
+  animation-delay: 4600ms;
+}
+
+.animate-delay-4800 {
+  animation-delay: 4800ms;
+}
+
+/* Custom shadows */
+.shadow-game-board {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 25px 25px -12px rgba(0, 0, 0, 0.15),
+    0 10px 20px -8px rgba(0, 0, 0, 0.1);
+}
