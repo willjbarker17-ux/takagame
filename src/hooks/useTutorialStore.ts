@@ -41,6 +41,7 @@ const createBlankBoard = () =>
 export const stepOrder: TutorialStep[] = [
   "welcome",
   "basic_movement",
+  "movement_with_ball",
   "completed",
 ];
 
@@ -57,6 +58,11 @@ const tutorialStepStates: Record<TutorialStep, Partial<TutorialState>> = {
     currentStep: "basic_movement",
     pieces: [new Piece("W1", TUTORIAL_PLAYER_COLOR, new Position(4, 4), false)],
     selectedPiecePosition: null,
+  },
+  movement_with_ball: {
+    currentStep: "movement_with_ball",
+    pieces: [new Piece("W1", TUTORIAL_PLAYER_COLOR, new Position(4, 4), true)],
+    selectedPiecePosition: new Position(4, 4),
   },
   completed: {
     currentStep: "completed",
@@ -226,6 +232,8 @@ export const handleSquareClick = (position: Position): void => {
 
     // If we completed the basic movement successfully, move to next step
     if (useTutorialStore.getState().currentStep === "basic_movement") {
+      nextStep();
+    } else if (useTutorialStore.getState().currentStep === "movement_with_ball") {
       nextStep();
     }
 

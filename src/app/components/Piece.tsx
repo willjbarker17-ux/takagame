@@ -1,5 +1,6 @@
 import React from "react";
 import { Piece as PieceClass } from "@/classes/Piece";
+import { FacingDirection } from "@/types/types";
 
 interface PieceProps {
   piece: PieceClass;
@@ -8,32 +9,30 @@ interface PieceProps {
 
 const Piece: React.FC<PieceProps> = ({ piece, isSelected }) => {
   // Soccer ball component that positions based on facing direction
-  // const SoccerBallIcon: React.FC<{ direction?: string }> = ({ direction }) => {
-  //   let ballClass = "absolute text-sm pointer-events-none ";
-  //
-  //   // Use "right" as default direction if no direction is specified
-  //   const facingDirection = direction || "right";
-  //
-  //   // Position ball based on facing direction - at the edge of the piece square
-  //   switch (facingDirection) {
-  //     case "up":
-  //       ballClass += "top-0 left-1/2 transform -translate-x-1/2";
-  //       break;
-  //     case "down":
-  //       ballClass += "bottom-0 left-1/2 transform -translate-x-1/2";
-  //       break;
-  //     case "left":
-  //       ballClass += "left-0 top-1/2 transform -translate-y-1/2";
-  //       break;
-  //     case "right":
-  //       ballClass += "right-0 top-1/2 transform -translate-y-1/2";
-  //       break;
-  //     default:
-  //       ballClass += "right-0 top-1/2 transform -translate-y-1/2";
-  //   }
-  //
-  //   return <div className={ballClass}>⚽</div>;
-  // };
+  const SoccerBallIcon: React.FC<{ direction: FacingDirection }> = ({ direction }) => {
+    let ballClass = "absolute text-sm pointer-events-none ";
+
+    // Use "right" as default direction if no direction is specified
+    const facingDirection = direction || "right";
+
+    // Position ball based on facing direction - at the edge of the piece square
+    switch (facingDirection) {
+      case "north":
+        ballClass += "top-0 left-1/2 transform -translate-x-1/2";
+        break;
+      case "south":
+        ballClass += "bottom-0 left-1/2 transform -translate-x-1/2";
+        break;
+      case "towards_white_goal":
+        ballClass += "left-0 top-1/2 transform -translate-y-1/2";
+        break;
+      case "towards_black_goal":
+        ballClass += "right-0 top-1/2 transform -translate-y-1/2";
+        break;
+    }
+
+    return <div className={ballClass}>⚽</div>;
+  };
 
   const canBeTackled = false;
   const isGoalie = false;
@@ -59,6 +58,11 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected }) => {
             : ""
         }`}
       />
+
+      {/* Soccer ball positioned based on facing direction */}
+      {piece.getHasBall() && (
+        <SoccerBallIcon direction={piece.getFacingDirection()} />
+      )}
 
       {/* Offside indicator */}
       {isOffside && (

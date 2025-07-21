@@ -1,4 +1,4 @@
-import type { PlayerColor } from "@/types/types";
+import type { FacingDirection, PlayerColor } from "@/types/types";
 import { Position } from "@/classes/Position";
 import {
   DIRECTION_VECTORS,
@@ -11,6 +11,7 @@ export class Piece {
   private readonly color: PlayerColor;
   private position: Position;
   private hasBall: boolean;
+  private facingDirection: FacingDirection;
   private readonly goalie: boolean = false;
 
   constructor(
@@ -23,6 +24,8 @@ export class Piece {
     this.color = color;
     this.position = position;
     this.hasBall = hasBall;
+    this.facingDirection =
+      color === "white" ? "towards_black_goal" : "towards_white_goal";
   }
 
   /**
@@ -71,9 +74,31 @@ export class Piece {
   }
 
   /**
+   * Get movement targets for when a piece has the ball
+   * @private
+   */
+  private getBallMovementTargets(): Position[] {
+    const validMoves: Position[] = [];
+
+    const [curRow, curCol] = this.position.getPositionCoordinates();
+
+    for (const [dRow, dCol] of DIRECTION_VECTORS) {
+      const newPosition = new Position(curRow + dRow, curCol + dCol);
+
+      if (this.goalie || (!this.goalie && !newPosition.isPositionInGoal())) {
+        validMoves.push(newPosition);
+      }
+    }
+
+    return validMoves;
+  }
+
+  /**
    * Get valid movement targets. This does not account for other players positions
    */
   getMovementTargets(): Position[] {
+    if (this.hasBall) return this.getBallMovementTargets();
+
     return this.getStandardMovementTargets();
   }
 
@@ -91,5 +116,9 @@ export class Piece {
 
   getHasBall() {
     return this.hasBall;
+  }
+
+  getFacingDirection() {
+    return this.facingDirection;
   }
 }

@@ -7,8 +7,7 @@ interface TutorialPanelProps {
 }
 
 const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
-  const { nextStep, completedSteps, currentStep } =
-    useTutorialBoard();
+  const { nextStep, completedSteps, currentStep } = useTutorialBoard();
 
   const getTutorialContent = (step: TutorialStep) => {
     switch (step) {
@@ -17,8 +16,6 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
           title: "Welcome to Taka!",
           content:
             "Let's learn how to play this exciting football strategy game. We'll start with the absolute basics - moving a single piece.",
-          action: "Start Learning",
-          onAction: nextStep,
         };
 
       case "basic_movement":
@@ -26,8 +23,12 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
           title: "Basic Movement",
           content:
             "Click on the highlighted white piece to select it, then click on any adjacent square (including diagonally) to move it there.",
-          action: null,
-          onAction: null,
+        };
+
+      case "movement_with_ball":
+        return {
+          title: "Movement with Ball",
+          content: "Click on any highlighted square to move with the ball.",
         };
 
       case "completed":
@@ -35,7 +36,6 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
           title: "Tutorial Complete!",
           content:
             "Congratulations! You've learned the basics of Taka. You're ready to play the full game!",
-          action: "Finish",
         };
     }
   };
@@ -74,12 +74,12 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
 
       {/* Actions */}
       <div className="flex flex-col gap-3">
-        {tutorialContent.action && tutorialContent.onAction && (
+        {currentStep === "welcome" && (
           <button
-            onClick={tutorialContent.onAction}
-            className="w-full rounded bg-blue-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-600 cursor-pointer"
+            onClick={nextStep}
+            className="w-full cursor-pointer rounded bg-blue-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
           >
-            {tutorialContent.action}
+            Start Learning
           </button>
         )}
       </div>
