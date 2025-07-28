@@ -133,6 +133,7 @@ const TutorialGameBoard: React.FC = () => {
                               selectedPiece?.getPosition()?.equals(position) ??
                               false
                             }
+                            isPassTarget={squareInfo === "pass_target"}
                           />
                         )}
 

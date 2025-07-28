@@ -1,8 +1,12 @@
 export class Position {
-  private readonly row: number; // 0-9 (A-J)
-  private readonly col: number; // 0-13 (1-14)
+  private readonly row: number; // 0-13 (1-14)
+  private readonly col: number; // 0-9 (A-J)
 
   constructor(row: number, col: number) {
+    if (row > 13 || row < 0 || col > 9 || col < 0) {
+      throw new Error("Out of bounds position");
+    }
+
     this.row = row;
     this.col = col;
   }

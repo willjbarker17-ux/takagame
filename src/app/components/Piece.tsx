@@ -5,9 +5,10 @@ import { FacingDirection } from "@/types/types";
 interface PieceProps {
   piece: PieceClass;
   isSelected: boolean;
+  isPassTarget: boolean;
 }
 
-const Piece: React.FC<PieceProps> = ({ piece, isSelected }) => {
+const Piece: React.FC<PieceProps> = ({ piece, isSelected, isPassTarget }) => {
   // Soccer ball component that positions based on facing direction
   const SoccerBallIcon: React.FC<{ direction: FacingDirection }> = ({ direction }) => {
     let ballClass = "absolute text-sm pointer-events-none ";
@@ -37,7 +38,6 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected }) => {
   const canBeTackled = false;
   const isGoalie = false;
   const isOffside = false;
-  const canReceiveBall = false;
 
   return (
     <div className="pointer-events-none relative">
@@ -53,7 +53,7 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected }) => {
         } ${
           isOffside ? "ring-opacity-90 opacity-75 ring-2 ring-orange-500" : ""
         } ${
-          canReceiveBall
+          isPassTarget
             ? "ring-opacity-75 animate-pulse ring-4 ring-green-500"
             : ""
         }`}

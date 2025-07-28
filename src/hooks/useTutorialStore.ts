@@ -12,6 +12,7 @@ import {
 import {
   BOARD_COLS,
   BOARD_ROWS,
+  DIRECTION_VECTORS,
   TUTORIAL_PLAYER_COLOR,
 } from "@/utils/constants";
 
@@ -52,13 +53,33 @@ export const stepOrder: TutorialStep[] = [
   "basic_movement",
   "turning",
   "movement_with_ball",
+  "passing",
   "completed",
 ];
 
-const demoPiece = new Piece(
+const demoPiece1 = new Piece(
   "W1",
   TUTORIAL_PLAYER_COLOR,
   new Position(4, 4),
+  false,
+);
+
+const demoPiece2 = new Piece(
+  "W2",
+  TUTORIAL_PLAYER_COLOR,
+  new Position(8, 0),
+  false,
+);
+const demoPiece3 = new Piece(
+  "W3",
+  TUTORIAL_PLAYER_COLOR,
+  new Position(8, 4),
+  false,
+);
+const demoPiece4 = new Piece(
+  "W4",
+  TUTORIAL_PLAYER_COLOR,
+  new Position(8, 8),
   false,
 );
 
@@ -78,10 +99,10 @@ const tutorialStepStates: Record<string, () => void> = {
       currentStep: "basic_movement",
     });
 
-    setBoardLayout([demoPiece]);
+    setBoardLayout([demoPiece1]);
   },
   turning: () => {
-    demoPiece.setHasBall(true);
+    demoPiece1.setHasBall(true);
 
     useTutorialStore.setState({
       currentStep: "turning",
@@ -91,6 +112,16 @@ const tutorialStepStates: Record<string, () => void> = {
     useTutorialStore.setState({
       currentStep: "movement_with_ball",
     });
+  },
+  passing: () => {
+    demoPiece1.setPosition(new Position(4, 4));
+    demoPiece1.setFacingDirection("south");
+
+    useTutorialStore.setState({
+      currentStep: "passing",
+    });
+
+    setBoardLayout([demoPiece1, demoPiece2, demoPiece3, demoPiece4]);
   },
   completed: () => {
     useTutorialStore.setState({
@@ -135,7 +166,7 @@ const getValidMovementTargets = (piece: Piece): Position[] => {
  * Deselect the currently selected piece
  */
 const deselectPiece = () => {
-  const {selectedPiece} = useTutorialStore.getState();
+  const { selectedPiece } = useTutorialStore.getState();
 
   if (!selectedPiece) {
     // This should never happen. This is a bug if this gets called.
@@ -147,7 +178,7 @@ const deselectPiece = () => {
     selectedPiece: null,
     isTurnButtonEnabled: false,
   });
-}
+};
 
 /**
  * Moves a piece from one position to another
@@ -251,6 +282,14 @@ export const getSquareInfo = (
   const piece = useTutorialStore.getState().boardLayout[row][col];
 
   if (piece && piece.getColor() === currentPlayerColor) {
+    if (
+      state.selectedPiece &&
+      state.selectedPiece.getHasBall() &&
+      getValidPassTargets(state.selectedPiece).find((p) => p.equals(position))
+    ) {
+      return "pass_target";
+    }
+
     return "piece";
   }
 
@@ -287,6 +326,68 @@ const getTurnTargets = (piece: Piece): getTurnTargetsReturnType => {
     targets.push({ position: new Position(row, col + 1), direction: "east" });
 
   return targets;
+};
+
+/**
+ * Get all valid pass targets for a piece
+ * @param origin Piece to get pass targets of
+ */
+const getValidPassTargets = (origin: Piece): Position[] => {
+  const validMoves: Position[] = [];
+
+  const [curRow, curCol] = origin.getPosition().getPositionCoordinates();
+  const facingDirection = origin.getFacingDirection();
+
+  for (const [dRow, dCol] of DIRECTION_VECTORS) {
+    if (
+      (facingDirection === "north" && dRow > 0) ||
+      (facingDirection === "east" && dCol < 0) ||
+      (facingDirection === "south" && dRow < 0) ||
+      (facingDirection === "west" && dCol > 0)
+    ) {
+      continue;
+    }
+
+    for (let distance = 1; ; distance++) {
+      const newRow = curRow + dRow * distance;
+      const newCol = curCol + dCol * distance;
+
+      if (newRow < 0 || newRow > 13 || newCol < 0 || newCol > 9) {
+        break;
+      }
+
+      const newPosition = new Position(newRow, newCol);
+
+      if (getPieceAtPosition(newPosition)) {
+        validMoves.push(newPosition);
+
+        // Break as we can't pass behind a piece
+        break;
+      }
+    }
+  }
+
+  return validMoves;
+};
+
+/**
+ * Pass the ball
+ * @param origin Origin piece to pass ball from
+ * @param destination Destination to pass ball to
+ */
+const passBall = (origin: Position, destination: Position) => {
+  const originPiece = getPieceAtPosition(origin);
+  const destinationPiece = getPieceAtPosition(destination);
+
+  if (!originPiece || !destinationPiece) {
+    throw new Error("There must be a piece at both the origin and destination");
+  }
+
+  originPiece.setHasBall(false);
+  destinationPiece.setHasBall(true);
+
+  // Push an update to the state
+  useTutorialStore.setState({});
 };
 
 /**
@@ -349,6 +450,21 @@ export const handleSquareClick = (position: Position): void => {
   }
 
   if (pieceAtPosition) {
+    if (selectedPiece) {
+      const passTargets = getValidPassTargets(selectedPiece);
+
+      if (passTargets.find((p) => p.equals(pieceAtPosition.getPosition()))) {
+        // User is trying to pass
+        passBall(selectedPiece.getPosition(), position);
+
+        if (currentStep === "passing") {
+          nextStep();
+        }
+
+        return;
+      }
+    }
+
     // Transfer selection over
     useTutorialStore.setState({ selectedPiece: pieceAtPosition });
 
@@ -360,7 +476,11 @@ export const handleSquareClick = (position: Position): void => {
   }
 
   // No piece, must mean user is trying to move
-  if (currentStep !== "turning" && selectedPiece && isPositionValidMovementTarget(position)) {
+  if (
+    currentStep !== "turning" &&
+    selectedPiece &&
+    isPositionValidMovementTarget(position)
+  ) {
     // We are trying to move
     movePiece(selectedPiece, position);
     deselectPiece();
@@ -378,7 +498,9 @@ export const handleSquareClick = (position: Position): void => {
   }
 
   // We are trying to de select
-  deselectPiece();
+  if (selectedPiece) {
+    deselectPiece();
+  }
 };
 
 /**

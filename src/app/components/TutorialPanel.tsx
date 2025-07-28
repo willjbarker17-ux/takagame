@@ -1,5 +1,9 @@
 import React from "react";
-import { nextStep, stepOrder, useTutorialBoard } from "@/hooks/useTutorialStore";
+import {
+  nextStep,
+  stepOrder,
+  useTutorialBoard,
+} from "@/hooks/useTutorialStore";
 import { TutorialStep } from "@/types/types";
 
 interface TutorialPanelProps {
@@ -7,7 +11,9 @@ interface TutorialPanelProps {
 }
 
 const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
-  const getTutorialContent = (step: TutorialStep): {title: string, content: string} => {
+  const getTutorialContent = (
+    step: TutorialStep,
+  ): { title: string; content: string } => {
     switch (step) {
       case "welcome":
         return {
@@ -23,17 +29,23 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
             "Click on the highlighted white piece to select it, then click on any adjacent square (including diagonally) to move it there.",
         };
 
+      case "turning":
+        return {
+          title: "Turning",
+          content: "Click on the piece and attempt to turn it",
+        };
+
       case "movement_with_ball":
         return {
           title: "Movement with Ball",
           content: "Click on any highlighted square to move with the ball.",
         };
 
-      case "turning":
+      case "passing":
         return {
-          title: "Turning",
-          content: "Click on the piece and attempt to turn it",
-        }
+          title: "Passing",
+          content: "Choose a target to pass the ball to.",
+        };
 
       case "completed":
         return {
@@ -44,7 +56,7 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
     }
   };
 
-  const {currentStep, completedSteps} = useTutorialBoard();
+  const { currentStep, completedSteps } = useTutorialBoard();
 
   const tutorialContent = getTutorialContent(currentStep);
 

@@ -6,6 +6,7 @@ export type TutorialStep =
   | "basic_movement"
   | "turning"
   | "movement_with_ball"
+  | "passing"
   | "completed";
 
 export type FacingDirection = "north" | "south" | "west" | "east";
@@ -16,4 +17,4 @@ export type FacingDirection = "north" | "south" | "west" | "east";
  * movement - blue dot, clickable
  * turn target - turn, clickable
  */
-export type SquareType = "nothing" | "piece" | "movement" | "turn_target";
+export type SquareType = "nothing" | "piece" | "movement" | "turn_target" | "pass_target";
