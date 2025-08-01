@@ -137,12 +137,6 @@ const TutorialGameBoard: React.FC = () => {
                           />
                         )}
 
-                        {piece === "ball" && (
-                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                            <div className="text-lg">⚽</div>
-                          </div>
-                        )}
-
                         {/*{isOverlappingPosition(rowIndex, colIndex) && (*/}
                         {/*  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">*/}
                         {/*    <div className="bg-opacity-90 h-6 w-6 animate-pulse rounded-full border-2 border-yellow-500 bg-gradient-to-r from-white to-blue-400 shadow-md" />*/}
@@ -155,9 +149,20 @@ const TutorialGameBoard: React.FC = () => {
                         {/*  </div>*/}
                         {/*)}*/}
 
-                        {squareInfo === "movement" && (
-                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        {squareInfo === "movement" && piece !== "ball" && (
+                          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
                             <div className="bg-opacity-90 h-5 w-5 animate-pulse rounded-full border-2 border-blue-600 bg-blue-400 shadow-md" />
+                          </div>
+                        )}
+
+                        {piece === "ball" && (
+                          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+                            <div className="relative text-lg">
+                              ⚽
+                              {squareInfo === "movement" && (
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-blue-400 opacity-60 mix-blend-multiply animate-pulse rounded-full"/>
+                              )}
+                            </div>
                           </div>
                         )}
 

@@ -46,7 +46,7 @@ interface TutorialState {
  * Creates a BOARD_ROWS x BOARD_COLS blank board filled with null values
  * @returns A 2D array representing an empty game board
  */
-const createBlankBoard = () =>
+const createBlankBoard = (): BoardSquareType[][] =>
   Array.from({ length: BOARD_ROWS }, () =>
     (Array(BOARD_COLS) as (Piece | null)[]).fill(null),
   );
@@ -62,6 +62,7 @@ export const stepOrder: TutorialStep[] = [
   "passing",
   "consecutive_pass",
   "ball_empty_square",
+  "ball_pickup",
   "completed",
 ];
 
@@ -146,6 +147,20 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
 
     setBoardLayout([demoPiece1]);
   },
+  ball_pickup: () => {
+    // Position the demo piece at (4,4) and place a ball at (6,4)
+    demoPiece1.setPosition(new Position(4, 4));
+    demoPiece1.setHasBall(false);
+
+    useTutorialStore.setState({
+      currentStep: "ball_pickup",
+      isMovementEnabled: true,
+      selectedPiece: null,
+    });
+
+    // Set up board layout with piece at (4,4) and ball at (6,4)
+    setBoardLayout([demoPiece1], [new Position(6, 4)]);
+  },
   completed: () => {
     useTutorialStore.setState({
       currentStep: "completed",
@@ -180,7 +195,9 @@ const getValidMovementTargets = (piece: Piece): Position[] => {
 
   for (const pos of allMoves) {
     const [pRow, pCol] = pos.getPositionCoordinates();
-    if (boardLayout[pRow][pCol] === null) {
+    const square = boardLayout[pRow][pCol];
+    // Allow movement to empty squares or squares with balls
+    if (square === null || square === "ball") {
       validMoves.push(pos);
     }
   }
@@ -225,6 +242,13 @@ const movePiece = (piece: Piece, newPosition: Position) => {
 
   useTutorialStore.setState((state) => {
     const newBoardLayout = state.boardLayout.map((row) => [...row]);
+    const targetSquare = newBoardLayout[nRow][nCol];
+
+    // If there's a ball at the target position, pick it up
+    if (targetSquare === "ball") {
+      piece.setHasBall(true);
+    }
+
     newBoardLayout[oRow][oCol] = null;
     newBoardLayout[nRow][nCol] = piece;
     return {
@@ -236,14 +260,27 @@ const movePiece = (piece: Piece, newPosition: Position) => {
 /**
  * Sets the board layout with the given pieces
  * @param pieces - Array of pieces to place on the board
+ * @param balls - Where to place balls
  */
-export const setBoardLayout = (pieces: Piece[]) => {
+export const setBoardLayout = (pieces: Piece[], balls?: Position[]) => {
   const boardLayout = createBlankBoard();
 
   pieces.forEach((piece) => {
     const [row, col] = piece.getPosition().getPositionCoordinates();
     boardLayout[row][col] = piece;
   });
+
+  if (balls) {
+    balls.forEach((pos) => {
+      const [row, col] = pos.getPositionCoordinates();
+
+      if (boardLayout[row][col] !== null) {
+        throw new Error("Balls and pieces cannot be overlapping");
+      }
+
+      boardLayout[row][col] = "ball";
+    });
+  }
 
   useTutorialStore.setState({
     pieces: [...pieces],
@@ -352,6 +389,18 @@ export const getSquareInfo = (
 
   if (state.isMovementEnabled && isPositionValidMovementTarget(position)) {
     return "movement";
+  }
+
+  // Check for empty square pass targets (only in ball_empty_square step)
+  if (
+    state.currentStep === "ball_empty_square" &&
+    state.selectedPiece &&
+    state.selectedPiece.getHasBall() &&
+    getValidEmptySquarePassTargets(state.selectedPiece).find((p) =>
+      p.equals(position),
+    )
+  ) {
+    return "empty_pass_target";
   }
 
   return "nothing";
@@ -602,6 +651,9 @@ export const handleSquareClick = (position: Position): void => {
     isPositionValidMovementTarget(position)
   ) {
     // We are trying to move
+    const boardSquare = getBoardSquare(position);
+    const isPickingUpBall = boardSquare === "ball";
+
     movePiece(selectedPiece, position);
     deselectPiece();
 
@@ -609,6 +661,8 @@ export const handleSquareClick = (position: Position): void => {
     if (currentStep === "basic_movement") {
       nextStep();
     } else if (currentStep === "movement_with_ball") {
+      nextStep();
+    } else if (currentStep === "ball_pickup" && isPickingUpBall) {
       nextStep();
     }
 

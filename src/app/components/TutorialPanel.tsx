@@ -56,7 +56,15 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
       case "ball_empty_square":
         return {
           title: "Passing to an empty square",
-          content: "TODO",
+          content:
+            "Click on an empty square to pass the ball there. This is useful for strategic positioning.",
+        };
+
+      case "ball_pickup":
+        return {
+          title: "Picking up the ball",
+          content:
+            "Click on the piece to select it, then click on the ball to move the piece there and pick up the ball.",
         };
 
       case "completed":
