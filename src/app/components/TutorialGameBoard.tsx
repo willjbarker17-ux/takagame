@@ -17,19 +17,16 @@ import {
 } from "@/hooks/useTutorialStore";
 
 const TutorialGameBoard: React.FC = () => {
-  const {
-    boardLayout,
-    selectedPiece,
-    isTurnButtonEnabled,
-  } = useTutorialBoard();
+  const { boardLayout, selectedPiece, isTurnButtonEnabled } =
+    useTutorialBoard();
 
   const colLabels = Array.from({ length: BOARD_COLS }, (_, i) =>
     // String.fromCharCode(65 + i),
-    i.toString()
+    i.toString(),
   ); // A-J
   const rowLabels = Array.from({ length: BOARD_ROWS }, (_, i) =>
     // (i + 1).toString(),
-    i.toString()
+    i.toString(),
   ); // 1-14
 
   return (

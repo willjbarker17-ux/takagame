@@ -10,7 +10,9 @@ interface PieceProps {
 
 const Piece: React.FC<PieceProps> = ({ piece, isSelected, isPassTarget }) => {
   // Soccer ball component that positions based on facing direction
-  const SoccerBallIcon: React.FC<{ direction: FacingDirection }> = ({ direction }) => {
+  const SoccerBallIcon: React.FC<{ direction: FacingDirection }> = ({
+    direction,
+  }) => {
     let ballClass = "absolute text-sm pointer-events-none ";
 
     // Use "right" as default direction if no direction is specified

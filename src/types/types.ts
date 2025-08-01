@@ -21,6 +21,11 @@ export type FacingDirection = "north" | "south" | "west" | "east";
  * movement - blue dot, clickable
  * turn target - turn, clickable
  */
-export type SquareType = "nothing" | "piece" | "movement" | "turn_target" | "pass_target";
+export type SquareType =
+  | "nothing"
+  | "piece"
+  | "movement"
+  | "turn_target"
+  | "pass_target";
 
 export type BoardSquareType = Piece | "ball" | null;

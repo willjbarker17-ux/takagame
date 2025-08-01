@@ -18,11 +18,11 @@ const eslintConfig = [
       "react/prop-types": "off", // We use TypeScript for prop validation
       "react/react-in-jsx-scope": "off", // Not needed in Next.js
       "react/jsx-uses-react": "off", // Not needed in Next.js
-      
+
       // React Hooks rules
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-      
+
       // Additional React best practices
       "react/jsx-key": "error",
       "react/jsx-no-duplicate-props": "error",

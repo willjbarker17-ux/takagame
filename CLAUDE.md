@@ -76,12 +76,14 @@ The app features a comprehensive tutorial system built with Zustand for state ma
 ### Game Board Components
 
 #### Static Game Board (`StaticGameBoard.tsx`)
+
 - Renders a 10x14 grid football field for the landing page
 - Uses coordinate system (A-J rows, 1-14 columns)
 - Displays static initial game positions for white and black teams
 - Each team has 11 pieces including 1 goalie
 
 #### Interactive Tutorial Board (`TutorialGameBoard.tsx`)
+
 - Reactive game board that responds to tutorial state changes
 - Handles piece selection, movement targets, pass targets, and turn indicators
 - Real-time visual feedback for valid moves and interactions
@@ -90,11 +92,13 @@ The app features a comprehensive tutorial system built with Zustand for state ma
 ### Page Structure
 
 #### Landing Page (`page.tsx`)
+
 - Marketing-focused single page with hero section, features, how-to-play, and footer
 - Integrates the StaticGameBoard component as a preview
 - Responsive design with Tailwind utilities
 
 #### Tutorial Page (`tutorial/page.tsx`)
+
 - Interactive learning environment with side-by-side board and instructions
 - Full-screen responsive layout with tutorial progression
 - Combines TutorialGameBoard and TutorialPanel components
@@ -130,3 +134,7 @@ The app features a comprehensive tutorial system built with Zustand for state ma
 - ESLint configured with Next.js rules
 - Development server runs on port 8000 (both dev and start commands)
 - Prettier integration for consistent code formatting
+
+## Claude Warnings
+
+- Never run the build command#
