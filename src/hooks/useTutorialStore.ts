@@ -585,6 +585,8 @@ export const nextStep = () => {
 
   useTutorialStore.setState({
     completedSteps: newCompletedSteps,
+    selectedPiece: null,
+    awaitingConsecutivePass: false,
   });
 };
 
