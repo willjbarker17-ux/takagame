@@ -81,6 +81,12 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
           content: "TODO",
         };
 
+      case "shooting":
+        return {
+          title: "Shooting The Ball",
+          content: "TODO",
+        };
+
       case "completed":
         return {
           title: "Tutorial Complete!",
@@ -139,7 +145,7 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
             onClick={handleRetry}
             className="w-full cursor-pointer rounded bg-red-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-red-600"
           >
-            Retry - No pieces nearby!
+            Retry
           </button>
         )}
       </div>

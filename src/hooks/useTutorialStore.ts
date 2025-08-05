@@ -75,6 +75,7 @@ export const stepOrder: TutorialStep[] = [
   "ball_pickup",
   "receiving_passes",
   "chip_pass",
+  "shooting",
   "completed",
 ];
 
@@ -208,6 +209,16 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
       new Piece("B3", TUTORIAL_OPPONENT_COLOR, new Position(6, 4), false),
     ]);
   },
+  shooting: () => {
+    useTutorialStore.setState({
+      currentStep: "shooting",
+      isMovementEnabled: false,
+    });
+
+    setBoardLayout([
+      new Piece("W1", TUTORIAL_PLAYER_COLOR, new Position(9, 4), true),
+    ]);
+  },
   completed: () => {
     useTutorialStore.setState({
       currentStep: "completed",
@@ -227,7 +238,7 @@ const useTutorialStore = create<TutorialState>(() => ({
   selectedPiece: null,
   isTurnButtonEnabled: false,
   isMovementEnabled: true,
-  currentStep: "chip_pass",
+  currentStep: "shooting",
   completedSteps: new Set<TutorialStep>(),
   tutorialActive: false,
   showRetryButton: true,
@@ -416,7 +427,8 @@ export const getSquareInfo = (
   // Check for empty square pass targets (only in ball_empty_square and receiving_passes steps)
   if (
     (state.currentStep === "ball_empty_square" ||
-      state.currentStep === "receiving_passes") &&
+      state.currentStep === "receiving_passes" ||
+      state.currentStep === "shooting") &&
     state.selectedPiece &&
     state.selectedPiece.getHasBall() &&
     getValidEmptySquarePassTargets(state.selectedPiece, state.boardLayout).find(
@@ -662,6 +674,18 @@ const handleEmptySquarePass = (position: Position): void => {
       passSender: selectedPiece,
       isMovementEnabled: true,
     });
+  } else if (currentStep === "shooting") {
+    const goalPos = new Position(13, 4);
+
+    if (!position.equals(goalPos)) {
+      useTutorialStore.setState({
+        selectedPiece: null,
+        showRetryButton: true,
+      });
+      return;
+    }
+
+    nextStep();
   }
 };
 

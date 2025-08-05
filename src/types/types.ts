@@ -14,6 +14,7 @@ export type TutorialStep =
   | "ball_pickup"
   | "receiving_passes"
   | "chip_pass"
+  | "shooting"
   | "completed";
 
 export type FacingDirection = "north" | "south" | "west" | "east";
