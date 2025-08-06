@@ -88,6 +88,12 @@ const demoPiece1 = new Piece(
   new Position(4, 4),
   false,
 );
+const demoPiece1 = new Piece({
+  id: "W1",
+  color: TUTORIAL_PLAYER_COLOR,
+  position: new Position(4, 4),
+  hasBall: false,
+});
 
 /**
  * Predefined states for each tutorial step. This represents the state we should update. Anything not set won't get updated
@@ -132,9 +138,9 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
 
     setBoardLayout([
       demoPiece1,
-      new Piece("W2", TUTORIAL_PLAYER_COLOR, new Position(8, 0), false),
-      new Piece("W3", TUTORIAL_PLAYER_COLOR, new Position(8, 4), false),
-      new Piece("W4", TUTORIAL_PLAYER_COLOR, new Position(8, 8), false),
+      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 0), hasBall: false }),
+      new Piece({ id: "W3", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 4), hasBall: false }),
+      new Piece({ id: "W4", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 8), hasBall: false }),
     ]);
   },
   consecutive_pass: () => {
@@ -149,9 +155,9 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     });
 
     setBoardLayout([
-      new Piece("W3", TUTORIAL_PLAYER_COLOR, new Position(4, 4), true),
-      new Piece("W2", TUTORIAL_PLAYER_COLOR, new Position(8, 0), false),
-      new Piece("B1", TUTORIAL_OPPONENT_COLOR, new Position(5, 4), false),
+      new Piece({ id: "W3", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 4), hasBall: true }),
+      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 0), hasBall: false }),
+      new Piece({ id: "B1", color: TUTORIAL_OPPONENT_COLOR, position: new Position(5, 4), hasBall: false }),
       demoPiece1,
     ]);
   },
@@ -193,7 +199,7 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     // This forces the user to pass to an empty square
     setBoardLayout([
       demoPiece1,
-      new Piece("W2", TUTORIAL_PLAYER_COLOR, new Position(7, 3), false),
+      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(7, 3), hasBall: false }),
     ]);
   },
   chip_pass: () => {
@@ -203,13 +209,13 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     });
 
     setBoardLayout([
-      new Piece("W1", TUTORIAL_PLAYER_COLOR, new Position(4, 4), true),
-      new Piece("W2", TUTORIAL_PLAYER_COLOR, new Position(8, 4), false),
-      new Piece("W3", TUTORIAL_PLAYER_COLOR, new Position(4, 1), false),
-      new Piece("W4", TUTORIAL_PLAYER_COLOR, new Position(4, 8), false),
-      new Piece("B1", TUTORIAL_OPPONENT_COLOR, new Position(4, 3), false),
-      new Piece("B2", TUTORIAL_OPPONENT_COLOR, new Position(4, 5), false),
-      new Piece("B3", TUTORIAL_OPPONENT_COLOR, new Position(6, 4), false),
+      new Piece({ id: "W1", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 4), hasBall: true }),
+      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 4), hasBall: false }),
+      new Piece({ id: "W3", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 1), hasBall: false }),
+      new Piece({ id: "W4", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 8), hasBall: false }),
+      new Piece({ id: "B1", color: TUTORIAL_OPPONENT_COLOR, position: new Position(4, 3), hasBall: false }),
+      new Piece({ id: "B2", color: TUTORIAL_OPPONENT_COLOR, position: new Position(4, 5), hasBall: false }),
+      new Piece({ id: "B3", color: TUTORIAL_OPPONENT_COLOR, position: new Position(6, 4), hasBall: false }),
     ]);
   },
   shooting: () => {
@@ -219,7 +225,7 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     });
 
     setBoardLayout([
-      new Piece("W1", TUTORIAL_PLAYER_COLOR, new Position(9, 4), true),
+      new Piece({ id: "W1", color: TUTORIAL_PLAYER_COLOR, position: new Position(9, 4), hasBall: true }),
     ]);
   },
   tackling: () => {
@@ -231,8 +237,8 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     // Set up tackling scenario: white piece adjacent to black piece with ball
     // Black piece faces east (perpendicular to white piece) so tackle is allowed
     setBoardLayout([
-      new Piece("W1", TUTORIAL_PLAYER_COLOR, new Position(6, 4), false),
-      new Piece("B1", TUTORIAL_OPPONENT_COLOR, new Position(6, 5), true, "west"),
+      new Piece({ id: "W1", color: TUTORIAL_PLAYER_COLOR, position: new Position(6, 4), hasBall: false }),
+      new Piece({ id: "B1", color: TUTORIAL_OPPONENT_COLOR, position: new Position(6, 5), hasBall: true, facingDirection: "west" }),
     ]);
   },
   completed: () => {

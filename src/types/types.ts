@@ -16,6 +16,7 @@ export type TutorialStep =
   | "chip_pass"
   | "shooting"
   | "tackling"
+  | "activating_goalies"
   | "completed";
 
 export type FacingDirection = "north" | "south" | "west" | "east";

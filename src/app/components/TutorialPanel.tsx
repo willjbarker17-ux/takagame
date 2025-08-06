@@ -94,6 +94,13 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
             "Select your white piece and click on the highlighted black piece to tackle! You can steal the ball from adjacent opponents if they're not facing away from you. After tackling, you'll swap positions and gain possession of the ball.",
         };
 
+      case "activating_goalies":
+        return {
+          title: "Activating Goalies",
+          content:
+            "Learn how to activate your goalie to defend your goal area. Goalies have special abilities and movement rules that make them essential for defense.",
+        };
+
       case "completed":
         return {
           title: "Tutorial Complete!",

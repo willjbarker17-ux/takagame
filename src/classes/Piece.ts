@@ -6,27 +6,31 @@ import {
   OTHER_MOVE_DISTANCE,
 } from "@/utils/constants";
 
+interface PieceParams {
+  id: string;
+  color: PlayerColor;
+  position: Position;
+  hasBall: boolean;
+  facingDirection?: FacingDirection;
+  isGoalie?: boolean;
+}
+
 export class Piece {
   private readonly id: string;
   private readonly color: PlayerColor;
   private position: Position;
   private hasBall: boolean;
   private facingDirection: FacingDirection;
-  private readonly goalie: boolean = false;
+  private readonly isGoalie: boolean;
 
-  constructor(
-    id: string,
-    color: PlayerColor,
-    position: Position,
-    hasBall: boolean,
-    facingDirection?: FacingDirection,
-  ) {
-    this.id = id;
-    this.color = color;
-    this.position = position;
-    this.hasBall = hasBall;
+  constructor(params: PieceParams) {
+    this.id = params.id;
+    this.color = params.color;
+    this.position = params.position;
+    this.hasBall = params.hasBall;
     this.facingDirection =
-      facingDirection ?? (color === "white" ? "south" : "north");
+      params.facingDirection ?? (params.color === "white" ? "south" : "north");
+    this.isGoalie = params.isGoalie ?? false;
   }
 
   /**
@@ -61,7 +65,8 @@ export class Piece {
 
         const newPosition = new Position(newRow, newCol);
 
-        if (this.goalie || (!this.goalie && !newPosition.isPositionInGoal())) {
+        // Only goalies can enter goal areas, normal pieces cannot
+        if (this.isGoalie || !newPosition.isPositionInGoal()) {
           validMoves.push(newPosition);
         } else {
           break; // Path is blocked
@@ -89,7 +94,8 @@ export class Piece {
 
       const newPosition = new Position(newRow, newCol);
 
-      if (this.goalie || (!this.goalie && !newPosition.isPositionInGoal())) {
+      // Only goalies can enter goal areas, normal pieces cannot
+      if (this.isGoalie || !newPosition.isPositionInGoal()) {
         validMoves.push(newPosition);
       }
     }
@@ -132,5 +138,9 @@ export class Piece {
 
   getFacingDirection() {
     return this.facingDirection;
+  }
+
+  getIsGoalie() {
+    return this.isGoalie;
   }
 }
