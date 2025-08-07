@@ -82,17 +82,20 @@ export const stepOrder: TutorialStep[] = [
   "completed",
 ];
 
-const demoPiece1 = new Piece(
-  "W1",
-  TUTORIAL_PLAYER_COLOR,
-  new Position(4, 4),
-  false,
-);
 const demoPiece1 = new Piece({
   id: "W1",
   color: TUTORIAL_PLAYER_COLOR,
   position: new Position(4, 4),
   hasBall: false,
+});
+
+// Special piece to represent the unactivated white goalie
+const unactivatedWhiteGoalie = new Piece({
+  id: "UNACTIVATED_WHITE_GOALIE",
+  color: TUTORIAL_PLAYER_COLOR,
+  position: new Position(0, 4), // Arbitrary position, not used for display
+  hasBall: false,
+  isGoalie: true,
 });
 
 /**
