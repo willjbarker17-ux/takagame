@@ -63,6 +63,10 @@ interface TutorialState {
   completedSteps: Set<TutorialStep>;
   /** The unactivated white goalie piece to show at intersection */
   whiteUnactivatedGoaliePiece: Piece | null;
+  /** Drag state for ball movement */
+  isDragging: boolean;
+  draggedPiece: Piece | null;
+  dragStartPosition: Position | null;
 }
 
 /**
@@ -435,6 +439,9 @@ const useTutorialStore = create<TutorialState>(() => ({
   tutorialActive: false,
   showRetryButton: false,
   whiteUnactivatedGoaliePiece: null,
+  isDragging: false,
+  draggedPiece: null,
+  dragStartPosition: null,
 }));
 
 /**
@@ -662,7 +669,7 @@ const handleConsecutivePass = (position: Position): void => {
  * Handle movement to empty squares or squares with balls
  */
 const handleMovement = (position: Position): void => {
-  const { selectedPiece, currentStep, awaitingReceivePass } =
+  const { selectedPiece, currentStep, awaitingReceivePass, isDragging } =
     useTutorialStore.getState();
 
   if (!selectedPiece) {
@@ -670,6 +677,12 @@ const handleMovement = (position: Position): void => {
   }
 
   const state = useTutorialStore.getState();
+
+  // Prevent click-based movement for pieces with ball (they should use drag)
+  // Exception: allow if this is called from handleBallDrop (isDragging will be true)
+  if (selectedPiece.getHasBall() && !isDragging) {
+    return;
+  }
 
   // Check if we're moving the unactivated goalie to the board
   if (selectedPiece === state.whiteUnactivatedGoaliePiece) {
@@ -841,6 +854,9 @@ const resetState = (completedSteps?: Set<TutorialStep>) => {
     awaitingConsecutivePass: false,
     awaitingReceivePass: false,
     showRetryButton: false,
+    isDragging: false,
+    draggedPiece: null,
+    dragStartPosition: null,
   };
 
   if (completedSteps) newState.completedSteps = completedSteps;
@@ -1138,6 +1154,127 @@ export const handleUnactivatedGoalieClick = (goaliePiece: Piece) => {
     // Select the unactivated goalie
     useTutorialStore.setState({ selectedPiece: goaliePiece });
   }
+};
+
+/**
+ * Handle start of ball drag
+ */
+export const handleBallDragStart = (
+  piece: Piece,
+  initialX?: number,
+  initialY?: number,
+) => {
+  if (!piece.getHasBall()) return;
+
+  useTutorialStore.setState({
+    isDragging: true,
+    draggedPiece: piece,
+    dragStartPosition: piece.getPositionOrThrowIfUnactivated(),
+    selectedPiece: piece,
+  });
+
+  // If initial position provided, dispatch a custom event to set initial mouse position
+  if (initialX !== undefined && initialY !== undefined) {
+    window.dispatchEvent(
+      new CustomEvent("dragstart-position", {
+        detail: { x: initialX, y: initialY },
+      }),
+    );
+  }
+};
+
+/**
+ * Handle ball drag over a position
+ */
+export const handleBallDragOver = (position: Position, event: DragEvent) => {
+  const { draggedPiece } = useTutorialStore.getState();
+
+  if (!draggedPiece || !isPositionValidMovementTarget(position)) {
+    event.dataTransfer!.dropEffect = "none";
+    return;
+  }
+
+  event.preventDefault();
+  event.dataTransfer!.dropEffect = "move";
+};
+
+/**
+ * Handle ball drop on a position
+ */
+export const handleBallDrop = (position: Position, event: DragEvent) => {
+  event.preventDefault();
+
+  const { draggedPiece } = useTutorialStore.getState();
+
+  if (!draggedPiece) {
+    handleBallDragEnd();
+    return;
+  }
+
+  if (isPositionValidMovementTarget(position)) {
+    // Valid drop - execute the movement
+    handleMovement(position);
+  } else {
+    // Invalid drop - snap back to original position
+    handleBallDragEnd();
+  }
+};
+
+/**
+ * Handle mouse-based ball drop
+ */
+export const handleMouseBallDrop = (position: Position) => {
+  const { draggedPiece, dragStartPosition } = useTutorialStore.getState();
+
+  if (!draggedPiece || !dragStartPosition) {
+    handleBallDragEnd();
+    return;
+  }
+
+  if (isPositionValidMovementTarget(position)) {
+    // Valid drop - move the piece
+    movePiece(draggedPiece, position);
+
+    // Handle ball pickup if needed
+    const boardSquare = getBoardSquareHelper(
+      position,
+      useTutorialStore.getState().boardLayout,
+    );
+    const isPickingUpBall = boardSquare === "ball";
+
+    if (isPickingUpBall) {
+      useTutorialStore.setState({
+        awaitingDirectionSelection: true,
+        selectedPiece: draggedPiece,
+        isDragging: false,
+        draggedPiece: null,
+        dragStartPosition: null,
+      });
+    } else {
+      deselectPiece();
+      handleBallDragEnd();
+    }
+
+    // Check for step progression
+    const { currentStep } = useTutorialStore.getState();
+    if (currentStep === "movement_with_ball") {
+      nextStep();
+    }
+  } else {
+    // Invalid drop - just end drag
+    handleBallDragEnd();
+  }
+};
+
+/**
+ * Handle end of ball drag
+ */
+export const handleBallDragEnd = () => {
+  useTutorialStore.setState({
+    isDragging: false,
+    draggedPiece: null,
+    dragStartPosition: null,
+  });
 };
 
 /**

@@ -1,12 +1,17 @@
 import React from "react";
 import { Piece as PieceClass } from "@/classes/Piece";
 import { FacingDirection } from "@/types/types";
+import {
+  handleBallDragStart,
+  useTutorialBoard,
+} from "@/hooks/useTutorialStore";
 
 interface PieceProps {
   piece: PieceClass;
   isSelected: boolean;
   isPassTarget: boolean;
   isTackleTarget?: boolean;
+  isDragging?: boolean;
 }
 
 const Piece: React.FC<PieceProps> = ({
@@ -14,6 +19,7 @@ const Piece: React.FC<PieceProps> = ({
   isSelected,
   isPassTarget,
   isTackleTarget = false,
+  isDragging = false,
 }) => {
   const isGoalie = piece.getIsGoalie();
 
@@ -42,16 +48,36 @@ const Piece: React.FC<PieceProps> = ({
         break;
     }
 
-    return <div className={ballClass}>⚽</div>;
+    return <div className={`${ballClass} pointer-events-none`}>⚽</div>;
   };
 
   const canBeTackled = false;
   const isOffside = false;
+  const hasBall = piece.getHasBall();
+  const { currentStep } = useTutorialBoard();
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!hasBall) {
+      return;
+    }
+
+    // Only allow dragging during the dribbling step
+    if (currentStep !== "movement_with_ball") {
+      return;
+    }
+
+    e.preventDefault();
+    // Start drag immediately with current mouse position
+    handleBallDragStart(piece, e.clientX, e.clientY);
+  };
 
   return (
-    <div className="pointer-events-none relative">
+    <div
+      className={`pointer-events-none relative ${isDragging ? "opacity-30" : ""}`}
+    >
       <div
-        className={`h-10 w-10 rounded-full border-2 shadow-md transition-all duration-200 ${
+        onMouseDown={handleMouseDown}
+        className={`h-10 w-10 rounded-full border-2 shadow-md transition-all duration-200 ${hasBall && currentStep === "movement_with_ball" ? "cursor-grab active:cursor-grabbing" : ""} ${
           piece.getColor() === "white"
             ? "border-gray-400 bg-white"
             : "border-gray-600 bg-gray-900"
@@ -70,6 +96,7 @@ const Piece: React.FC<PieceProps> = ({
             ? "ring-opacity-75 animate-pulse ring-4 ring-red-500"
             : ""
         }`}
+        style={{ pointerEvents: hasBall ? "auto" : "none" }}
       />
 
       {/* Soccer ball positioned based on facing direction */}

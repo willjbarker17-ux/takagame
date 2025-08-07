@@ -5,7 +5,7 @@ import Piece from "./Piece";
 import { Piece as PieceClass } from "@/classes/Piece";
 import { Position } from "@/classes/Position";
 import { BoardSquareType, SquareType } from "@/types/types";
-import { handleSquareClick } from "@/hooks/useTutorialStore";
+import { handleSquareClick, useTutorialBoard } from "@/hooks/useTutorialStore";
 import { BOARD_COLS } from "@/utils/constants";
 
 interface BoardCellProps {
@@ -25,6 +25,7 @@ const BoardCell: React.FC<BoardCellProps> = ({
   rowIndex,
   colIndex,
 }) => {
+  const { currentStep } = useTutorialBoard();
   const cellIndex = rowIndex * BOARD_COLS + colIndex;
   const isGoalCol = colIndex >= 3 && colIndex <= 6;
   const isTopGoal = rowIndex === 0 && isGoalCol;
@@ -35,7 +36,23 @@ const BoardCell: React.FC<BoardCellProps> = ({
   const isFieldDivider1 = rowIndex === 4;
   const isFieldDivider2 = rowIndex === 8;
 
-  let borderClasses = `aspect-square border-[0.5px] border-white bg-green-700 flex items-center justify-center relative transition-colors ${squareInfo === "nothing" ? "cursor-default" : "cursor-pointer"}`;
+  // Determine cursor style based on square type and selected piece
+  let cursorClass = "cursor-default";
+  if (squareInfo !== "nothing") {
+    // If it's a movement square and selected piece has ball during dribbling step, no pointer (requires drag)
+    if (
+      squareInfo === "movement" &&
+      selectedPiece &&
+      selectedPiece.getHasBall() &&
+      currentStep === "movement_with_ball"
+    ) {
+      cursorClass = "cursor-default";
+    } else {
+      cursorClass = "cursor-pointer";
+    }
+  }
+
+  let borderClasses = `aspect-square border-[0.5px] border-white bg-green-700 flex items-center justify-center relative transition-colors ${cursorClass}`;
 
   if (isFieldDivider1 || isFieldDivider2) {
     borderClasses += " border-b-4 border-b-white";
@@ -55,6 +72,7 @@ const BoardCell: React.FC<BoardCellProps> = ({
     <div
       key={`cell-${cellIndex}`}
       className={borderClasses}
+      data-position={`${position.getPositionCoordinates()[0]},${position.getPositionCoordinates()[1]}`}
       onClick={() => handleSquareClick(position)}
     >
       {/* Render piece with reduced opacity if turn target */}
@@ -69,6 +87,7 @@ const BoardCell: React.FC<BoardCellProps> = ({
             }
             isPassTarget={squareInfo === "pass_target"}
             isTackleTarget={squareInfo === "tackle_target"}
+            isDragging={false}
           />
         </div>
       )}
