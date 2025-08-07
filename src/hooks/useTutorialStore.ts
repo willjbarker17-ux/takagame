@@ -9,8 +9,7 @@ import {
   getTurnTargets,
   getValidEmptySquarePassTargets,
   getValidPassTargets,
-  getValidTackleTargets,
-  isPositionValidMovementTarget as isValidMovementTarget
+  getValidTackleTargets
 } from "@/services/gameValidation";
 import {
   createBlankBoard,
