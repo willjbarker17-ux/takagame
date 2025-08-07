@@ -68,7 +68,9 @@ const BoardCell: React.FC<BoardCellProps> = ({
             <Piece
               piece={piece}
               isSelected={
-                selectedPiece?.getPosition()?.equals(position) ?? false
+                selectedPiece
+                  ?.getPositionOrThrowIfUnactivated()
+                  ?.equals(position) ?? false
               }
               isPassTarget={squareInfo === "pass_target"}
               isTackleTarget={squareInfo === "tackle_target"}

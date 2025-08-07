@@ -1,4 +1,8 @@
-import type { FacingDirection, PlayerColor } from "@/types/types";
+import type {
+  FacingDirection,
+  PiecePositionType,
+  PlayerColor,
+} from "@/types/types";
 import { Position } from "@/classes/Position";
 import {
   DIRECTION_VECTORS,
@@ -9,7 +13,7 @@ import {
 interface PieceParams {
   id: string;
   color: PlayerColor;
-  position: Position;
+  position: PiecePositionType;
   hasBall: boolean;
   facingDirection?: FacingDirection;
   isGoalie?: boolean;
@@ -18,7 +22,7 @@ interface PieceParams {
 export class Piece {
   private readonly id: string;
   private readonly color: PlayerColor;
-  private position: Position;
+  private position: PiecePositionType;
   private hasBall: boolean;
   private facingDirection: FacingDirection;
   private readonly isGoalie: boolean;
@@ -33,6 +37,37 @@ export class Piece {
     this.isGoalie = params.isGoalie ?? false;
   }
 
+  getPositionOrThrowIfUnactivated(): Position {
+    if (!(this.position instanceof Position)) {
+      throw new Error(
+        "getPositionOrThrowIfUnactivated was called and the piece was unactivated",
+      );
+    }
+
+    return this.position;
+  }
+
+  setPosition(position: PiecePositionType) {
+    this.position = position;
+  }
+
+  /**
+   * Get valid movement targets. This does not account for other players positions
+   */
+  getMovementTargets(): Position[] {
+    if (this.hasBall) return this.getBallMovementTargets();
+
+    return this.getStandardMovementTargets();
+  }
+
+  getColor() {
+    return this.color;
+  }
+
+  getPosition() {
+    return this.position;
+  }
+
   /**
    * Get the standard move targets for when a piece does not have the ball
    * @private
@@ -40,7 +75,8 @@ export class Piece {
   private getStandardMovementTargets(): Position[] {
     const validMoves: Position[] = [];
 
-    const [curRow, curCol] = this.position.getPositionCoordinates();
+    const [curRow, curCol] =
+      this.getPositionOrThrowIfUnactivated().getPositionCoordinates();
 
     for (const [dRow, dCol] of DIRECTION_VECTORS) {
       const isTowardOpponentGoal =
@@ -84,7 +120,8 @@ export class Piece {
   private getBallMovementTargets(): Position[] {
     const validMoves: Position[] = [];
 
-    const [curRow, curCol] = this.position.getPositionCoordinates();
+    const [curRow, curCol] =
+      this.getPositionOrThrowIfUnactivated().getPositionCoordinates();
 
     for (const [dRow, dCol] of DIRECTION_VECTORS) {
       const newRow = curRow + dRow;
@@ -101,27 +138,6 @@ export class Piece {
     }
 
     return validMoves;
-  }
-
-  /**
-   * Get valid movement targets. This does not account for other players positions
-   */
-  getMovementTargets(): Position[] {
-    if (this.hasBall) return this.getBallMovementTargets();
-
-    return this.getStandardMovementTargets();
-  }
-
-  getColor() {
-    return this.color;
-  }
-
-  getPosition() {
-    return this.position;
-  }
-
-  setPosition(position: Position) {
-    this.position = position;
   }
 
   setHasBall(hasBall: boolean) {

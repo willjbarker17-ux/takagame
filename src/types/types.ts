@@ -1,5 +1,6 @@
 // Types
 import { Piece } from "@/classes/Piece";
+import { Position } from "@/classes/Position";
 
 export type PlayerColor = "white" | "black";
 
@@ -41,3 +42,8 @@ export type SquareType =
 export type BoardSquareType = Piece | "ball" | null;
 
 export type BoardType = BoardSquareType[][];
+
+export type PiecePositionType =
+  | Position
+  | "white_unactivated"
+  | "black_unactivated";

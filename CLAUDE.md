@@ -99,7 +99,7 @@ The app features a comprehensive tutorial system built with Zustand for state ma
 
 #### Static Game Board (`StaticGameBoard.tsx`)
 
-- Renders a 14x10 grid football field for the landing page  
+- Renders a 14x10 grid football field for the landing page
 - Uses coordinate system (rows 0-13, columns 0-9)
 - Displays static initial game positions for white and black teams
 - Each team has 11 pieces including 1 goalie
@@ -161,18 +161,21 @@ The app features a comprehensive tutorial system built with Zustand for state ma
 ## Important Development Guidelines
 
 ### Board Coordinate System
+
 - The game uses a 14x10 grid (14 rows, 10 columns)
 - Rows are indexed 0-13 (representing positions 1-14 in game terms)
-- Columns are indexed 0-9 (representing positions A-J in game terms) 
+- Columns are indexed 0-9 (representing positions A-J in game terms)
 - Goal areas are at rows 0 and 13, columns 3-6
 
 ### Tutorial Step Flow
+
 The tutorial follows this progression:
+
 1. `welcome` - Introduction
 2. `basic_movement` - Basic piece movement without ball
 3. `turning` - Direction changes for pieces with ball
 4. `movement_with_ball` - Movement when possessing the ball
-5. `passing` - Basic passing to other pieces  
+5. `passing` - Basic passing to other pieces
 6. `consecutive_pass` - Chained passing sequences
 7. `ball_empty_square` - Passing to empty squares
 8. `ball_pickup` - Moving to pick up balls from empty squares
@@ -182,12 +185,14 @@ The tutorial follows this progression:
 12. `completed` - Tutorial completion
 
 ### State Management Patterns
+
 - All board state updates must create new arrays/objects for React reactivity
 - Use the service layer functions (`boardHelpers.ts`, `gameValidation.ts`) for game logic
 - The Zustand store manages both UI state and game state
 - Tutorial progression is handled through predefined state configurations
 
 ### Game Rules Implementation
+
 - Pieces have different movement patterns based on ball possession
 - Pass validation includes facing direction (90-degree cone) and line-of-sight
 - Ball pickup happens automatically when moving to a square containing a ball

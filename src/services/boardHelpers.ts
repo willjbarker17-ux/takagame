@@ -1,7 +1,7 @@
 import { Piece } from "@/classes/Piece";
 import { Position } from "@/classes/Position";
 import { BoardSquareType, BoardType, PlayerColor } from "@/types/types";
-import { BOARD_ROWS, BOARD_COLS } from "@/utils/constants";
+import { BOARD_COLS, BOARD_ROWS } from "@/utils/constants";
 
 /**
  * Board manipulation utilities
@@ -29,7 +29,9 @@ export const createBoardLayout = (
   const boardLayout = createBlankBoard();
 
   pieces.forEach((piece) => {
-    const [row, col] = piece.getPosition().getPositionCoordinates();
+    const [row, col] = piece
+      .getPositionOrThrowIfUnactivated()
+      .getPositionCoordinates();
     boardLayout[row][col] = piece;
   });
 
@@ -115,7 +117,9 @@ export const movePieceOnBoard = (
     throw new Error("There can't be a piece at the new location.");
   }
 
-  const [oRow, oCol] = piece.getPosition().getPositionCoordinates();
+  const [oRow, oCol] = piece
+    .getPositionOrThrowIfUnactivated()
+    .getPositionCoordinates();
   const [nRow, nCol] = newPosition.getPositionCoordinates();
 
   const newBoardLayout = boardLayout.map((row) => [...row]);
@@ -220,8 +224,8 @@ export const swapPiecePositions = (
     throw new Error("Target piece must have ball to be tackled");
   }
 
-  const tacklerPos = tackler.getPosition();
-  const targetPos = target.getPosition();
+  const tacklerPos = tackler.getPositionOrThrowIfUnactivated();
+  const targetPos = target.getPositionOrThrowIfUnactivated();
 
   const [tacklerRow, tacklerCol] = tacklerPos.getPositionCoordinates();
   const [targetRow, targetCol] = targetPos.getPositionCoordinates();

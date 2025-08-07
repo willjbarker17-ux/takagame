@@ -11,12 +11,17 @@ import { Position } from "@/classes/Position";
 import {
   getSquareInfo,
   handleTurnPiece,
+  handleUnactivatedGoalieClick,
   useTutorialBoard,
 } from "@/hooks/useTutorialStore";
 
 const TutorialGameBoard: React.FC = () => {
-  const { boardLayout, selectedPiece, isTurnButtonEnabled } =
-    useTutorialBoard();
+  const {
+    boardLayout,
+    selectedPiece,
+    isTurnButtonEnabled,
+    whiteUnactivatedGoaliePiece,
+  } = useTutorialBoard();
 
   const colLabels = Array.from({ length: BOARD_COLS }, (_, i) =>
     // String.fromCharCode(65 + i),
@@ -92,6 +97,28 @@ const TutorialGameBoard: React.FC = () => {
               })}
             </React.Fragment>
           ))}
+
+          {/* Render unactivated goalie at intersection */}
+          {whiteUnactivatedGoaliePiece && (
+            <div
+              className={`absolute z-30 flex items-center justify-center ${selectedPiece === whiteUnactivatedGoaliePiece ? "pointer-events-none" : ""}`}
+              style={{
+                left: `calc(2rem + ${4.25 * (100 / BOARD_COLS)}%)`,
+                top: `calc(2rem + ${0.4 * (100 / BOARD_ROWS)}%)`,
+                width: `${100 / BOARD_COLS}%`,
+                height: `${100 / BOARD_ROWS}%`,
+              }}
+              onClick={() =>
+                handleUnactivatedGoalieClick(whiteUnactivatedGoaliePiece)
+              }
+            >
+              <div
+                className={`h-10 w-10 cursor-pointer rounded-full border-4 border-blue-600 bg-white shadow-md transition-all duration-200 ${selectedPiece === whiteUnactivatedGoaliePiece ? "ring-opacity-75 scale-110 ring-4 ring-yellow-400" : ""}`}
+              >
+                <div className="flex h-full w-full items-center justify-center text-xs font-bold text-blue-600" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import React from "react";
 import {
+  handleRetry,
   nextStep,
   stepOrder,
   useTutorialBoard,
-  handleRetry,
 } from "@/hooks/useTutorialStore";
 import { TutorialStep } from "@/types/types";
 
@@ -162,22 +162,6 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
             Retry
           </button>
         )}
-      </div>
-
-      {/* Completed steps indicator */}
-      <div className="mt-6 flex justify-center gap-2">
-        {stepOrder.map((step) => (
-          <div
-            key={step}
-            className={`h-3 w-3 rounded-full ${
-              completedSteps.has(step as TutorialStep)
-                ? "bg-green-500"
-                : currentStep === step
-                  ? "bg-blue-500"
-                  : "bg-gray-300"
-            }`}
-          />
-        ))}
       </div>
     </div>
   );

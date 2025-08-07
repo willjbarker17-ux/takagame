@@ -9,7 +9,14 @@ interface PieceProps {
   isTackleTarget?: boolean;
 }
 
-const Piece: React.FC<PieceProps> = ({ piece, isSelected, isPassTarget, isTackleTarget = false }) => {
+const Piece: React.FC<PieceProps> = ({
+  piece,
+  isSelected,
+  isPassTarget,
+  isTackleTarget = false,
+}) => {
+  const isGoalie = piece.getIsGoalie();
+
   // Soccer ball component that positions based on facing direction
   const SoccerBallIcon: React.FC<{ direction: FacingDirection }> = ({
     direction,
@@ -39,16 +46,15 @@ const Piece: React.FC<PieceProps> = ({ piece, isSelected, isPassTarget, isTackle
   };
 
   const canBeTackled = false;
-  const isGoalie = false;
   const isOffside = false;
 
   return (
     <div className="pointer-events-none relative">
       <div
-        className={`h-10 w-10 rounded-full border-2 transition-all duration-200 ${
+        className={`h-10 w-10 rounded-full border-2 shadow-md transition-all duration-200 ${
           piece.getColor() === "white"
-            ? "border-gray-400 bg-white shadow-md"
-            : "border-gray-600 bg-gray-900 shadow-md"
+            ? "border-gray-400 bg-white"
+            : "border-gray-600 bg-gray-900"
         } ${
           isSelected && "ring-opacity-75 scale-110 ring-4 ring-yellow-400"
         } ${canBeTackled ? "ring-opacity-75 ring-4 ring-red-500" : ""} ${

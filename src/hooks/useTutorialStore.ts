@@ -61,6 +61,8 @@ interface TutorialState {
   currentStep: TutorialStep;
   /** Set of tutorial steps that have been completed */
   completedSteps: Set<TutorialStep>;
+  /** The unactivated white goalie piece to show at intersection */
+  whiteUnactivatedGoaliePiece: Piece | null;
 }
 
 /**
@@ -79,6 +81,7 @@ export const stepOrder: TutorialStep[] = [
   "chip_pass",
   "shooting",
   "tackling",
+  "activating_goalies",
   "completed",
 ];
 
@@ -87,15 +90,6 @@ const demoPiece1 = new Piece({
   color: TUTORIAL_PLAYER_COLOR,
   position: new Position(4, 4),
   hasBall: false,
-});
-
-// Special piece to represent the unactivated white goalie
-const unactivatedWhiteGoalie = new Piece({
-  id: "UNACTIVATED_WHITE_GOALIE",
-  color: TUTORIAL_PLAYER_COLOR,
-  position: new Position(0, 4), // Arbitrary position, not used for display
-  hasBall: false,
-  isGoalie: true,
 });
 
 /**
@@ -141,9 +135,24 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
 
     setBoardLayout([
       demoPiece1,
-      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 0), hasBall: false }),
-      new Piece({ id: "W3", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 4), hasBall: false }),
-      new Piece({ id: "W4", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 8), hasBall: false }),
+      new Piece({
+        id: "W2",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(8, 0),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "W3",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(8, 4),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "W4",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(8, 8),
+        hasBall: false,
+      }),
     ]);
   },
   consecutive_pass: () => {
@@ -158,9 +167,24 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     });
 
     setBoardLayout([
-      new Piece({ id: "W3", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 4), hasBall: true }),
-      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 0), hasBall: false }),
-      new Piece({ id: "B1", color: TUTORIAL_OPPONENT_COLOR, position: new Position(5, 4), hasBall: false }),
+      new Piece({
+        id: "W3",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(4, 4),
+        hasBall: true,
+      }),
+      new Piece({
+        id: "W2",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(8, 0),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "B1",
+        color: TUTORIAL_OPPONENT_COLOR,
+        position: new Position(5, 4),
+        hasBall: false,
+      }),
       demoPiece1,
     ]);
   },
@@ -202,7 +226,12 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     // This forces the user to pass to an empty square
     setBoardLayout([
       demoPiece1,
-      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(7, 3), hasBall: false }),
+      new Piece({
+        id: "W2",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(7, 3),
+        hasBall: false,
+      }),
     ]);
   },
   chip_pass: () => {
@@ -212,13 +241,48 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     });
 
     setBoardLayout([
-      new Piece({ id: "W1", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 4), hasBall: true }),
-      new Piece({ id: "W2", color: TUTORIAL_PLAYER_COLOR, position: new Position(8, 4), hasBall: false }),
-      new Piece({ id: "W3", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 1), hasBall: false }),
-      new Piece({ id: "W4", color: TUTORIAL_PLAYER_COLOR, position: new Position(4, 8), hasBall: false }),
-      new Piece({ id: "B1", color: TUTORIAL_OPPONENT_COLOR, position: new Position(4, 3), hasBall: false }),
-      new Piece({ id: "B2", color: TUTORIAL_OPPONENT_COLOR, position: new Position(4, 5), hasBall: false }),
-      new Piece({ id: "B3", color: TUTORIAL_OPPONENT_COLOR, position: new Position(6, 4), hasBall: false }),
+      new Piece({
+        id: "W1",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(4, 4),
+        hasBall: true,
+      }),
+      new Piece({
+        id: "W2",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(8, 4),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "W3",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(4, 1),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "W4",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(4, 8),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "B1",
+        color: TUTORIAL_OPPONENT_COLOR,
+        position: new Position(4, 3),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "B2",
+        color: TUTORIAL_OPPONENT_COLOR,
+        position: new Position(4, 5),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "B3",
+        color: TUTORIAL_OPPONENT_COLOR,
+        position: new Position(6, 4),
+        hasBall: false,
+      }),
     ]);
   },
   shooting: () => {
@@ -228,7 +292,12 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     });
 
     setBoardLayout([
-      new Piece({ id: "W1", color: TUTORIAL_PLAYER_COLOR, position: new Position(9, 4), hasBall: true }),
+      new Piece({
+        id: "W1",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(9, 4),
+        hasBall: true,
+      }),
     ]);
   },
   tackling: () => {
@@ -240,9 +309,38 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     // Set up tackling scenario: white piece adjacent to black piece with ball
     // Black piece faces east (perpendicular to white piece) so tackle is allowed
     setBoardLayout([
-      new Piece({ id: "W1", color: TUTORIAL_PLAYER_COLOR, position: new Position(6, 4), hasBall: false }),
-      new Piece({ id: "B1", color: TUTORIAL_OPPONENT_COLOR, position: new Position(6, 5), hasBall: true, facingDirection: "west" }),
+      new Piece({
+        id: "W1",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(6, 4),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "B1",
+        color: TUTORIAL_OPPONENT_COLOR,
+        position: new Position(6, 5),
+        hasBall: true,
+        facingDirection: "west",
+      }),
     ]);
+  },
+  activating_goalies: () => {
+    const goalie = new Piece({
+      id: "WG",
+      color: TUTORIAL_PLAYER_COLOR,
+      position: "white_unactivated",
+      hasBall: false,
+      isGoalie: true,
+    });
+
+    useTutorialStore.setState({
+      currentStep: "activating_goalies",
+      isMovementEnabled: false,
+      whiteUnactivatedGoaliePiece: goalie,
+    });
+
+    // Set up goalie activation scenario - show unactivated goalie at intersection
+    setBoardLayout([]);
   },
   completed: () => {
     useTutorialStore.setState({
@@ -263,10 +361,11 @@ const useTutorialStore = create<TutorialState>(() => ({
   selectedPiece: null,
   isTurnButtonEnabled: false,
   isMovementEnabled: true,
-  currentStep: "tackling",
+  currentStep: "welcome",
   completedSteps: new Set<TutorialStep>(),
   tutorialActive: false,
-  showRetryButton: true,
+  showRetryButton: false,
+  whiteUnactivatedGoaliePiece: null,
 }));
 
 /**
@@ -387,6 +486,18 @@ export const getSquareInfo = (
     return isSquareTurnTarget ? "turn_target" : "nothing";
   }
 
+  // If unactivated white goalie is selected, show movement targets in goal area
+  if (
+    state.selectedPiece &&
+    state.selectedPiece === state.whiteUnactivatedGoaliePiece
+  ) {
+    const [row, col] = position.getPositionCoordinates();
+    // Check if position is in white goal area (R0C3-R0C6 and R1C3-R1C6)
+    const isInGoalArea = (row === 0 || row === 1) && col >= 3 && col <= 6;
+
+    return isInGoalArea ? "movement" : "nothing";
+  }
+
   const pieceAtPosition = getPieceAtPosition(position);
 
   // If we are awaiting receive pass, only allow clicking pieces within one square of ball
@@ -412,7 +523,7 @@ export const getSquareInfo = (
       return "nothing";
     } else {
       const adjPositions = getAdjacentPositions(
-        state.selectedPiece.getPosition(),
+        state.selectedPiece.getPositionOrThrowIfUnactivated(),
       );
       const ballPos = findBall(state.boardLayout);
 
@@ -572,9 +683,13 @@ const handlePieceSelection = (position: Position): void => {
     const state = useTutorialStore.getState();
     const passTargets = getValidPassTargets(selectedPiece, state.boardLayout);
 
-    if (passTargets.some((p) => p.equals(pieceAtPosition.getPosition()))) {
+    if (
+      passTargets.some((p) =>
+        p.equals(pieceAtPosition.getPositionOrThrowIfUnactivated()),
+      )
+    ) {
       // This is a valid pass
-      passBall(selectedPiece.getPosition(), position);
+      passBall(selectedPiece.getPositionOrThrowIfUnactivated(), position);
 
       if (currentStep === "passing" || currentStep === "chip_pass") {
         nextStep();
@@ -630,12 +745,16 @@ const handleConsecutivePass = (position: Position): void => {
   const passTargets = getValidPassTargets(selectedPiece, state.boardLayout);
 
   // The clicked square must be a pass target
-  if (!passTargets.some((p) => p.equals(pieceAtPosition.getPosition()))) {
+  if (
+    !passTargets.some((p) =>
+      p.equals(pieceAtPosition.getPositionOrThrowIfUnactivated()),
+    )
+  ) {
     return;
   }
 
   // User is trying to pass
-  passBall(selectedPiece.getPosition(), position);
+  passBall(selectedPiece.getPositionOrThrowIfUnactivated(), position);
 
   // If we just made our consecutive pass, move to next step
   if (currentStep === "consecutive_pass") {
@@ -655,6 +774,29 @@ const handleMovement = (position: Position): void => {
   }
 
   const state = useTutorialStore.getState();
+
+  // Check if we're moving the unactivated goalie to the board
+  if (selectedPiece === state.whiteUnactivatedGoaliePiece) {
+    // Update the piece's position
+    selectedPiece.setPosition(position);
+
+    // Add the piece to the board layout and pieces array
+    const newPieces = [...state.pieces, selectedPiece];
+    setBoardLayout(newPieces);
+
+    // Clear the unactivated goalie state and deselect
+    useTutorialStore.setState({
+      whiteUnactivatedGoaliePiece: null,
+      selectedPiece: null,
+    });
+
+    // Progress to next step after goalie activation
+    if (currentStep === "activating_goalies") {
+      nextStep();
+    }
+    return;
+  }
+
   const boardSquare = getBoardSquareHelper(position, state.boardLayout);
   const isPickingUpBall = boardSquare === "ball";
 
@@ -691,7 +833,7 @@ const handleEmptySquarePass = (position: Position): void => {
     return;
   }
 
-  passBall(selectedPiece.getPosition(), position);
+  passBall(selectedPiece.getPositionOrThrowIfUnactivated(), position);
 
   if (currentStep === "ball_empty_square") {
     nextStep();
@@ -871,6 +1013,21 @@ export const handleRetry = () => {
 
   tutorialStepStates[currentStep]();
   resetState();
+};
+
+/**
+ * Handle clicking on the unactivated goalie
+ */
+export const handleUnactivatedGoalieClick = (goaliePiece: Piece) => {
+  const { selectedPiece } = useTutorialStore.getState();
+
+  // If already selected, deselect
+  if (selectedPiece === goaliePiece) {
+    useTutorialStore.setState({ selectedPiece: null });
+  } else {
+    // Select the unactivated goalie
+    useTutorialStore.setState({ selectedPiece: goaliePiece });
+  }
 };
 
 /**

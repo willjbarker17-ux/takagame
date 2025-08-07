@@ -1,6 +1,6 @@
 import { Piece } from "@/classes/Piece";
 import { Position } from "@/classes/Position";
-import { DIRECTION_VECTORS, BOARD_ROWS, BOARD_COLS } from "@/utils/constants";
+import { BOARD_COLS, BOARD_ROWS, DIRECTION_VECTORS } from "@/utils/constants";
 import { BoardType } from "@/types/types";
 import { getAdjacentPositions } from "@/services/boardHelpers";
 
@@ -47,7 +47,9 @@ export const getValidPassTargets = (
 ): Position[] => {
   const validMoves: Position[] = [];
 
-  const [curRow, curCol] = origin.getPosition().getPositionCoordinates();
+  const [curRow, curCol] = origin
+    .getPositionOrThrowIfUnactivated()
+    .getPositionCoordinates();
   const facingDirection = origin.getFacingDirection();
 
   for (const [dRow, dCol] of DIRECTION_VECTORS) {
@@ -98,7 +100,9 @@ export const getValidEmptySquarePassTargets = (
 ): Position[] => {
   const validMoves: Position[] = [];
 
-  const [curRow, curCol] = origin.getPosition().getPositionCoordinates();
+  const [curRow, curCol] = origin
+    .getPositionOrThrowIfUnactivated()
+    .getPositionCoordinates();
   const facingDirection = origin.getFacingDirection();
 
   for (const [dRow, dCol] of DIRECTION_VECTORS) {
@@ -144,7 +148,9 @@ export const getTurnTargets = (
   position: Position;
   direction: "north" | "south" | "west" | "east";
 }> => {
-  const [row, col] = piece.getPosition().getPositionCoordinates();
+  const [row, col] = piece
+    .getPositionOrThrowIfUnactivated()
+    .getPositionCoordinates();
   const targets = [];
 
   if (row - 1 >= 0)
@@ -195,8 +201,8 @@ export const isPositionValidMovementTarget = (
  * @returns True if tackle is allowed, false if target is facing away
  */
 export const canTackle = (tackler: Piece, target: Piece): boolean => {
-  const tacklerPos = tackler.getPosition();
-  const targetPos = target.getPosition();
+  const tacklerPos = tackler.getPositionOrThrowIfUnactivated();
+  const targetPos = target.getPositionOrThrowIfUnactivated();
   const targetFacing = target.getFacingDirection();
 
   const [tacklerRow, tacklerCol] = tacklerPos.getPositionCoordinates();
@@ -236,7 +242,7 @@ export const getValidTackleTargets = (
   boardLayout: BoardType,
 ): Position[] => {
   const validTargets: Position[] = [];
-  const tacklerPos = tackler.getPosition();
+  const tacklerPos = tackler.getPositionOrThrowIfUnactivated();
   const adjacentPositions = getAdjacentPositions(tacklerPos);
 
   for (const pos of adjacentPositions) {
