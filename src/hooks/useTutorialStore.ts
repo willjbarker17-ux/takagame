@@ -79,11 +79,11 @@ export const stepOrder: TutorialStep[] = [
   "turning",
   "passing",
   "passing_right",
-  "consecutive_pass",
-  "ball_empty_square",
-  "ball_pickup",
-  "receiving_passes",
   "chip_pass",
+  "ball_empty_square",
+  "receiving_passes",
+  "ball_pickup",
+  "consecutive_pass",
   "shooting",
   "tackling",
   "activating_goalies",
@@ -262,6 +262,9 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
     ]);
   },
   ball_empty_square: () => {
+    demoPiece1.setFacingDirection("south");
+    demoPiece1.setHasBall(true);
+
     useTutorialStore.setState({
       currentStep: "ball_empty_square",
       isMovementEnabled: false,
