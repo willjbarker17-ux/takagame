@@ -86,6 +86,12 @@ const BoardCell: React.FC<BoardCellProps> = ({
         </div>
       )}
 
+      {squareInfo === "empty_pass_target" && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+          <div className="h-3 w-3 rounded-full bg-gray-300 shadow-md" />
+        </div>
+      )}
+
       {piece === "ball" && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
           <div className="relative text-lg">
