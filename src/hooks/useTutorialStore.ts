@@ -3,34 +3,26 @@
 import { create } from "zustand";
 import { Piece } from "@/classes/Piece";
 import { Position } from "@/classes/Position";
+import { BoardType, PlayerColor, SquareType, TutorialStep } from "@/types/types";
+import { TUTORIAL_OPPONENT_COLOR, TUTORIAL_PLAYER_COLOR } from "@/utils/constants";
 import {
-  BoardType,
-  PlayerColor,
-  SquareType,
-  TutorialStep,
-} from "@/types/types";
-import {
-  TUTORIAL_OPPONENT_COLOR,
-  TUTORIAL_PLAYER_COLOR,
-} from "@/utils/constants";
-import {
-  getValidPassTargets,
-  getValidEmptySquarePassTargets,
   getTurnTargets,
-  isPositionValidMovementTarget as isValidMovementTarget,
+  getValidEmptySquarePassTargets,
+  getValidPassTargets,
   getValidTackleTargets,
+  isPositionValidMovementTarget as isValidMovementTarget
 } from "@/services/gameValidation";
 import {
   createBlankBoard,
   createBoardLayout,
+  findBall,
+  getAdjacentPieces,
+  getAdjacentPositions,
   getBoardSquare as getBoardSquareHelper,
   getPieceAtPosition as getPieceAtPositionHelper,
-  placeBallAtPosition as placeBallAtPositionHelper,
   movePieceOnBoard,
-  getAdjacentPieces,
-  findBall,
-  getAdjacentPositions,
-  swapPiecePositions,
+  placeBallAtPosition as placeBallAtPositionHelper,
+  swapPiecePositions
 } from "@/services/boardHelpers";
 
 /**
@@ -646,6 +638,7 @@ const handleTurnTarget = (position: Position): void => {
   if (!turnTarget) {
     // Since the clicked position is not a valid turn target, we are trying to deselect
     deselectPiece();
+
     return;
   }
 
@@ -659,7 +652,11 @@ const handleTurnTarget = (position: Position): void => {
     isTurnButtonEnabled: false,
   });
 
-  if (currentStep === "turning" || currentStep === "receiving_passes") {
+  if (
+    currentStep === "turning" ||
+    currentStep === "receiving_passes" ||
+    currentStep === "tackling"
+  ) {
     nextStep();
   }
 };
@@ -879,7 +876,7 @@ const handleEmptySquarePass = (position: Position): void => {
  * Handle tackle target clicks
  */
 const handleTackle = (position: Position): void => {
-  const { selectedPiece, currentStep } = useTutorialStore.getState();
+  const { selectedPiece } = useTutorialStore.getState();
 
   if (!selectedPiece) {
     return;
@@ -898,20 +895,26 @@ const handleTackle = (position: Position): void => {
       targetPiece,
       state.boardLayout,
     );
-    return { boardLayout: newBoardLayout, selectedPiece: null };
+    return {
+      boardLayout: newBoardLayout,
+      awaitingDirectionSelection: true,
+    };
   });
-
-  // Progress to next step after successful tackle
-  if (currentStep === "tackling") {
-    nextStep();
-  }
 };
 
 /**
  * Handle deselection when clicking on nothing
  */
 const handleDeselection = (): void => {
-  const { selectedPiece } = useTutorialStore.getState();
+  const { selectedPiece, currentStep, awaitingDirectionSelection } =
+    useTutorialStore.getState();
+
+  if (
+    awaitingDirectionSelection &&
+    (currentStep === "tackling" || currentStep === "receiving_passes")
+  ) {
+    return;
+  }
 
   if (selectedPiece) {
     deselectPiece();
