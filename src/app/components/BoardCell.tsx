@@ -93,9 +93,22 @@ const BoardCell: React.FC<BoardCellProps> = ({
       )}
 
       {/* Turn target indicator */}
-      {squareInfo === "turn_target" && (
+      {squareInfo === "turn_target" && selectedPiece && (
         <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
-          <div className="animate-pulse text-2xl text-yellow-400">↻</div>
+          <div className="animate-pulse text-2xl text-yellow-400">
+            {(() => {
+              const [selectedRow, selectedCol] = selectedPiece.getPositionOrThrowIfUnactivated().getPositionCoordinates();
+              const [currentRow, currentCol] = position.getPositionCoordinates();
+              
+              // Determine direction based on relative position to selected piece
+              if (currentRow < selectedRow) return "↑"; // North
+              if (currentRow > selectedRow) return "↓"; // South
+              if (currentCol < selectedCol) return "←"; // West
+              if (currentCol > selectedCol) return "→"; // East
+              
+              return "↻"; // Fallback
+            })()}
+          </div>
         </div>
       )}
 
