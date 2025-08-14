@@ -182,7 +182,11 @@ The tutorial follows this progression:
 9. `receiving_passes` - Receiving passes from empty squares
 10. `chip_pass` - Advanced passing over opponents
 11. `shooting` - Scoring goals
-12. `completed` - Tutorial completion
+12. `tackling` - Tackling opponents
+13. `tackling_positioning` - Tactical positioning before tackling
+14. `activating_goalies` - Activating goalie pieces
+15. `blocking_shots` - Using goalies to block shots
+16. `completed` - Tutorial completion
 
 ### State Management Patterns
 

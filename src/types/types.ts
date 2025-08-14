@@ -17,6 +17,7 @@ export type TutorialStep =
   | "chip_pass"
   | "shooting"
   | "tackling"
+  | "tackling_positioning"
   | "activating_goalies"
   | "blocking_shots"
   | "completed";

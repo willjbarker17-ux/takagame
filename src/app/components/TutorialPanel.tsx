@@ -55,7 +55,7 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
         return {
           title: "Consecutive Passes",
           content:
-            "Make your first pass, then immediately make a second pass with the receiving piece. This counts as one turn. You cannot chip pass twice when consecutive passing.",
+            "Make your first pass, then immediately make a second pass with the receiving piece. This counts as one turn.\n\nYou cannot make two consecutive chip passes - only one chip pass is allowed per turn.",
         };
 
       case "ball_empty_square":
@@ -98,6 +98,13 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
           title: "Tackling (Stealing the Ball)",
           content:
             "You can tackle (steal the ball from) an opponent if your piece is adjacent (vertically, horizontally, or diagonally) to their piece with the ball. You cannot tackle from behind.\n\nAfter a successful tackle you swap positions and get to make a move.",
+        };
+
+      case "tackling_positioning":
+        return {
+          title: "Tactical Positioning for Tackles",
+          content:
+            "Sometimes you need to move into the right position before you can tackle. The opponent is facing away from you and has the ball.\n\nFirst, move your piece to an adjacent square next to the opponent, then tackle them. Remember: you cannot tackle from behind!",
         };
 
       case "activating_goalies":
