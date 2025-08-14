@@ -137,7 +137,12 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
     }
   };
 
-  const { currentStep, completedSteps, showRetryButton, awaitingDirectionSelection } = useTutorialBoard();
+  const {
+    currentStep,
+    completedSteps,
+    showRetryButton,
+    awaitingDirectionSelection,
+  } = useTutorialBoard();
 
   const tutorialContent = getTutorialContent(currentStep);
 
@@ -172,9 +177,9 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
       </p>
 
       {awaitingDirectionSelection && (
-        <div className="mb-4 rounded-lg bg-yellow-50 border border-yellow-200 p-3">
-          <p className="text-sm text-yellow-800 font-medium">
-            💡 Don't forget to choose the piece's direction!
+        <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+          <p className="text-sm font-medium text-yellow-800">
+            💡 Don&apos;t forget to choose the piece&apos;s direction!
           </p>
         </div>
       )}
