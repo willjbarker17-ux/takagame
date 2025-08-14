@@ -60,7 +60,7 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
 
       case "ball_empty_square":
         return {
-          title: "Passing to Empty Squares (Loose Ball)",
+          title: "Passing to Open Square",
           content:
             "Select your piece with the ball, then click on an empty square to pass there.",
         };
@@ -69,7 +69,7 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
         return {
           title: "Ball Pickup (Gaining Possession)",
           content:
-            "Click the piece, then click on the ball to move there and pick it up.",
+            "Click the piece, then click on the ball to move there and pick it up. After picking up the ball, you can dribble or turn.",
         };
 
       case "receiving_passes":
@@ -97,14 +97,14 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
         return {
           title: "Tackling (Stealing the Ball)",
           content:
-            "You can tackle (steal the ball from) an opponent if your piece is adjacent (vertically, horizontally, or diagonally) to their piece with the ball. You cannot tackle from behind.\n\nAfter a successful tackle you swap positions and get to make a move.",
+            "You can tackle (steal the ball from) an opponent if your piece is adjacent (vertically, horizontally, or diagonally) to their piece with the ball. You cannot tackle from behind.\n\nSelect your white piece and click the highlighted opponent!\n\nAfter a successful tackle you swap positions and get to make a move.",
         };
 
       case "activating_goalies":
         return {
           title: "Activating Goalies (Special Pieces)",
           content:
-            "Goalies are normal pieces but are the only ones allowed to enter the goal.\n\nGoalies block shots when they are on the square the opponents trying to shoot in. They have no blocking ability when they are in their starting circle",
+            "Goalies are normal pieces but are the only ones allowed to enter the goal.\n\nGoalies block shots when they are on the square the opponents trying to shoot in. They have no blocking ability when they are in their starting circle.",
         };
 
       case "blocking_shots":
