@@ -87,6 +87,7 @@ export const stepOrder: TutorialStep[] = [
   "shooting",
   "consecutive_pass_to_score",
   "tackling",
+  "tackling_positioning",
   "activating_goalies",
   "blocking_shots",
   "completed",
@@ -409,6 +410,32 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
       }),
     ]);
   },
+  tackling_positioning: () => {
+    useTutorialStore.setState({
+      currentStep: "tackling_positioning",
+      isMovementEnabled: true,
+    });
+
+    // Set up positioning scenario: player must maneuver around opponent to tackle
+    // Black piece faces east (away from white piece) and is adjacent
+    // White piece starts at (6, 4), black piece at (6, 5) facing east
+    // Player needs to move to a valid tackle position (not from behind)
+    setBoardLayout([
+      new Piece({
+        id: "W1",
+        color: TUTORIAL_PLAYER_COLOR,
+        position: new Position(6, 4),
+        hasBall: false,
+      }),
+      new Piece({
+        id: "B1",
+        color: TUTORIAL_OPPONENT_COLOR,
+        position: new Position(6, 5),
+        hasBall: true,
+        facingDirection: "east",
+      }),
+    ]);
+  },
   activating_goalies: () => {
     const goalie = new Piece({
       id: "WG",
@@ -584,6 +611,7 @@ const handleTurnTarget = (position: Position): void => {
     currentStep === "turning" ||
     currentStep === "receiving_passes" ||
     currentStep === "tackling" ||
+    currentStep === "tackling_positioning" ||
     currentStep === "passing" ||
     currentStep === "consecutive_pass" ||
     currentStep === "ball_pickup" ||
@@ -620,7 +648,7 @@ const handlePieceSelection = (position: Position): void => {
       // This is a valid pass
       passBall(selectedPiece.getPositionOrThrowIfUnactivated(), position);
 
-      // Set up for consecutive pass
+      // Select the piece that received the pass
       useTutorialStore.setState({
         selectedPiece: pieceAtPosition,
       });
@@ -890,6 +918,7 @@ const handleDeselection = (): void => {
   if (
     awaitingDirectionSelection &&
     (currentStep === "tackling" ||
+      currentStep === "tackling_positioning" ||
       currentStep === "receiving_passes" ||
       currentStep === "passing" ||
       currentStep === "consecutive_pass" ||
@@ -1084,7 +1113,7 @@ export const getSquareInfo = (
 
     // Check for tackle targets (only in tackling step)
     if (
-      state.currentStep === "tackling" &&
+      (state.currentStep === "tackling" || state.currentStep === "tackling_positioning") &&
       state.selectedPiece &&
       !state.selectedPiece.getHasBall() &&
       pieceAtPosition.getColor() !== TUTORIAL_PLAYER_COLOR
