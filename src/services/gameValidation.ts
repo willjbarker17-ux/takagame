@@ -1,6 +1,6 @@
 import { Piece } from "@/classes/Piece";
 import { Position } from "@/classes/Position";
-import { BOARD_COLS, BOARD_ROWS, DIRECTION_VECTORS } from "@/utils/constants";
+import { BOARD_COLS, BOARD_ROWS, DIRECTION_VECTORS, FORWARD_MOVE_DISTANCE, OTHER_MOVE_DISTANCE } from "@/utils/constants";
 import { BoardType } from "@/types/types";
 import { getAdjacentPositions, findBallPosition } from "@/services/boardHelpers";
 
@@ -94,18 +94,67 @@ export const getValidMovementTargets = (
   piece: Piece,
   boardLayout: BoardType,
 ): Position[] => {
-  // Get raw movement target from piece
-  const allMoves = piece.getMovementTargets();
-
-  // Account for other pieces and remove blocked paths
   const validMoves: Position[] = [];
+  const [curRow, curCol] = piece.getPositionOrThrowIfUnactivated().getPositionCoordinates();
 
-  for (const pos of allMoves) {
-    const [pRow, pCol] = pos.getPositionCoordinates();
-    const square = boardLayout[pRow][pCol];
-    // Allow movement to empty squares or squares with balls
-    if (square === null || square === "ball") {
-      validMoves.push(pos);
+  // Get movement distance based on ball possession
+  const hasBall = piece.getHasBall();
+  const color = piece.getColor();
+  const isGoalie = piece.getIsGoalie();
+
+  // For each direction vector, trace the path step by step
+  for (const [dRow, dCol] of DIRECTION_VECTORS) {
+    // Calculate max distance for this direction
+    let maxDistance = 0;
+    
+    if (hasBall) {
+      // Ball movement: 1 square in any direction
+      maxDistance = 1;
+    } else {
+      // Standard movement rules
+      const isTowardOpponentGoal =
+        (color === "white" && dRow > 0) ||
+        (color === "black" && dRow < 0);
+      
+      const isHorizontal = dCol === 0 && dRow !== 0;
+      const isVertical = dRow === 0 && dCol !== 0;
+      
+      if (isTowardOpponentGoal) {
+        maxDistance = FORWARD_MOVE_DISTANCE;
+      } else if (isHorizontal || isVertical) {
+        maxDistance = OTHER_MOVE_DISTANCE;
+      }
+    }
+
+    // Trace the path in this direction, checking each square
+    for (let distance = 1; distance <= maxDistance; distance++) {
+      const newRow = curRow + dRow * distance;
+      const newCol = curCol + dCol * distance;
+
+      // Check bounds
+      if (newRow < 0 || newRow >= BOARD_ROWS || newCol < 0 || newCol >= BOARD_COLS) {
+        break;
+      }
+
+      const newPosition = new Position(newRow, newCol);
+      const square = boardLayout[newRow][newCol];
+
+      // Check if piece can enter this position
+      if (square instanceof Piece) {
+        // Path is blocked by another piece - cannot continue in this direction
+        break;
+      }
+
+      // Check goal area restrictions (only goalies can enter goal areas)
+      if (!isGoalie && newPosition.isPositionInGoal()) {
+        // Path is blocked by goal area restriction - cannot continue in this direction
+        break;
+      }
+
+      // Square is empty or has a ball - valid move
+      if (square === null || square === "ball") {
+        validMoves.push(newPosition);
+      }
     }
   }
 
