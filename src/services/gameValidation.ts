@@ -118,10 +118,11 @@ export const getValidMovementTargets = (
       
       const isHorizontal = dCol === 0 && dRow !== 0;
       const isVertical = dRow === 0 && dCol !== 0;
+      const isDiagonal = dRow !== 0 && dCol !== 0;
       
       if (isTowardOpponentGoal) {
         maxDistance = FORWARD_MOVE_DISTANCE;
-      } else if (isHorizontal || isVertical) {
+      } else if (isHorizontal || isVertical || isDiagonal) {
         maxDistance = OTHER_MOVE_DISTANCE;
       }
     }
