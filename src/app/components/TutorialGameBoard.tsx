@@ -130,15 +130,6 @@ const TutorialGameBoard: React.FC = () => {
 
   // Handle arrow keys for direction selection
   React.useEffect(() => {
-    // Allow arrow keys during direction selection or during turning step with selected piece
-    const shouldHandleArrowKeys =
-      (awaitingDirectionSelection && selectedPiece) ||
-      (currentStep === "turning" && selectedPiece);
-
-    if (!shouldHandleArrowKeys) {
-      return;
-    }
-
     const handleKeyDown = (e: KeyboardEvent) => {
       // Prevent default behavior to avoid scrolling
       const { key } = e;

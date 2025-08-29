@@ -814,7 +814,11 @@ const handlePieceSelection = (position: Position): void => {
   useTutorialStore.setState({ selectedPiece: pieceAtPosition });
 
   // Enable the turn button after we select the piece
-  if (currentStep === "turning" || currentStep === "tackling") {
+  if (
+    currentStep === "turning" ||
+    currentStep === "tackling" ||
+    currentStep === "ball_pickup"
+  ) {
     useTutorialStore.setState({ isTurnButtonEnabled: true });
   }
 };
@@ -1473,6 +1477,8 @@ export const handleBallDragStart = (
 ) => {
   const { currentStep } = useTutorialStore.getState();
 
+  handlePieceSelection(piece.getPositionOrThrowIfUnactivated());
+
   if (!DRIBBLE_ACTIVE_STEPS.has(currentStep)) {
     return;
   }
@@ -1480,8 +1486,6 @@ export const handleBallDragStart = (
   if (piece.getColor() !== TUTORIAL_PLAYER_COLOR) return;
 
   if (!piece.getHasBall()) return;
-
-  handlePieceSelection(piece.getPositionOrThrowIfUnactivated());
 
   useTutorialStore.setState({
     isDragging: true,
@@ -1586,24 +1590,15 @@ export const handleBallDragEnd = () => {
  * @param direction - The direction to turn the selected piece
  */
 export const handleArrowKeyTurn = (direction: FacingDirection): void => {
-  const { selectedPiece, awaitingDirectionSelection, currentStep } =
-    useTutorialStore.getState();
+  const { selectedPiece } = useTutorialStore.getState();
 
   if (!selectedPiece) {
     return;
   }
 
-  // If we're in the turning step with a selected piece but not yet awaiting direction,
-  // automatically enter direction selection mode
-  if (currentStep === "turning" && !awaitingDirectionSelection) {
-    useTutorialStore.setState({
-      awaitingDirectionSelection: true,
-    });
-  }
-
   // Now check if we should proceed with the turn
   const state = useTutorialStore.getState();
-  if (!state.awaitingDirectionSelection) {
+  if (!state.isTurnButtonEnabled && !state.awaitingDirectionSelection) {
     return;
   }
 
