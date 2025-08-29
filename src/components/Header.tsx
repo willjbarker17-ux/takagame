@@ -7,7 +7,7 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link
-            href="/"
+            href="/public"
             className="flex items-center space-x-2 transition-opacity hover:opacity-80"
           >
             <SoccerBallIcon className="h-8 w-8 text-green-600" size={32} />

@@ -1,5 +1,5 @@
-import StaticGameBoard from "./components/StaticGameBoard";
-import SoccerBallIcon from "./components/SoccerBallIcon";
+import StaticGameBoard from "@/components/StaticGameBoard";
+import SoccerBallIcon from "@/components/SoccerBallIcon";
 
 export default function Home() {
   return (
