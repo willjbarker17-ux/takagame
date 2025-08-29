@@ -109,7 +109,7 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
 
       case "tackling_positioning":
         return {
-          title: "Tactical Positioning for Tackles",
+          title: "Move to Tackling Position",
           content:
             "Sometimes you need to move into the right position before you can tackle. The opponent is facing away from you and has the ball.\n\nFirst, move your piece to an adjacent square next to the opponent, then tackle them. Remember: you cannot tackle from behind!",
         };
