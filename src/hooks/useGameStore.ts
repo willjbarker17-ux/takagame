@@ -19,9 +19,13 @@ import {
   createBoardLayout,
   getBoardSquare,
   getPieceAtPosition,
+  movePieceOnBoard,
 } from "@/services/game/boardHelpers";
 import { Position } from "@/classes/Position";
-import { getTurnTargets } from "@/services/game/gameValidation";
+import {
+  getTurnTargets,
+  isPositionValidMovementTarget,
+} from "@/services/game/gameValidation";
 
 interface GameState {
   /** Current game id **/
@@ -45,6 +49,8 @@ interface GameState {
   playerTurn: PlayerColor;
   /** Show direction arrows **/
   showDirectionArrows: boolean;
+  /** Should we lock the selection to the selected piece? */
+  isSelectionLocked: boolean;
 }
 
 const piece1 = new Piece({
@@ -77,12 +83,19 @@ const piece4 = new Piece({
   hasBall: true,
 });
 
+const piece5 = new Piece({
+  id: "B2",
+  color: "black",
+  position: new Position(11, 4),
+  hasBall: false,
+});
+
 const useGameStore = create<GameState>(() => ({
   gameId: "",
-  pieces: [piece1, piece2, piece3, piece4],
+  pieces: [piece1, piece2, piece3, piece4, piece5],
   balls: [new Position(12, 6)],
   boardLayout: createBoardLayout(
-    [piece1, piece2, piece3, piece4],
+    [piece1, piece2, piece3, piece4, piece5],
     [new Position(12, 6)],
   ),
   selectedPiece: null,
@@ -91,6 +104,7 @@ const useGameStore = create<GameState>(() => ({
   whiteUnactivatedGoaliePiece: piece1,
   blackUnactivatedGoaliePiece: piece2,
   showDirectionArrows: false,
+  isSelectionLocked: false,
 }));
 
 /**
@@ -109,11 +123,11 @@ export const handleTurnPieceButtonClick = () => {
 export const handleArrowKeyTurn = (direction: FacingDirection) => {
   const { selectedPiece } = useGameStore.getState();
 
-  if (!selectedPiece) {
+  if (!selectedPiece || !selectedPiece.getHasBall()) {
     return;
   }
 
-  selectedPiece.setFacingDirection(direction);
+  turnPiece(selectedPiece, direction);
 };
 
 export const handleUnactivatedGoalieClick = (color: PlayerColor) => {
@@ -132,7 +146,7 @@ export const handleUnactivatedGoalieClick = (color: PlayerColor) => {
       );
     }
 
-    selectPiece(whiteUnactivatedGoaliePiece);
+    useGameStore.setState({ selectedPiece: whiteUnactivatedGoaliePiece });
   } else if (color === "black") {
     if (!blackUnactivatedGoaliePiece) {
       throw new Error(
@@ -140,14 +154,8 @@ export const handleUnactivatedGoalieClick = (color: PlayerColor) => {
       );
     }
 
-    selectPiece(blackUnactivatedGoaliePiece);
+    useGameStore.setState({ selectedPiece: blackUnactivatedGoaliePiece });
   }
-};
-
-const selectPiece = (piece: Piece) => {
-  useGameStore.setState({
-    selectedPiece: piece,
-  });
 };
 
 export const getSquareInfo = (position: Position): SquareInfoType => {
@@ -205,6 +213,19 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
     return { visual: "piece", clickable: true };
   }
 
+  // Check if this square is a valid movement target for the selected piece
+  if (state.selectedPiece) {
+    const isMovementTarget = isPositionValidMovementTarget(
+      state.selectedPiece,
+      position,
+      state.boardLayout,
+    );
+
+    if (isMovementTarget) {
+      return { visual: "movement", clickable: true };
+    }
+  }
+
   return { visual: "nothing", clickable: false };
 };
 
@@ -244,11 +265,15 @@ export const handleSquareClick = (position: Position): void => {
 };
 
 /**
- * This is used to select pieces
+ * This is used to set the currently selected piece. This is not the function that is hit for passes.
  * @param position
  */
 const handlePieceClick = (position: Position): void => {
-  const { boardLayout, playerColor } = useGameStore.getState();
+  const { boardLayout, playerColor, isSelectionLocked } =
+    useGameStore.getState();
+
+  // Prevent the selection from changing
+  if (isSelectionLocked) return;
 
   const pieceAtPosition = getPieceAtPosition(position, boardLayout);
 
@@ -291,10 +316,30 @@ const handleMovementClick = (position: Position): void => {
   const unactivatedGoalie = getUnactivatedGoalie();
   if (selectedPiece === unactivatedGoalie) {
     activateGoalie(unactivatedGoalie, position);
-
-    deselectPiece();
-
     return;
+  }
+
+  movePiece(selectedPiece, position);
+};
+
+const movePiece = (piece: Piece, position: Position): void => {
+  const { boardLayout } = useGameStore.getState();
+
+  const boardSquare = getBoardSquare(position, boardLayout);
+  const isPickingUpBall = boardSquare === "ball";
+
+  useGameStore.setState({
+    boardLayout: movePieceOnBoard(piece, position, boardLayout),
+  });
+
+  // If we are picking up a ball, force the user to select a direction
+  if (isPickingUpBall) {
+    useGameStore.setState({
+      showDirectionArrows: true,
+      isSelectionLocked: true,
+    });
+  } else {
+    deselectPiece();
   }
 };
 
@@ -326,8 +371,9 @@ const activateGoalie = (goalie: Piece, position: Position): void => {
 
   // Check if a ball is where the goalie is going to activate
   const square = getBoardSquare(position, boardLayout);
+  const isPickingUpBall = square === "ball";
 
-  if (square === "ball") {
+  if (isPickingUpBall) {
     goalie.setHasBall(true);
   }
 
@@ -338,6 +384,15 @@ const activateGoalie = (goalie: Piece, position: Position): void => {
   });
 
   removeUnactivatedGoalie(playerColor);
+
+  if (isPickingUpBall) {
+    useGameStore.setState({
+      isSelectionLocked: true,
+      showDirectionArrows: true,
+    });
+  } else {
+    deselectPiece();
+  }
 };
 
 const handleTurnTargetClick = (position: Position): void => {
@@ -359,7 +414,11 @@ const handleTurnTargetClick = (position: Position): void => {
     );
   }
 
-  selectedPiece.setFacingDirection(turnTarget.direction);
+  turnPiece(selectedPiece, turnTarget.direction);
+};
+
+const turnPiece = (piece: Piece, direction: FacingDirection): void => {
+  piece.setFacingDirection(direction);
 
   useGameStore.setState({
     showDirectionArrows: false,
@@ -381,6 +440,10 @@ const handleBlankSquareClick = (): void => {
  * Deselect the currently select
  */
 const deselectPiece = () => {
+  const { isSelectionLocked } = useGameStore.getState();
+
+  if (isSelectionLocked) return;
+
   useGameStore.setState({
     selectedPiece: null,
     showDirectionArrows: false,

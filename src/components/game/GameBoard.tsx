@@ -57,7 +57,7 @@ const GameBoard: React.FC = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [showDirectionArrows]);
+  }, [showDirectionArrows, selectedPiece]);
 
   const colLabels = Array.from({ length: BOARD_COLS }, (_, i) =>
     // String.fromCharCode(65 + i),
