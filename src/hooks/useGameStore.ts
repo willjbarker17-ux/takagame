@@ -21,12 +21,14 @@ import {
   getPieceAtPosition,
   movePieceOnBoard,
   placeBallAtPosition,
+  swapPiecePositions,
 } from "@/services/game/boardHelpers";
 import { Position } from "@/classes/Position";
 import {
   getTurnTargets,
   getValidEmptySquarePassTargets,
   getValidPassTargets,
+  getValidTackleTargets,
   isCrossZonePass,
   isPositionValidMovementTarget,
 } from "@/services/game/gameValidation";
@@ -249,6 +251,26 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
     }
   }
 
+  // Check if this position is a tackle target
+  if (
+    pieceAtPosition &&
+    state.selectedPiece &&
+    !state.selectedPiece.getHasBall() &&
+    pieceAtPosition.getColor() !== state.playerColor
+  ) {
+    const tackleTargets = getValidTackleTargets(
+      state.selectedPiece,
+      state.boardLayout,
+    );
+
+    const positionIsTackleTarget = tackleTargets.find((p) =>
+      p.equals(position),
+    );
+
+    if (positionIsTackleTarget)
+      return { visual: "tackle_target", clickable: true };
+  }
+
   // Check if this position is an empty square pass target
   if (state.selectedPiece && state.selectedPiece.getHasBall()) {
     const isValidEmptySquarePassTarget = getValidEmptySquarePassTargets(
@@ -308,9 +330,32 @@ export const handleSquareClick = (position: Position): void => {
       return handlePassTargetClick(position);
     case "empty_pass_target":
       return handleEmptySquarePassTargetClick(position);
+    case "tackle_target":
+      return handleTackleTargetClick(position);
     default:
       return handleBlankSquareClick();
   }
+};
+
+const handleTackleTargetClick = (position: Position): void => {
+  const { selectedPiece, boardLayout } = useGameStore.getState();
+
+  if (!selectedPiece) {
+    throw new Error("Trying to tackle, but there isn't a selected piece");
+  }
+
+  const targetPiece = getPieceAtPosition(position, boardLayout);
+
+  if (!targetPiece || !targetPiece.getHasBall()) {
+    throw new Error("Trying to tackle a piece that doesn't have a ball");
+  }
+
+  const newBoard = swapPiecePositions(selectedPiece, targetPiece, boardLayout);
+
+  useGameStore.setState({
+    boardLayout: newBoard,
+    isSelectionLocked: true,
+  });
 };
 
 const handleEmptySquarePassTargetClick = (position: Position): void => {
