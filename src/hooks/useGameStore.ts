@@ -25,6 +25,7 @@ import {
 } from "@/services/game/boardHelpers";
 import { Position } from "@/classes/Position";
 import {
+  getRelativeDirectionBetweenPositions,
   getTurnTargets,
   getValidEmptySquarePassTargets,
   getValidPassTargets,
@@ -57,6 +58,8 @@ interface GameState {
   showDirectionArrows: boolean;
   /** Should we lock the selection to the selected piece? */
   isSelectionLocked: boolean;
+  /** Did we just make a pass and are awaiting a second? */
+  awaitingConsecutivePass: boolean;
 }
 
 const piece1 = new Piece({
@@ -111,6 +114,7 @@ const useGameStore = create<GameState>(() => ({
   blackUnactivatedGoaliePiece: piece2,
   showDirectionArrows: false,
   isSelectionLocked: false,
+  awaitingConsecutivePass: false,
 }));
 
 /**
@@ -176,6 +180,23 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
 
   const pieceAtPosition = getPieceAtPosition(position, state.boardLayout);
 
+  // If we are waiting for a direction selection, the only actions are to turn the piece, transfer selection, or deselect the piece
+  if (state.showDirectionArrows) {
+    if (!state.selectedPiece) {
+      throw new Error("Arrows are shown, but there isn't a selected piece");
+    }
+
+    const turnTargets = getTurnTargets(state.selectedPiece);
+
+    const isSquareTurnTarget = turnTargets.some((e) =>
+      e.position.equals(position),
+    );
+
+    if (isSquareTurnTarget) return { visual: "turn_target", clickable: true };
+
+    return { visual: "nothing", clickable: false };
+  }
+
   // Check to see if this position is a valid pass target
   if (
     pieceAtPosition &&
@@ -205,23 +226,6 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
     return { visual: "piece", clickable: true };
   }
 
-  // If we are waiting for a direction selection, the only actions are to turn the piece, transfer selection, or deselect the piece
-  if (state.showDirectionArrows) {
-    if (!state.selectedPiece) {
-      throw new Error("Arrows are shown, but there isn't a selected piece");
-    }
-
-    const turnTargets = getTurnTargets(state.selectedPiece);
-
-    const isSquareTurnTarget = turnTargets.some((e) =>
-      e.position.equals(position),
-    );
-
-    if (isSquareTurnTarget) return { visual: "turn_target", clickable: true };
-
-    return { visual: "nothing", clickable: false };
-  }
-
   const playersGoalie = getUnactivatedGoalie();
 
   // If unactivated white goalie is selected, show movement targets in goal area
@@ -239,7 +243,11 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
   }
 
   // Check if this square is a valid movement target for the selected piece
-  if (state.selectedPiece && !state.selectedPiece.getHasBall()) {
+  if (
+    state.selectedPiece &&
+    !state.selectedPiece.getHasBall() &&
+    !state.awaitingConsecutivePass
+  ) {
     const isMovementTarget = isPositionValidMovementTarget(
       state.selectedPiece,
       position,
@@ -256,7 +264,8 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
     pieceAtPosition &&
     state.selectedPiece &&
     !state.selectedPiece.getHasBall() &&
-    pieceAtPosition.getColor() !== state.playerColor
+    pieceAtPosition.getColor() !== state.playerColor &&
+    !state.awaitingConsecutivePass
   ) {
     const tackleTargets = getValidTackleTargets(
       state.selectedPiece,
@@ -292,6 +301,7 @@ const endTurn = (): void => {
       playerColor: state.playerColor === "white" ? "black" : "white",
       selectedPiece: null,
       isSelectionLocked: false,
+      awaitingConsecutivePass: false,
     };
   });
 };
@@ -402,6 +412,14 @@ const passBall = (origin: Position, destination: Position) => {
   if (destinationPiece) {
     destinationPiece.setHasBall(true);
 
+    // Figure out what direction to make the destination piece face
+    const directionToFace = getRelativeDirectionBetweenPositions(
+      origin,
+      destination,
+    );
+
+    destinationPiece.setFacingDirection(directionToFace);
+
     // Push an update to the state
     useGameStore.setState({});
   } else {
@@ -414,7 +432,8 @@ const passBall = (origin: Position, destination: Position) => {
 };
 
 const handlePassTargetClick = (position: Position): void => {
-  const { selectedPiece, boardLayout } = useGameStore.getState();
+  const { selectedPiece, boardLayout, awaitingConsecutivePass } =
+    useGameStore.getState();
   const pieceAtPosition = getPieceAtPosition(position, boardLayout);
 
   if (!selectedPiece) {
@@ -429,8 +448,9 @@ const handlePassTargetClick = (position: Position): void => {
     selectedPiece: pieceAtPosition,
   });
 
-  if (isCrossZonePass(fromPosition, position)) {
-    // Cross-zone pass - only allow direction selection, no consecutive passes
+  if (isCrossZonePass(fromPosition, position) || awaitingConsecutivePass) {
+    // Cross-zone pass or second pass in consecutive pass
+    // Only allow direction selection, no more passes
     useGameStore.setState({
       showDirectionArrows: true,
       isSelectionLocked: true,
@@ -438,9 +458,10 @@ const handlePassTargetClick = (position: Position): void => {
     return;
   }
 
-  // TODO: Set up consecutive pass
-
-  endTurn();
+  useGameStore.setState({
+    awaitingConsecutivePass: true,
+    isSelectionLocked: true,
+  });
 };
 
 /**

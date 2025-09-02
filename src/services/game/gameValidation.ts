@@ -7,7 +7,7 @@ import {
   FORWARD_MOVE_DISTANCE,
   OTHER_MOVE_DISTANCE,
 } from "@/utils/constants";
-import { BoardType } from "@/types/types";
+import { BoardType, FacingDirection } from "@/types/types";
 import {
   getAdjacentPositions,
   findBallPositions,
@@ -332,6 +332,31 @@ export const getTurnTargets = (
     });
 
   return targets;
+};
+
+/**
+ * Figure out the relative direction between two pieces.
+ * @param origin Origin piece
+ * @param destination Destination piece
+ */
+export const getRelativeDirectionBetweenPositions = (
+  origin: Position,
+  destination: Position,
+): FacingDirection => {
+  if (origin.equals(destination)) {
+    throw new Error(
+      "Positions can't be equal to figure out relative direction",
+    );
+  }
+
+  const [origRow, origCol] = origin.getPositionCoordinates();
+  const [destRow, destCol] = destination.getPositionCoordinates();
+
+  if (origCol === destCol) {
+    return origRow - destRow > 0 ? "north" : "south";
+  }
+
+  return origCol - destCol > 0 ? "west" : "east";
 };
 
 /**
