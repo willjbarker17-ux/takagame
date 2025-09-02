@@ -17,6 +17,8 @@ import { create } from "zustand";
 import {
   addPieceToBoard,
   createBoardLayout,
+  getAdjacentPieces,
+  getAdjacentPositions,
   getBoardSquare,
   getPieceAtPosition,
   movePieceOnBoard,
@@ -61,6 +63,8 @@ interface GameState {
   isSelectionLocked: boolean;
   /** Did we just make a pass and are awaiting a second? */
   awaitingConsecutivePass: boolean;
+  /** If we are trying to receive a pass, we put the position that the ball was passed to here */
+  receivingPassPosition: Position | null;
 }
 
 const piece1 = new Piece({
@@ -116,6 +120,7 @@ const useGameStore = create<GameState>(() => ({
   showDirectionArrows: false,
   isSelectionLocked: false,
   awaitingConsecutivePass: false,
+  receivingPassPosition: null,
 }));
 
 /**
@@ -148,9 +153,12 @@ export const handleUnactivatedGoalieClick = (color: PlayerColor) => {
     whiteUnactivatedGoaliePiece,
     blackUnactivatedGoaliePiece,
     playerColor,
+    awaitingConsecutivePass,
+    receivingPassPosition,
   } = useGameStore.getState();
 
-  if (color !== playerColor) return;
+  if (color !== playerColor || awaitingConsecutivePass || receivingPassPosition)
+    return;
 
   if (color === "white") {
     if (!whiteUnactivatedGoaliePiece) {
@@ -198,6 +206,50 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
     return { visual: "nothing", clickable: false };
   }
 
+  // If we are waiting to receive a pass, and we haven't selected a piece yet, only allow the user to select adjacent pieces
+  if (state.receivingPassPosition && !state.selectedPiece) {
+    if (!pieceAtPosition) return { visual: "nothing", clickable: false };
+
+    const adjPieces = getAdjacentPieces(
+      state.receivingPassPosition,
+      state.playerColor,
+      state.boardLayout,
+    );
+
+    const piece = adjPieces.find((p) => p === pieceAtPosition);
+
+    if (!piece || piece.getColor() !== state.playerColor) {
+      return { visual: "nothing", clickable: false };
+    }
+
+    return { visual: "piece", clickable: true };
+  }
+
+  const playersGoalie = getUnactivatedGoalie();
+
+  if (state.receivingPassPosition && state.selectedPiece) {
+    if (state.selectedPiece === playersGoalie) {
+      // TODO: Is this right?
+      throw new Error("We can't receive by an unactivated goalie");
+    }
+
+    // Find all positions adjacent to the selected piece.
+    const adjPositions = getAdjacentPositions(
+      state.selectedPiece.getPositionOrThrowIfUnactivated(),
+    );
+
+    // See if the adjacent position is 1. equal to the current position we are checking and 2. the receiving pass position
+    const positionIsAdjToSelectedPiece = adjPositions.find(
+      (p) => p.equals(position) && p.equals(state.receivingPassPosition!),
+    );
+
+    if (positionIsAdjToSelectedPiece) {
+      return { visual: "movement", clickable: true };
+    }
+
+    return { visual: "nothing", clickable: false };
+  }
+
   // Check to see if this position is a valid pass target
   if (
     pieceAtPosition &&
@@ -226,8 +278,6 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
   ) {
     return { visual: "piece", clickable: true };
   }
-
-  const playersGoalie = getUnactivatedGoalie();
 
   // If unactivated white goalie is selected, show movement targets in goal area
   if (state.selectedPiece && state.selectedPiece === playersGoalie) {
@@ -303,6 +353,7 @@ const endTurn = (): void => {
       selectedPiece: null,
       isSelectionLocked: false,
       awaitingConsecutivePass: false,
+      receivingPassPosition: null,
     };
   });
 };
@@ -370,7 +421,7 @@ const handleTackleTargetClick = (position: Position): void => {
 };
 
 const handleEmptySquarePassTargetClick = (position: Position): void => {
-  const { selectedPiece } = useGameStore.getState();
+  const { selectedPiece, boardLayout, playerColor } = useGameStore.getState();
 
   if (!selectedPiece) {
     throw new Error(
@@ -378,13 +429,41 @@ const handleEmptySquarePassTargetClick = (position: Position): void => {
     );
   }
 
+  const pieceAtDestination = getPieceAtPosition(position, boardLayout);
+
+  if (pieceAtDestination) {
+    throw new Error(
+      "We are trying to perform an empty square pass, but there is a piece at the destination",
+    );
+  }
+
   passBall(selectedPiece.getPositionOrThrowIfUnactivated(), position);
 
-  deselectPiece();
+  if (
+    isCrossZonePass(selectedPiece.getPositionOrThrowIfUnactivated(), position)
+  ) {
+    // Turn is over if this was a cross zone pass
+    endTurn();
+    return;
+  }
 
-  // TODO: Receiving pass
+  // Get all adjacent pieces that don't include the currently selected piece
+  const adjPieces = getAdjacentPieces(
+    position,
+    playerColor,
+    boardLayout,
+  ).filter((e) => e !== selectedPiece);
 
-  endTurn();
+  // If there are no adjacent pieces, we can't physically receive the pass so end the turn
+  if (adjPieces.length === 0) {
+    endTurn();
+    return;
+  }
+
+  useGameStore.setState({
+    receivingPassPosition: position,
+    selectedPiece: null,
+  });
 };
 
 /**
@@ -435,10 +514,16 @@ const passBall = (origin: Position, destination: Position) => {
 const handlePassTargetClick = (position: Position): void => {
   const { selectedPiece, boardLayout, awaitingConsecutivePass } =
     useGameStore.getState();
-  const pieceAtPosition = getPieceAtPosition(position, boardLayout);
+  const pieceAtDestination = getPieceAtPosition(position, boardLayout);
 
   if (!selectedPiece) {
     throw new Error("Trying to pass but there isn't a selected piece");
+  }
+
+  if (!pieceAtDestination) {
+    throw new Error(
+      "There isn't a piece at the destination, but we were told from getSquareInfo that this position was a pass target.",
+    );
   }
 
   const fromPosition = selectedPiece.getPositionOrThrowIfUnactivated();
@@ -446,7 +531,7 @@ const handlePassTargetClick = (position: Position): void => {
 
   // Select the piece that received the pass
   useGameStore.setState({
-    selectedPiece: pieceAtPosition,
+    selectedPiece: pieceAtDestination,
   });
 
   if (

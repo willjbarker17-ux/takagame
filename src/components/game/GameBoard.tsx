@@ -22,6 +22,8 @@ const GameBoard: React.FC = () => {
     blackUnactivatedGoaliePiece,
     showDirectionArrows,
     playerTurn,
+    awaitingConsecutivePass,
+    receivingPassPosition,
   } = useGameBoard();
 
   // Handle arrow keys for direction selection
@@ -153,7 +155,7 @@ const GameBoard: React.FC = () => {
               onClick={() => handleUnactivatedGoalieClick("white")}
             >
               <div
-                className={`h-10 w-10 ${playerColor === "white" && isCurrentPlayersTurn() ? "cursor-pointer" : ""} rounded-full border-4 border-blue-600 bg-white shadow-md transition-all duration-200 ${selectedPiece === whiteUnactivatedGoaliePiece ? "ring-opacity-75 scale-110 ring-4 ring-yellow-400" : ""}`}
+                className={`h-10 w-10 ${playerColor === "white" && isCurrentPlayersTurn() && !awaitingConsecutivePass && !receivingPassPosition ? "cursor-pointer" : ""} rounded-full border-4 border-blue-600 bg-white shadow-md transition-all duration-200 ${selectedPiece === whiteUnactivatedGoaliePiece ? "ring-opacity-75 scale-110 ring-4 ring-yellow-400" : ""}`}
               >
                 <div className="flex h-full w-full items-center justify-center text-xs font-bold text-blue-600" />
               </div>
@@ -173,7 +175,7 @@ const GameBoard: React.FC = () => {
               onClick={() => handleUnactivatedGoalieClick("black")}
             >
               <div
-                className={`h-10 w-10 ${playerColor === "black" && isCurrentPlayersTurn() ? "cursor-pointer" : ""} rounded-full border-4 border-blue-600 bg-gray-900 shadow-md transition-all duration-200 ${selectedPiece === blackUnactivatedGoaliePiece ? "ring-opacity-75 scale-110 ring-4 ring-yellow-400" : ""}`}
+                className={`h-10 w-10 ${playerColor === "black" && isCurrentPlayersTurn() && !awaitingConsecutivePass && !receivingPassPosition ? "cursor-pointer" : ""} rounded-full border-4 border-blue-600 bg-gray-900 shadow-md transition-all duration-200 ${selectedPiece === blackUnactivatedGoaliePiece ? "ring-opacity-75 scale-110 ring-4 ring-yellow-400" : ""}`}
               >
                 <div className="flex h-full w-full items-center justify-center text-xs font-bold text-blue-600" />
               </div>
