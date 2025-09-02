@@ -21,6 +21,7 @@ const GameBoard: React.FC = () => {
     whiteUnactivatedGoaliePiece,
     blackUnactivatedGoaliePiece,
     showDirectionArrows,
+    playerTurn,
   } = useGameBoard();
 
   // Handle arrow keys for direction selection
@@ -73,7 +74,7 @@ const GameBoard: React.FC = () => {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center">
       {/* Turn controls */}
-      <div className="mb-4 flex flex-shrink-0 justify-center gap-4">
+      <div className="mb-4 flex flex-shrink-0 flex-col justify-center gap-4">
         <button
           className={`rounded px-6 py-2 font-semibold text-white transition-colors ${
             !isTurnButtonEnabled
@@ -85,6 +86,10 @@ const GameBoard: React.FC = () => {
         >
           Turn Piece
         </button>
+
+        <p>
+          You are {playerColor} and it&#39;s {playerTurn}&#39;s turn
+        </p>
       </div>
 
       {/* Game board container with shadow and border */}

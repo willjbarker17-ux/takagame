@@ -132,6 +132,8 @@ export const handleArrowKeyTurn = (direction: FacingDirection) => {
   }
 
   turnPiece(selectedPiece, direction);
+
+  endTurn();
 };
 
 export const handleUnactivatedGoalieClick = (color: PlayerColor) => {
@@ -261,6 +263,17 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
   return { visual: "nothing", clickable: false };
 };
 
+const endTurn = (): void => {
+  useGameStore.setState((state) => {
+    return {
+      playerTurn: state.playerTurn === "white" ? "black" : "white",
+      playerColor: state.playerColor === "white" ? "black" : "white",
+      selectedPiece: null,
+      isSelectionLocked: false,
+    };
+  });
+};
+
 /**
  * Is it the current players turn?
  */
@@ -314,6 +327,8 @@ const handleEmptySquarePassTargetClick = (position: Position): void => {
   deselectPiece();
 
   // TODO: Receiving pass
+
+  endTurn();
 };
 
 /**
@@ -379,6 +394,8 @@ const handlePassTargetClick = (position: Position): void => {
   }
 
   // TODO: Set up consecutive pass
+
+  endTurn();
 };
 
 /**
@@ -432,14 +449,29 @@ const handleMovementClick = (position: Position): void => {
   // If the selected piece is an unactivated goalie, activate it
   const unactivatedGoalie = getUnactivatedGoalie();
   if (selectedPiece === unactivatedGoalie) {
-    activateGoalie(unactivatedGoalie, position);
+    const pickedUpBall = activateGoalie(unactivatedGoalie, position);
+
+    if (!pickedUpBall) {
+      endTurn();
+    }
+
     return;
   }
 
-  movePiece(selectedPiece, position);
+  const pickedUpBall = movePiece(selectedPiece, position);
+
+  if (!pickedUpBall) {
+    endTurn();
+  }
 };
 
-const movePiece = (piece: Piece, position: Position): void => {
+/**
+ * Move a piece to a position, and return if we picked up the ball
+ * @param piece Piece to move
+ * @param position Position to move piece to
+ * @returns Did we pick up a loose ball?
+ */
+const movePiece = (piece: Piece, position: Position): boolean => {
   const { boardLayout } = useGameStore.getState();
 
   const boardSquare = getBoardSquare(position, boardLayout);
@@ -458,6 +490,8 @@ const movePiece = (piece: Piece, position: Position): void => {
   } else {
     deselectPiece();
   }
+
+  return isPickingUpBall;
 };
 
 /**
@@ -480,8 +514,9 @@ const removeUnactivatedGoalie = (color: PlayerColor): void => {
  * Activate an unactivated goalie
  * @param goalie Goalie piece to activate
  * @param position Position to activate the goalie on
+ * @returns Did we pick up a loose ball?
  */
-const activateGoalie = (goalie: Piece, position: Position): void => {
+const activateGoalie = (goalie: Piece, position: Position): boolean => {
   const { boardLayout, playerColor } = useGameStore.getState();
 
   goalie.setPosition(position);
@@ -510,6 +545,8 @@ const activateGoalie = (goalie: Piece, position: Position): void => {
   } else {
     deselectPiece();
   }
+
+  return isPickingUpBall;
 };
 
 const handleTurnTargetClick = (position: Position): void => {
@@ -532,6 +569,8 @@ const handleTurnTargetClick = (position: Position): void => {
   }
 
   turnPiece(selectedPiece, turnTarget.direction);
+
+  endTurn();
 };
 
 const turnPiece = (piece: Piece, direction: FacingDirection): void => {
