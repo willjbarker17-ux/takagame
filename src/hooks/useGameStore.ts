@@ -31,6 +31,7 @@ import {
   getValidPassTargets,
   getValidTackleTargets,
   isCrossZonePass,
+  isPassChipPass,
   isPositionValidMovementTarget,
 } from "@/services/game/gameValidation";
 
@@ -448,9 +449,13 @@ const handlePassTargetClick = (position: Position): void => {
     selectedPiece: pieceAtPosition,
   });
 
-  if (isCrossZonePass(fromPosition, position) || awaitingConsecutivePass) {
-    // Cross-zone pass or second pass in consecutive pass
-    // Only allow direction selection, no more passes
+  if (
+    isCrossZonePass(fromPosition, position) ||
+    isPassChipPass(selectedPiece, position) ||
+    awaitingConsecutivePass
+  ) {
+    /** If we made a cross-zone pass, second pass in consecutive pass, or a chip pass, we can now only choose direction,
+    no more passes */
     useGameStore.setState({
       showDirectionArrows: true,
       isSelectionLocked: true,

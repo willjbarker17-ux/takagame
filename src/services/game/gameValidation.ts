@@ -179,6 +179,25 @@ export const getValidMovementTargets = (
 };
 
 /**
+ * Figure out if a given pass is a chip pass
+ * @param origin Origin piece
+ * @param destination Destination position we are passing to
+ * @return Is this a chip pass
+ */
+export const isPassChipPass = (
+  origin: Piece,
+  destination: Position,
+): boolean => {
+  const [origRow, origCol] = origin
+    .getPositionOrThrowIfUnactivated()
+    .getPositionCoordinates();
+
+  // TODO: Claude! Implement this
+
+  return false;
+};
+
+/**
  * Get all valid pass targets for a piece
  * @param origin - Piece to get pass targets of
  * @param boardLayout - Current board layout
