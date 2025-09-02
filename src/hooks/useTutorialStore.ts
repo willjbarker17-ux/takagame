@@ -22,6 +22,7 @@ import {
   getValidTackleTargets,
   isPositionValidMovementTarget as isValidMovementTarget,
   isPlayerOffside,
+  isCrossZonePass,
 } from "@/services/game/gameValidation";
 import {
   createBlankBoard,
@@ -684,31 +685,6 @@ const handleTurnTarget = (position: Position): void => {
   ) {
     nextStep();
   }
-};
-
-/**
- * Checks if a pass crosses shooting zones (full move rule)
- */
-const isCrossZonePass = (
-  fromPosition: Position,
-  toPosition: Position,
-): boolean => {
-  const [fromRow] = fromPosition.getPositionCoordinates();
-  const [toRow] = toPosition.getPositionCoordinates();
-
-  // White's shooting zone: rows 9-13, Black's shooting zone: rows 0-4
-  // Middle zone: rows 5-8
-  const isFromWhiteZone = fromRow >= 9;
-  const isFromBlackZone = fromRow <= 4;
-  const isToWhiteZone = toRow >= 9;
-  const isToBlackZone = toRow <= 4;
-
-  // Cross-zone if passing from one shooting zone to another, or from shooting zone to middle/other shooting zone
-  return (
-    (isFromWhiteZone && (isToBlackZone || (toRow >= 5 && toRow <= 8))) ||
-    (isFromBlackZone && (isToWhiteZone || (toRow >= 5 && toRow <= 8))) ||
-    (fromRow >= 5 && fromRow <= 8 && (isToWhiteZone || isToBlackZone))
-  );
 };
 
 /**
