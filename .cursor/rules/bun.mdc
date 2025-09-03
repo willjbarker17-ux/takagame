@@ -1,6 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: true
----
-We are using Bun on this project as both a runner and package manager.

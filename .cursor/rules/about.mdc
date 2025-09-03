@@ -1,8 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: true
----
-This project is a soccer board game app. This will allow users to play against other users. Users get matched with players with similar skills (Elos). This is the backend for this game.
-
-NEVER add admin routes.
