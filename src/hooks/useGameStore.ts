@@ -36,6 +36,14 @@ import {
   isPassChipPass,
   isPositionValidMovementTarget,
 } from "@/services/game/gameValidation";
+import { GameClient } from "@/services/socketService";
+
+interface Player {
+  id: string;
+  username: string;
+  elo: number;
+  isGuest?: boolean;
+}
 
 interface GameState {
   /** Current game id **/
@@ -69,58 +77,40 @@ interface GameState {
   isDragging: boolean;
   draggedPiece: Piece | null;
   dragStartPosition: Position | null;
+
+  // Multiplayer state
+  /** Socket client instance for multiplayer communication */
+  socketClient: GameClient | null;
+  /** Is the socket connected? */
+  isConnected: boolean;
+  /** Is currently connecting to socket? */
+  isConnecting: boolean;
+  /** Connection/socket error message */
+  connectionError: string | null;
+  /** Game status from backend */
+  gameStatus: "waiting" | "active" | "completed";
+  /** White player information */
+  whitePlayer: Player | null;
+  /** Black player information */
+  blackPlayer: Player | null;
+  /** Winner of the game */
+  winner: PlayerColor | null;
+  /** Waiting for opponent to join */
+  waitingForOpponent: boolean;
 }
 
-const piece1 = new Piece({
-  id: "WG",
-  color: "white",
-  position: "white_unactivated",
-  hasBall: false,
-  isGoalie: true,
-});
-
-const piece2 = new Piece({
-  id: "BG",
-  color: "black",
-  position: "black_unactivated",
-  hasBall: false,
-  isGoalie: true,
-});
-
-const piece3 = new Piece({
-  id: "W1",
-  color: "white",
-  position: new Position(2, 2),
-  hasBall: true,
-});
-
-const piece4 = new Piece({
-  id: "B1",
-  color: "black",
-  position: new Position(11, 2),
-  hasBall: true,
-});
-
-const piece5 = new Piece({
-  id: "B2",
-  color: "black",
-  position: new Position(11, 4),
-  hasBall: false,
-});
+// Initial state is empty - pieces will be loaded from multiplayer game state
 
 const useGameStore = create<GameState>(() => ({
   gameId: "",
-  pieces: [piece1, piece2, piece3, piece4, piece5],
-  balls: [new Position(12, 6)],
-  boardLayout: createBoardLayout(
-    [piece1, piece2, piece3, piece4, piece5],
-    [new Position(12, 6)],
-  ),
+  pieces: [],
+  balls: [],
+  boardLayout: createBoardLayout([], []),
   selectedPiece: null,
-  playerColor: "black",
-  playerTurn: "black",
-  whiteUnactivatedGoaliePiece: piece1,
-  blackUnactivatedGoaliePiece: piece2,
+  playerColor: "white",
+  playerTurn: "white",
+  whiteUnactivatedGoaliePiece: null,
+  blackUnactivatedGoaliePiece: null,
   showDirectionArrows: false,
   isSelectionLocked: false,
   awaitingConsecutivePass: false,
@@ -128,6 +118,17 @@ const useGameStore = create<GameState>(() => ({
   isDragging: false,
   draggedPiece: null,
   dragStartPosition: null,
+
+  // Multiplayer state
+  socketClient: null,
+  isConnected: false,
+  isConnecting: false,
+  connectionError: null,
+  gameStatus: "waiting",
+  whitePlayer: null,
+  blackPlayer: null,
+  winner: null,
+  waitingForOpponent: true,
 }));
 
 /**
@@ -353,10 +354,66 @@ export const getSquareInfo = (position: Position): SquareInfoType => {
 };
 
 const endTurn = (): void => {
+  // Send the current game state to the server before ending turn
+  const { socketClient, pieces, balls } = useGameStore.getState();
+
+  if (socketClient) {
+    // Convert local game state to socket format
+    const socketGameState = {
+      pieces: pieces.map((piece) => {
+        // Check if this is an unactivated goalie
+        let x: number | undefined;
+        let y: number | undefined;
+        
+        try {
+          const [row, col] = piece.getPositionOrThrowIfUnactivated().getPositionCoordinates();
+          x = col;
+          y = row;
+        } catch {
+          // This is an unactivated piece, don't include coordinates
+          x = undefined;
+          y = undefined;
+        }
+
+        const pieceData: any = {
+          id: piece.getId(),
+          playerId:
+            piece.getColor() === "white"
+              ? "white_player_id"
+              : "black_player_id",
+          type: piece.getIsGoalie() ? "goalie" : "regular",
+          hasBall: piece.getHasBall(),
+          facingDirection: piece.getFacingDirection(),
+        };
+
+        // Only include coordinates if the piece has a valid position
+        if (x !== undefined && y !== undefined) {
+          pieceData.x = x;
+          pieceData.y = y;
+        }
+
+        return pieceData;
+      }),
+      ballPositions: balls.map((ball) => {
+        const [row, col] = ball.getPositionCoordinates();
+        return {
+          x: col, // Backend now uses 0-indexed columns
+          y: row, // Backend now uses 0-indexed rows
+        };
+      }),
+    };
+
+    try {
+      console.log("Sending move to socket:", socketGameState);
+      socketClient.makeMove(socketGameState);
+    } catch (error) {
+      console.error("Failed to send move:", error);
+    }
+  }
+
   useGameStore.setState((state) => {
     return {
       playerTurn: state.playerTurn === "white" ? "black" : "white",
-      playerColor: state.playerColor === "white" ? "black" : "white",
       selectedPiece: null,
       isSelectionLocked: false,
       awaitingConsecutivePass: false,
@@ -449,7 +506,8 @@ const handleEmptySquarePassTargetClick = (position: Position): void => {
 
   // Check for scoring
   if (position.isPositionInGoal()) {
-    selectedPiece.setHasBall(false);
+    // Place the ball at the goal position (this will remove ball from piece)
+    passBall(selectedPiece.getPositionOrThrowIfUnactivated(), position);
 
     endTurn();
     return;
@@ -855,6 +913,502 @@ export const handleBallDragEnd = () => {
     isDragging: false,
     draggedPiece: null,
     dragStartPosition: null,
+  });
+};
+
+// Multiplayer socket functions
+
+/**
+ * Initialize socket client and set up event handlers
+ */
+export const initializeSocketClient = (
+  client: GameClient,
+  currentUserId?: string,
+) => {
+  useGameStore.setState({
+    socketClient: client,
+    isConnecting: true,
+    connectionError: null,
+  });
+
+  // Set up event handlers
+  client.setOnConnect(() => {
+    useGameStore.setState({
+      isConnected: true,
+      isConnecting: false,
+      connectionError: null,
+    });
+  });
+
+  client.setOnDisconnect(() => {
+    useGameStore.setState({
+      isConnected: false,
+      connectionError: "Disconnected from server",
+    });
+  });
+
+  client.setOnGameJoined((data) => {
+    const { game } = data;
+
+    // Debug logging for player assignment
+    console.log("Player joining game - Game data:", {
+      whitePlayerId: game.whitePlayerId,
+      blackPlayerId: game.blackPlayerId,
+      whitePlayerGuestId: game.whitePlayerGuestId,
+      blackPlayerGuestId: game.blackPlayerGuestId,
+      whitePlayerUsername: game.whitePlayerUsername,
+      blackPlayerUsername: game.blackPlayerUsername,
+      isGuestUser: client.isGuestUser(),
+      guestSession: client.getGuestSession(),
+    });
+
+    // Determine player color based on authenticated or guest user
+    let playerColor: PlayerColor = "white"; // Default fallback
+
+    if (client.isGuestUser()) {
+      const guestSession = client.getGuestSession();
+
+      // First try to match by session ID (most reliable)
+      if (guestSession && guestSession.sessionId) {
+        if (game.whitePlayerGuestId === guestSession.sessionId) {
+          playerColor = "white";
+        } else if (game.blackPlayerGuestId === guestSession.sessionId) {
+          playerColor = "black";
+        }
+      }
+
+      // If session ID matching failed, try to match by username as fallback
+      if (
+        playerColor === "white" &&
+        guestSession?.sessionId !== game.whitePlayerGuestId
+      ) {
+        // Reset color and try username matching
+        const currentUsername =
+          guestSession?.username || client.getGuestUsername();
+        if (currentUsername === game.whitePlayerUsername) {
+          playerColor = "white";
+        } else if (currentUsername === game.blackPlayerUsername) {
+          playerColor = "black";
+        } else {
+          // Final fallback: use game state to infer color
+          if (game.whitePlayerGuestId && game.blackPlayerGuestId) {
+            // Both slots filled - assume we're the second player (black) if we can't match either ID
+            playerColor = "black";
+          } else if (game.whitePlayerGuestId && !game.blackPlayerGuestId) {
+            playerColor = "black"; // White slot taken, we must be black
+          } else if (!game.whitePlayerGuestId && game.blackPlayerGuestId) {
+            playerColor = "white"; // Black slot taken, we must be white
+          } else {
+            playerColor = "white"; // Default to white if neither slot filled
+          }
+        }
+      }
+    } else {
+      // For authenticated users, use the passed currentUserId or try to determine from context
+      if (currentUserId) {
+        // Compare current user ID with game player IDs
+        if (game.whitePlayerId === currentUserId) {
+          playerColor = "white";
+        } else if (game.blackPlayerId === currentUserId) {
+          playerColor = "black";
+        }
+      } else {
+        // Fallback: infer from game state when user ID is not available
+        // This logic assumes the joining user is the opposite color of existing player
+        if (game.whitePlayerId && !game.blackPlayerId) {
+          // White player exists, joining player must be black
+          playerColor = "black";
+        } else if (!game.whitePlayerId && game.blackPlayerId) {
+          // Black player exists, joining player must be white
+          playerColor = "white";
+        } else {
+          // Default to white for first player
+          playerColor = "white";
+        }
+      }
+    }
+
+    // Debug logging for final player color assignment
+    console.log("Final player color assignment:", {
+      playerColor,
+      isGuestUser: client.isGuestUser(),
+      guestSessionId: client.getGuestSession()?.sessionId,
+      currentUsername:
+        client.getGuestSession()?.username || client.getGuestUsername(),
+      gameWhiteGuestId: game.whitePlayerGuestId,
+      gameBlackGuestId: game.blackPlayerGuestId,
+      gameWhiteUsername: game.whitePlayerUsername,
+      gameBlackUsername: game.blackPlayerUsername,
+    });
+
+    // Create player objects with proper data
+    const whitePlayer: Player | null =
+      game.whitePlayer ||
+      (game.whitePlayerUsername
+        ? {
+            id: game.whitePlayerGuestId || "guest-white",
+            username: game.whitePlayerUsername,
+            elo: 1200, // Default ELO for guests
+            isGuest: true,
+          }
+        : null);
+
+    const blackPlayer: Player | null =
+      game.blackPlayer ||
+      (game.blackPlayerUsername
+        ? {
+            id: game.blackPlayerGuestId || "guest-black",
+            username: game.blackPlayerUsername,
+            elo: 1200, // Default ELO for guests
+            isGuest: true,
+          }
+        : null);
+
+    useGameStore.setState({
+      gameId: game.id,
+      gameStatus: game.status,
+      whitePlayer,
+      blackPlayer,
+      playerColor,
+      playerTurn: game.currentTurn || "white",
+      waitingForOpponent: game.status === "waiting",
+      winner: game.winner,
+    });
+
+    if (game.gameState) {
+      updateGameStateFromSocket(game.gameState);
+    }
+  });
+
+  client.setOnPlayerJoined((data) => {
+    const { game } = data;
+
+    // Create player objects with proper data for both authenticated and guest users
+    const whitePlayer: Player | null =
+      game.whitePlayer ||
+      (game.whitePlayerUsername
+        ? {
+            id: game.whitePlayerGuestId || "guest-white",
+            username: game.whitePlayerUsername,
+            elo: 1200,
+            isGuest: true,
+          }
+        : null);
+
+    const blackPlayer: Player | null =
+      game.blackPlayer ||
+      (game.blackPlayerUsername
+        ? {
+            id: game.blackPlayerGuestId || "guest-black",
+            username: game.blackPlayerUsername,
+            elo: 1200,
+            isGuest: true,
+          }
+        : null);
+
+    useGameStore.setState({
+      gameStatus: game.status,
+      whitePlayer,
+      blackPlayer,
+      waitingForOpponent: false,
+      playerTurn: game.currentTurn || "white",
+    });
+
+    if (game.gameState) {
+      updateGameStateFromSocket(game.gameState);
+    }
+  });
+
+  client.setOnGameStateUpdated((data) => {
+    const { game, gameState } = data;
+    useGameStore.setState({
+      playerTurn: game.currentTurn || "white",
+      gameStatus: game.status,
+      winner: game.winner,
+    });
+    updateGameStateFromSocket(gameState);
+  });
+
+  client.setOnMoveConfirmed((data) => {
+    const { game, gameState } = data;
+    useGameStore.setState({
+      playerTurn: game.currentTurn || "white",
+      gameStatus: game.status,
+      winner: game.winner,
+    });
+    updateGameStateFromSocket(gameState);
+  });
+
+  client.setOnGameOver((data) => {
+    const { game, winner } = data;
+    useGameStore.setState({
+      gameStatus: "completed",
+      winner: winner as PlayerColor,
+      playerTurn: game.currentTurn || "white",
+    });
+  });
+
+  client.setOnError((error) => {
+    useGameStore.setState({
+      connectionError: error.message,
+      isConnecting: false,
+      isConnected: false, // Treat access denied as connection failure
+    });
+  });
+};
+
+// Types for socket data format
+interface SocketGamePiece {
+  id: string;
+  playerId: string;
+  x?: number; // Optional for unactivated goalies
+  y?: number; // Optional for unactivated goalies
+  type?: string;
+  hasBall?: boolean;
+  facingDirection?: string;
+}
+
+interface SocketBallPosition {
+  x: number;
+  y: number;
+}
+
+interface SocketGameState {
+  pieces: SocketGamePiece[];
+  ballPositions: SocketBallPosition[];
+}
+
+/**
+ * Update local game state from socket data
+ */
+const updateGameStateFromSocket = (socketGameState: SocketGameState) => {
+  if (
+    !socketGameState ||
+    !socketGameState.pieces ||
+    !socketGameState.ballPositions
+  ) {
+    console.log("Invalid game state received from socket:", socketGameState);
+    return;
+  }
+
+  // Convert socket game pieces to local Piece objects
+  const pieces: Piece[] = socketGameState.pieces.map(
+    (socketPiece: SocketGamePiece) => {
+      // Determine player color based on piece ID or playerId
+      const color: PlayerColor =
+        socketPiece.id?.startsWith("w") ||
+        socketPiece.playerId?.includes("white")
+          ? "white"
+          : "black";
+
+      // Handle unactivated goalies with null/undefined coordinates
+      const position = (socketPiece.x === undefined || socketPiece.y === undefined) 
+        ? (color === "white" ? "white_unactivated" : "black_unactivated")
+        : new Position(socketPiece.y!, socketPiece.x!);
+
+      return new Piece({
+        id: socketPiece.id,
+        color: color,
+        position: position as any, // Both backend and frontend now use 0-indexed
+        hasBall: socketPiece.hasBall || false,
+        facingDirection: (socketPiece.facingDirection as any) || (color === "white" ? "south" : "north"),
+        isGoalie: socketPiece.type === "goalie",
+      });
+    },
+  );
+
+  // Convert socket ball positions to local Position objects
+  const balls: Position[] = socketGameState.ballPositions.map(
+    (ballPos: SocketBallPosition) => new Position(ballPos.y, ballPos.x), // Both backend and frontend now use 0-indexed
+  );
+
+  // Note: Pieces already have correct hasBall property from server data, no need to reassign
+
+  // Filter out balls that are held by pieces (only keep loose balls)
+  const looseBalls = balls.filter(
+    (ball) =>
+      !pieces.some((piece) => {
+        try {
+          const piecePosition = piece.getPositionOrThrowIfUnactivated();
+          return piecePosition.equals(ball);
+        } catch {
+          return false; // Unactivated piece
+        }
+      }),
+  );
+
+  // Create board layout
+  const boardLayout = createBoardLayout(pieces, looseBalls);
+
+  // Check for unactivated goalies
+  const whiteUnactivatedGoaliePiece =
+    pieces.find(
+      (p) =>
+        p.getColor() === "white" &&
+        p.getIsGoalie() &&
+        typeof p.getPosition() === "string",
+    ) || null;
+
+  const blackUnactivatedGoaliePiece =
+    pieces.find(
+      (p) =>
+        p.getColor() === "black" &&
+        p.getIsGoalie() &&
+        typeof p.getPosition() === "string",
+    ) || null;
+
+  // Update the store with the converted state
+  useGameStore.setState({
+    pieces,
+    balls: looseBalls,
+    boardLayout,
+    whiteUnactivatedGoaliePiece,
+    blackUnactivatedGoaliePiece,
+  });
+
+  console.log("Updated game state from socket:", {
+    pieces: pieces.length,
+    balls: looseBalls.length,
+  });
+};
+
+/**
+ * Send move to multiplayer backend
+ */
+export const sendMoveToSocket = () => {
+  const { socketClient, pieces, balls } = useGameStore.getState();
+
+  if (!socketClient) {
+    console.error("Cannot send move: Socket client not initialized");
+    return;
+  }
+
+  // Convert local game state to socket format
+  const socketGameState = {
+    pieces: pieces.map((piece) => {
+      // Check if this is an unactivated goalie
+      let x: number | undefined;
+      let y: number | undefined;
+      
+      try {
+        const [row, col] = piece.getPositionOrThrowIfUnactivated().getPositionCoordinates();
+        x = col;
+        y = row;
+      } catch {
+        // This is an unactivated piece, don't include coordinates
+        x = undefined;
+        y = undefined;
+      }
+
+      const pieceData: any = {
+        id: piece.getId(),
+        playerId:
+          piece.getColor() === "white" ? "white_player_id" : "black_player_id", // TODO: Use actual player IDs
+        type: piece.getIsGoalie() ? "goalie" : "regular",
+      };
+
+      // Only include coordinates if the piece has a valid position
+      if (x !== undefined && y !== undefined) {
+        pieceData.x = x;
+        pieceData.y = y;
+      }
+
+      return pieceData;
+    }),
+    ballPositions: balls.map((ball) => ({
+      x: ball.getPositionCoordinates()[0],
+      y: ball.getPositionCoordinates()[1],
+    })),
+  };
+
+  try {
+    socketClient.makeMove(socketGameState);
+  } catch (error) {
+    console.error("Failed to send move:", error);
+    useGameStore.setState({
+      connectionError:
+        error instanceof Error ? error.message : "Failed to send move",
+    });
+  }
+};
+
+/**
+ * Connect to game with socket client
+ */
+export const connectToGame = async (gameId: string) => {
+  const { socketClient } = useGameStore.getState();
+
+  if (!socketClient) {
+    throw new Error("Socket client not initialized");
+  }
+
+  try {
+    await socketClient.connect();
+    socketClient.joinGame(gameId);
+  } catch (error) {
+    useGameStore.setState({
+      connectionError:
+        error instanceof Error ? error.message : "Failed to connect to game",
+      isConnecting: false,
+    });
+    throw error;
+  }
+};
+
+/**
+ * Create a new multiplayer game (supports both guest and authenticated users)
+ */
+export const createMultiplayerGame = async (
+  guestUsername?: string,
+): Promise<string> => {
+  const { socketClient } = useGameStore.getState();
+
+  if (!socketClient) {
+    throw new Error("Socket client not initialized");
+  }
+
+  try {
+    const gameId = await socketClient.createGame(guestUsername);
+
+    // Store guest session if this was a guest game creation
+    if (socketClient.isGuestUser()) {
+      const guestSession = socketClient.getGuestSession();
+      if (guestSession) {
+        // The auth hook will handle storing this via setGuestSession
+        console.log("Guest session created:", guestSession);
+      }
+    }
+
+    return gameId;
+  } catch (error) {
+    useGameStore.setState({
+      connectionError:
+        error instanceof Error ? error.message : "Failed to create game",
+    });
+    throw error;
+  }
+};
+
+/**
+ * Disconnect from multiplayer game
+ */
+export const disconnectFromGame = () => {
+  const { socketClient } = useGameStore.getState();
+
+  if (socketClient) {
+    socketClient.disconnect();
+  }
+
+  useGameStore.setState({
+    socketClient: null,
+    isConnected: false,
+    isConnecting: false,
+    connectionError: null,
+    gameStatus: "waiting",
+    whitePlayer: null,
+    blackPlayer: null,
+    winner: null,
+    waitingForOpponent: true,
   });
 };
 
