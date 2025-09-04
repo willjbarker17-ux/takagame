@@ -1,5 +1,6 @@
-import StaticGameBoard from "./components/StaticGameBoard";
-import SoccerBallIcon from "./components/SoccerBallIcon";
+import StaticGameBoard from "@/components/rules/StaticGameBoard";
+import SoccerBallIcon from "@/components/game/SoccerBallIcon";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -14,18 +15,21 @@ export default function Home() {
           <p className="animate-fade-in-up animate-delay-200 mx-auto mb-8 max-w-3xl text-xl text-gray-600 opacity-0">
             Experience the tactical depth of football in a turn-based board
             game. Plan your moves, execute perfect passes, and outmaneuver your
-            opponent on a 10x14 grid battlefield.
+            opponent on a 14x10 grid battlefield.
           </p>
           <div className="animate-fade-in-up animate-delay-400 flex flex-col justify-center gap-4 opacity-0 sm:flex-row">
-            <button className="rounded-lg bg-green-600 px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-green-700">
+            <Link
+              href="/play"
+              className="rounded-lg bg-green-600 px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-green-700"
+            >
               Start Playing
-            </button>
-            <a
+            </Link>
+            <Link
               href="/rules"
               className="rounded-lg border border-gray-300 bg-white px-8 py-4 text-lg font-semibold text-gray-900 transition-colors hover:bg-gray-50"
             >
               Learn Rules
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -164,9 +168,12 @@ export default function Home() {
             Challenge a friend and experience the thrill of tactical football
           </p>
           <div className="animate-fade-in-up animate-delay-3600 opacity-0">
-            <button className="rounded-lg bg-white px-8 py-4 text-lg font-semibold text-green-600 transition-colors hover:bg-gray-100">
+            <Link
+              href="/play"
+              className="rounded-lg bg-white px-8 py-4 text-lg font-semibold text-green-600 transition-colors hover:bg-gray-100"
+            >
               Start Your First Game
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -190,67 +197,28 @@ export default function Home() {
               <h4 className="mb-3 font-semibold">Game</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <a href="#" className="transition-colors hover:text-white">
+                  <Link
+                    href="/play"
+                    className="transition-colors hover:text-white"
+                  >
                     Play Now
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href="/rules"
                     className="transition-colors hover:text-white"
                   >
                     Rules
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="transition-colors hover:text-white">
-                    Tutorial
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="animate-fade-in-up animate-delay-4400 opacity-0">
-              <h4 className="mb-3 font-semibold">About</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a
-                    href="/rules"
+                  <Link
+                    href="/tutorial"
                     className="transition-colors hover:text-white"
                   >
-                    How to Play
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-white">
-                    Strategy Guide
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-white">
-                    FAQ
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="animate-fade-in-up animate-delay-4600 opacity-0">
-              <h4 className="mb-3 font-semibold">Connect</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="transition-colors hover:text-white">
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-white">
-                    Discord
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-white">
-                    Twitter
-                  </a>
+                    Tutorial
+                  </Link>
                 </li>
               </ul>
             </div>

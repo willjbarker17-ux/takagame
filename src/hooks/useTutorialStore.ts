@@ -8,7 +8,7 @@ import {
   BoardType,
   FacingDirection,
   PlayerColor,
-  SquareType,
+  TutorialSquareType,
   TutorialStep,
 } from "@/types/types";
 import {
@@ -22,12 +22,13 @@ import {
   getValidTackleTargets,
   isPositionValidMovementTarget as isValidMovementTarget,
   isPlayerOffside,
-} from "@/services/gameValidation";
+  isCrossZonePass,
+} from "@/services/game/gameValidation";
 import {
   createBlankBoard,
   createBoardLayout,
-  findBall,
-  findBallPosition,
+  findLooseBalls,
+  findBallPositions,
   getAdjacentPieces,
   getAdjacentPositions,
   getBoardSquare as getBoardSquareHelper,
@@ -35,7 +36,7 @@ import {
   movePieceOnBoard,
   placeBallAtPosition as placeBallAtPositionHelper,
   swapPiecePositions,
-} from "@/services/boardHelpers";
+} from "@/services/game/boardHelpers";
 
 /**
  * State interface for the tutorial store
@@ -88,33 +89,14 @@ export const stepOrder: TutorialStep[] = [
   "chip_pass",
   "consecutive_pass",
   "shooting",
+  "activating_goalies",
+  "blocking_shots",
   "consecutive_pass_to_score",
   "tackling",
   "tackling_positioning",
-  "activating_goalies",
-  "blocking_shots",
   "offside",
   "shooting_zone_pass",
   "completed",
-];
-
-const WHITE_GOALIE_ACTIVATION_TARGETS: Position[] = [
-  new Position(0, 3),
-  new Position(0, 4),
-  new Position(0, 5),
-  new Position(0, 6),
-  new Position(1, 3),
-  new Position(1, 4),
-  new Position(1, 5),
-  new Position(1, 6),
-  new Position(2, 3),
-  new Position(3, 2),
-  new Position(2, 6),
-  new Position(3, 7),
-  new Position(2, 4),
-  new Position(3, 4),
-  new Position(2, 5),
-  new Position(3, 5),
 ];
 
 const DRIBBLE_ACTIVE_STEPS: Set<TutorialStep> = new Set([
@@ -559,12 +541,6 @@ const tutorialStepStates: Record<TutorialStep, () => void> = {
         position: new Position(9, 4), // Teammate in black's zone (rows 0-4) - crosses zones
         hasBall: false,
       }),
-      new Piece({
-        id: "W3",
-        color: TUTORIAL_PLAYER_COLOR,
-        position: new Position(4, 9), // Teammate in same white zone - no zone crossing
-        hasBall: false,
-      }),
     ]);
   },
   completed: () => {
@@ -712,31 +688,6 @@ const handleTurnTarget = (position: Position): void => {
 };
 
 /**
- * Checks if a pass crosses shooting zones (full move rule)
- */
-const isCrossZonePass = (
-  fromPosition: Position,
-  toPosition: Position,
-): boolean => {
-  const [fromRow] = fromPosition.getPositionCoordinates();
-  const [toRow] = toPosition.getPositionCoordinates();
-
-  // White's shooting zone: rows 9-13, Black's shooting zone: rows 0-4
-  // Middle zone: rows 5-8
-  const isFromWhiteZone = fromRow >= 9;
-  const isFromBlackZone = fromRow <= 4;
-  const isToWhiteZone = toRow >= 9;
-  const isToBlackZone = toRow <= 4;
-
-  // Cross-zone if passing from one shooting zone to another, or from shooting zone to middle/other shooting zone
-  return (
-    (isFromWhiteZone && (isToBlackZone || (toRow >= 5 && toRow <= 8))) ||
-    (isFromBlackZone && (isToWhiteZone || (toRow >= 5 && toRow <= 8))) ||
-    (fromRow >= 5 && fromRow <= 8 && (isToWhiteZone || isToBlackZone))
-  );
-};
-
-/**
  * Handle piece selection and potential passing
  */
 const handlePieceSelection = (position: Position): void => {
@@ -820,7 +771,11 @@ const handlePieceSelection = (position: Position): void => {
   useTutorialStore.setState({ selectedPiece: pieceAtPosition });
 
   // Enable the turn button after we select the piece
-  if (currentStep === "turning" || currentStep === "tackling") {
+  if (
+    currentStep === "turning" ||
+    currentStep === "tackling" ||
+    currentStep === "ball_pickup"
+  ) {
     useTutorialStore.setState({ isTurnButtonEnabled: true });
   }
 };
@@ -1200,12 +1155,12 @@ export const isPieceOffside = (piece: BoardSquareType): boolean => {
     return false;
   }
 
-  const ballPosition = findBallPosition(boardLayout);
-  if (!ballPosition) {
+  const ballPositions = findBallPositions(boardLayout);
+  if (ballPositions.length !== 1) {
     return false;
   }
 
-  return isPlayerOffside(piece, ballPosition, boardLayout);
+  return isPlayerOffside(piece, ballPositions[0], boardLayout);
 };
 
 /**
@@ -1217,7 +1172,7 @@ export const isPieceOffside = (piece: BoardSquareType): boolean => {
 export const getSquareInfo = (
   position: Position,
   currentPlayerColor: PlayerColor,
-): SquareType => {
+): TutorialSquareType => {
   const state = useTutorialStore.getState();
 
   if (state.showRetryButton) return "nothing";
@@ -1243,9 +1198,9 @@ export const getSquareInfo = (
     state.selectedPiece &&
     state.selectedPiece === state.whiteUnactivatedGoaliePiece
   ) {
-    const isGoalActivationTarget = WHITE_GOALIE_ACTIVATION_TARGETS.some((e) =>
-      e.equals(position),
-    );
+    const isGoalActivationTarget = state.whiteUnactivatedGoaliePiece
+      .getGoalieActivationTargets()
+      .some((e) => e.equals(position));
 
     // Only allow activation if the position is a valid target AND there's no piece there
     if (isGoalActivationTarget && !getPieceAtPosition(position)) {
@@ -1265,12 +1220,12 @@ export const getSquareInfo = (
       if (!piece || piece.getColor() !== currentPlayerColor) return "nothing";
 
       // Find the ball
-      const ballPos = findBall(state.boardLayout);
+      const ballPos = findLooseBalls(state.boardLayout);
 
-      if (!ballPos) return "nothing";
+      if (ballPos.length === 0) return "nothing";
 
       const adjPiecesToBall = getAdjacentPieces(
-        ballPos,
+        ballPos[0],
         TUTORIAL_PLAYER_COLOR,
         state.boardLayout,
       );
@@ -1287,14 +1242,14 @@ export const getSquareInfo = (
       const adjPositions = getAdjacentPositions(
         state.selectedPiece.getPositionOrThrowIfUnactivated(),
       );
-      const ballPos = findBall(state.boardLayout);
+      const ballPos = findLooseBalls(state.boardLayout);
 
       if (!ballPos) {
         throw new Error("Can't find ball on board");
       }
 
       const positionIsAdjToSelectedPiece =
-        adjPositions.filter((p) => p.equals(ballPos) && p.equals(position))
+        adjPositions.filter((p) => p.equals(ballPos[0]) && p.equals(position))
           .length > 0;
 
       return positionIsAdjToSelectedPiece ? "movement" : "nothing";
@@ -1479,6 +1434,8 @@ export const handleBallDragStart = (
 ) => {
   const { currentStep } = useTutorialStore.getState();
 
+  handlePieceSelection(piece.getPositionOrThrowIfUnactivated());
+
   if (!DRIBBLE_ACTIVE_STEPS.has(currentStep)) {
     return;
   }
@@ -1486,8 +1443,6 @@ export const handleBallDragStart = (
   if (piece.getColor() !== TUTORIAL_PLAYER_COLOR) return;
 
   if (!piece.getHasBall()) return;
-
-  handlePieceSelection(piece.getPositionOrThrowIfUnactivated());
 
   useTutorialStore.setState({
     isDragging: true,
@@ -1592,24 +1547,15 @@ export const handleBallDragEnd = () => {
  * @param direction - The direction to turn the selected piece
  */
 export const handleArrowKeyTurn = (direction: FacingDirection): void => {
-  const { selectedPiece, awaitingDirectionSelection, currentStep } =
-    useTutorialStore.getState();
+  const { selectedPiece } = useTutorialStore.getState();
 
   if (!selectedPiece) {
     return;
   }
 
-  // If we're in the turning step with a selected piece but not yet awaiting direction,
-  // automatically enter direction selection mode
-  if (currentStep === "turning" && !awaitingDirectionSelection) {
-    useTutorialStore.setState({
-      awaitingDirectionSelection: true,
-    });
-  }
-
   // Now check if we should proceed with the turn
   const state = useTutorialStore.getState();
-  if (!state.awaitingDirectionSelection) {
+  if (!state.isTurnButtonEnabled && !state.awaitingDirectionSelection) {
     return;
   }
 

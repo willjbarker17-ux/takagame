@@ -5,9 +5,11 @@ import type {
 } from "@/types/types";
 import { Position } from "@/classes/Position";
 import {
+  BLACK_GOALIE_ACTIVATION_TARGETS,
   DIRECTION_VECTORS,
   FORWARD_MOVE_DISTANCE,
   OTHER_MOVE_DISTANCE,
+  WHITE_GOALIE_ACTIVATION_TARGETS,
 } from "@/utils/constants";
 
 interface PieceParams {
@@ -52,12 +54,14 @@ export class Piece {
   }
 
   /**
-   * Get valid movement targets. This does not account for other players positions
+   * Get the goalie activation targets based on the color
    */
-  getMovementTargets(): Position[] {
-    if (this.hasBall) return this.getBallMovementTargets();
-
-    return this.getStandardMovementTargets();
+  getGoalieActivationTargets() {
+    if (this.color === "white") {
+      return WHITE_GOALIE_ACTIVATION_TARGETS;
+    } else {
+      return BLACK_GOALIE_ACTIVATION_TARGETS;
+    }
   }
 
   getColor() {

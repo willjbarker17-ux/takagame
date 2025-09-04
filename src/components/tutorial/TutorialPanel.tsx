@@ -139,7 +139,7 @@ const TutorialPanel: React.FC<TutorialPanelProps> = ({ className = "" }) => {
         return {
           title: "Cross-Zone Pass Rule",
           content:
-            "Moving the ball from your own shooting zone into the opponent's zone (or vice versa) counts as a full move.\n\nYou're in your shooting zone (bottom area). You have two pass options:\n• Pass to teammate in opponent's zone (top area) - This crosses zones, so NO consecutive passes allowed, only direction selection\n• Pass within same zone (bottom area) - Normal rules apply, consecutive passes allowed\n\nTry both types of passes to see the difference!",
+            "Moving the ball from your own shooting zone into the opponent's shooting zone (or vice versa) counts as a full move.\n\nPassing to a teammate in the opponent's zone (top area) crosses zones, so NO consecutive passes allowed, OR moving to receive a pass. Only direction selection allowed.",
         };
 
       case "completed":

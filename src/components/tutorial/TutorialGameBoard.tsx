@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import BoardCell from "./BoardCell";
-import Piece from "./Piece";
+import TutorialBoardCell from "./TutorialBoardCell";
+import Piece from "../game/Piece";
 import {
   BOARD_COLS,
   BOARD_ROWS,
@@ -130,15 +130,6 @@ const TutorialGameBoard: React.FC = () => {
 
   // Handle arrow keys for direction selection
   React.useEffect(() => {
-    // Allow arrow keys during direction selection or during turning step with selected piece
-    const shouldHandleArrowKeys =
-      (awaitingDirectionSelection && selectedPiece) ||
-      (currentStep === "turning" && selectedPiece);
-
-    if (!shouldHandleArrowKeys) {
-      return;
-    }
-
     const handleKeyDown = (e: KeyboardEvent) => {
       // Prevent default behavior to avoid scrolling
       const { key } = e;
@@ -240,7 +231,7 @@ const TutorialGameBoard: React.FC = () => {
                 );
 
                 return (
-                  <BoardCell
+                  <TutorialBoardCell
                     key={`cell-${rowIndex}-${colIndex}`}
                     position={position}
                     piece={piece}

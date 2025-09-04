@@ -1,5 +1,5 @@
 import Link from "next/link";
-import SoccerBallIcon from "./SoccerBallIcon";
+import SoccerBallIcon from "./game/SoccerBallIcon";
 
 export default function Header() {
   return (
@@ -27,9 +27,11 @@ export default function Header() {
               Tutorial
             </Link>
           </nav>
-          <button className="rounded-lg bg-green-600 px-6 py-2 font-medium text-white transition-colors hover:bg-green-700">
-            Play Now
-          </button>
+          <Link href="/play">
+            <button className="cursor-pointer rounded-lg bg-green-600 px-6 py-2 font-medium text-white transition-colors hover:bg-green-700">
+              Play Now
+            </button>
+          </Link>
         </div>
       </div>
     </header>

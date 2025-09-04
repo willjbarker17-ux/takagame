@@ -1,23 +1,27 @@
 "use client";
 
 import React from "react";
-import Piece from "./Piece";
+import Piece from "../game/Piece";
 import { Piece as PieceClass } from "@/classes/Piece";
 import { Position } from "@/classes/Position";
-import { BoardSquareType, SquareType } from "@/types/types";
-import { handleSquareClick, useTutorialBoard, isPieceOffside } from "@/hooks/useTutorialStore";
+import { BoardSquareType, TutorialSquareType } from "@/types/types";
+import {
+  handleSquareClick,
+  useTutorialBoard,
+  isPieceOffside,
+} from "@/hooks/useTutorialStore";
 import { BOARD_COLS } from "@/utils/constants";
 
 interface BoardCellProps {
   position: Position;
   piece: BoardSquareType;
-  squareInfo: SquareType;
+  squareInfo: TutorialSquareType;
   selectedPiece: PieceClass | null;
   rowIndex: number;
   colIndex: number;
 }
 
-const BoardCell: React.FC<BoardCellProps> = ({
+const TutorialBoardCell: React.FC<BoardCellProps> = ({
   position,
   piece,
   squareInfo,
@@ -82,7 +86,9 @@ const BoardCell: React.FC<BoardCellProps> = ({
             piece={piece}
             isSelected={
               selectedPiece && selectedPiece.getPosition() instanceof Position
-                ? selectedPiece.getPositionOrThrowIfUnactivated().equals(position)
+                ? selectedPiece
+                    .getPositionOrThrowIfUnactivated()
+                    .equals(position)
                 : false
             }
             isPassTarget={squareInfo === "pass_target"}
@@ -98,15 +104,18 @@ const BoardCell: React.FC<BoardCellProps> = ({
         <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
           <div className="animate-pulse text-2xl text-yellow-400">
             {(() => {
-              const [selectedRow, selectedCol] = selectedPiece.getPositionOrThrowIfUnactivated().getPositionCoordinates();
-              const [currentRow, currentCol] = position.getPositionCoordinates();
-              
+              const [selectedRow, selectedCol] = selectedPiece
+                .getPositionOrThrowIfUnactivated()
+                .getPositionCoordinates();
+              const [currentRow, currentCol] =
+                position.getPositionCoordinates();
+
               // Determine direction based on relative position to selected piece
               if (currentRow < selectedRow) return "↑"; // North
               if (currentRow > selectedRow) return "↓"; // South
               if (currentCol < selectedCol) return "←"; // West
               if (currentCol > selectedCol) return "→"; // East
-              
+
               return "↻"; // Fallback
             })()}
           </div>
@@ -139,4 +148,4 @@ const BoardCell: React.FC<BoardCellProps> = ({
   );
 };
 
-export default BoardCell;
+export default TutorialBoardCell;

@@ -29,9 +29,12 @@ export const createBoardLayout = (
   const boardLayout = createBlankBoard();
 
   pieces.forEach((piece) => {
-    const [row, col] = piece
-      .getPositionOrThrowIfUnactivated()
-      .getPositionCoordinates();
+    const pos = piece.getPosition();
+
+    // If an unactivated goalie, skjp this piece
+    if (!(pos instanceof Position)) return;
+
+    const [row, col] = pos.getPositionCoordinates();
     boardLayout[row][col] = piece;
   });
 
@@ -196,16 +199,18 @@ export const getAdjacentPieces = (
  * Get the position of the first ball we find
  * @param boardLayout Current board layout
  */
-export const findBall = (boardLayout: BoardType): Position | null => {
+export const findLooseBalls = (boardLayout: BoardType): Position[] => {
+  const positions: Position[] = [];
+
   for (let row_idx = 0; row_idx < BOARD_ROWS; row_idx++) {
     for (let col_idx = 0; col_idx < BOARD_COLS; col_idx++) {
       if (boardLayout[row_idx][col_idx] === "ball") {
-        return new Position(row_idx, col_idx);
+        positions.push(new Position(row_idx, col_idx));
       }
     }
   }
 
-  return null;
+  return positions;
 };
 
 /**
@@ -213,24 +218,23 @@ export const findBall = (boardLayout: BoardType): Position | null => {
  * @param boardLayout - Current board layout
  * @returns Position of the ball or null if not found
  */
-export const findBallPosition = (boardLayout: BoardType): Position | null => {
+export const findBallPositions = (boardLayout: BoardType): Position[] => {
   // First check for loose ball
-  const looseBall = findBall(boardLayout);
-  if (looseBall) {
-    return looseBall;
-  }
+  const looseBalls = findLooseBalls(boardLayout);
 
-  // Ball is with a piece, find which piece has it
+  const positions = [...looseBalls];
+
+  // Ball also might be with a piece, find which piece has it
   for (let row = 0; row < BOARD_ROWS; row++) {
     for (let col = 0; col < BOARD_COLS; col++) {
       const square = boardLayout[row][col];
       if (square instanceof Piece && square.getHasBall()) {
-        return new Position(row, col);
+        positions.push(new Position(row, col));
       }
     }
   }
-  
-  return null;
+
+  return positions;
 };
 
 /**
@@ -260,11 +264,11 @@ export const swapPiecePositions = (
   let newFacingDirection = tackler.getFacingDirection();
 
   if (rowDiff > 0) {
-    // Tackler moved south (toward opponent goal for white)
-    newFacingDirection = tackler.getColor() === "white" ? "south" : "north";
-  } else if (rowDiff < 0) {
-    // Tackler moved north (toward opponent goal for black)
+    // Tackler moved south (toward white's goal, black's attack direction)
     newFacingDirection = tackler.getColor() === "white" ? "north" : "south";
+  } else if (rowDiff < 0) {
+    // Tackler moved north (toward black's goal, white's attack direction)  
+    newFacingDirection = tackler.getColor() === "white" ? "south" : "north";
   }
 
   // Create new board layout
@@ -284,4 +288,27 @@ export const swapPiecePositions = (
   newBoardLayout[targetRow][targetCol] = tackler;
 
   return newBoardLayout;
+};
+
+/**
+ * Add a new piece to the board. This is used to activate goalies. When calling this function, make sure to check if a
+ * ball is at the piece's position
+ * @param piece Piece to add. Position is inferred from this piece
+ * @param boardLayout Current board layout
+ */
+export const addPieceToBoard = (piece: Piece, boardLayout: BoardType) => {
+  const pos = piece.getPositionOrThrowIfUnactivated();
+
+  const square = getBoardSquare(pos, boardLayout);
+
+  if (square instanceof Piece) {
+    throw new Error("Trying to add a piece on top of another piece");
+  }
+
+  const [row, col] = pos.getPositionCoordinates();
+
+  // This will overwrite any balls
+  boardLayout[row][col] = piece;
+
+  return boardLayout;
 };

@@ -21,7 +21,7 @@ This is a Next.js 15 frontend application for "Taka" - a turn-based football str
 src/
 ├── app/
 │   ├── components/
-│   │   ├── BoardCell.tsx           # Individual board cell component
+│   │   ├── TutorialBoardCell.tsx           # Individual board cell component
 │   │   ├── Header.tsx              # Common header component
 │   │   ├── Piece.tsx               # Individual game piece component
 │   │   ├── SoccerBallIcon.tsx      # Soccer ball SVG component
@@ -110,7 +110,7 @@ The app features a comprehensive tutorial system built with Zustand for state ma
 - Handles piece selection, movement targets, pass targets, and turn indicators
 - Real-time visual feedback for valid moves and interactions
 - Integrated with tutorial step progression logic
-- Uses `BoardCell` components for individual squares with click handling
+- Uses `TutorialBoardCell` components for individual squares with click handling
 
 ### Page Structure
 

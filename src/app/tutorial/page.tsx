@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import TutorialGameBoard from "../components/TutorialGameBoard";
-import TutorialPanel from "../components/TutorialPanel";
+import TutorialGameBoard from "@/components/tutorial/TutorialGameBoard";
+import TutorialPanel from "@/components/tutorial/TutorialPanel";
 
 const DemoPage: React.FC = () => {
   return (

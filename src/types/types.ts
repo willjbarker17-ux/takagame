@@ -35,7 +35,7 @@ export type FacingDirection = "north" | "south" | "west" | "east";
  * pass_target - pass to piece, clickable
  * empty_pass_target - pass to empty square, clickable
  */
-export type SquareType =
+export type TutorialSquareType =
   | "nothing"
   | "piece"
   | "movement"
@@ -43,6 +43,20 @@ export type SquareType =
   | "pass_target"
   | "empty_pass_target"
   | "tackle_target";
+
+export type SquareVisualType =
+  | "nothing"
+  | "movement"
+  | "piece"
+  | "turn_target"
+  | "pass_target"
+  | "empty_pass_target"
+  | "tackle_target";
+
+export interface SquareInfoType {
+  visual: SquareVisualType;
+  clickable: boolean;
+}
 
 export type BoardSquareType = Piece | "ball" | null;
 

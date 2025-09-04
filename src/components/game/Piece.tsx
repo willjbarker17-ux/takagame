@@ -2,9 +2,12 @@ import React from "react";
 import { Piece as PieceClass } from "@/classes/Piece";
 import { FacingDirection } from "@/types/types";
 import {
-  handleBallDragStart,
+  handleBallDragStart as handleTutorialBallDragStart,
   useTutorialBoard,
 } from "@/hooks/useTutorialStore";
+import {
+  handleBallDragStart as handleGameBallDragStart,
+} from "@/hooks/useGameStore";
 
 interface PieceProps {
   piece: PieceClass;
@@ -13,6 +16,7 @@ interface PieceProps {
   isTackleTarget?: boolean;
   isDragging?: boolean;
   isOffside?: boolean;
+  mode?: "tutorial" | "game"; // Add mode prop to distinguish context
 }
 
 const Piece: React.FC<PieceProps> = ({
@@ -22,6 +26,7 @@ const Piece: React.FC<PieceProps> = ({
   isTackleTarget = false,
   isDragging = false,
   isOffside = false,
+  mode = "tutorial", // Default to tutorial for backward compatibility
 }) => {
   const isGoalie = piece.getIsGoalie();
 
@@ -55,12 +60,19 @@ const Piece: React.FC<PieceProps> = ({
 
   const canBeTackled = false;
   const hasBall = piece.getHasBall();
-  const { currentStep } = useTutorialBoard();
+  const tutorialState = useTutorialBoard();
+  
+  // Only get currentStep if we're in tutorial mode
+  const currentStep = mode === "tutorial" ? tutorialState.currentStep : null;
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Start drag immediately with current mouse position
-    handleBallDragStart(piece, e.clientX, e.clientY);
+    // Use appropriate handler based on mode
+    if (mode === "tutorial") {
+      handleTutorialBallDragStart(piece, e.clientX, e.clientY);
+    } else {
+      handleGameBallDragStart(piece, e.clientX, e.clientY);
+    }
   };
 
   return (
@@ -69,7 +81,7 @@ const Piece: React.FC<PieceProps> = ({
     >
       <div
         onMouseDown={handleMouseDown}
-        className={`h-10 w-10 rounded-full border-2 shadow-md transition-all duration-200 ${hasBall && (currentStep === "movement_with_ball" || currentStep === "ball_pickup" || currentStep === "passing" || currentStep === "consecutive_pass" || currentStep === "chip_pass" || currentStep === "shooting" || currentStep === "consecutive_pass_to_score" || currentStep === "offside" || currentStep === "shooting_zone_pass") ? "cursor-grab active:cursor-grabbing" : ""} ${
+        className={`h-10 w-10 rounded-full border-2 shadow-md transition-all duration-200 ${hasBall && (mode === "game" || (mode === "tutorial" && (currentStep === "movement_with_ball" || currentStep === "ball_pickup" || currentStep === "passing" || currentStep === "consecutive_pass" || currentStep === "chip_pass" || currentStep === "shooting" || currentStep === "consecutive_pass_to_score" || currentStep === "offside" || currentStep === "shooting_zone_pass"))) ? "cursor-grab active:cursor-grabbing" : ""} ${
           piece.getColor() === "white"
             ? "border-gray-400 bg-white"
             : "border-gray-600 bg-gray-900"
