@@ -9,8 +9,11 @@ import logger from "morgan";
 import cookieParser from "cookie-parser";
 import zodErrorHandler from "@/middleware/zodErrorHandler";
 import noCache from "@/middleware/noCache";
+import { createServer } from "http";
+import { initializeSocketIO } from "@/socketio";
 
 const app = express();
+const server = createServer(app);
 
 if (config.PRODUCTION) {
   Sentry.init({
@@ -37,7 +40,8 @@ app.use((req, res, next) => {
   if (req.originalUrl === "/webhooks/stripe") {
     next();
   } else {
-    express.json()(req, res, next);
+    const jsonMiddleware = express.json();
+    jsonMiddleware(req, res, next);
   }
 });
 
@@ -52,6 +56,10 @@ app.use(zodErrorHandler);
 if (config.PRODUCTION) Sentry.setupExpressErrorHandler(app);
 app.use(errorHandler);
 
-app.listen(config.PORT, () => {
-  console.log(`Listening on port ${config.PORT}`);
+// Initialize Socket.IO
+initializeSocketIO(server);
+
+server.listen(config.PORT, () => {
+  console.log(`Server listening on port ${config.PORT}`);
+  console.log(`Socket.IO server initialized`);
 });

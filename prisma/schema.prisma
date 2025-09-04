@@ -23,6 +23,8 @@ model User {
   elo          Int            @default(200)
   onboardingComplete Boolean @default(false)
   RefreshToken RefreshToken[]
+  whitePlayerGames Game[]     @relation("WhitePlayerGames")
+  blackPlayerGames Game[]     @relation("BlackPlayerGames")
 }
 
 model RefreshToken {
@@ -39,4 +41,28 @@ model VerificationToken {
   email     String
   createdAt DateTime @default(now())
   expiresAt DateTime
+}
+
+model Game {
+  id                    String   @id @default(cuid())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Registered user players (optional)
+  whitePlayer           User?    @relation("WhitePlayerGames", fields: [whitePlayerId], references: [id])
+  whitePlayerId         String?
+  blackPlayer           User?    @relation("BlackPlayerGames", fields: [blackPlayerId], references: [id])
+  blackPlayerId         String?
+  
+  // Guest player identifiers (alternative to registered users)
+  whitePlayerGuestId    String?  // Guest session ID
+  whitePlayerUsername   String?  // Display username for white player
+  blackPlayerGuestId    String?  // Guest session ID  
+  blackPlayerUsername   String?  // Display username for black player
+  
+  status                String   @default("waiting") // 'waiting', 'active', 'completed'
+  currentTurn           String?  // 'white' or 'black'
+  gameState             Json?    // Array of pieces with positions
+  ballPositions         Json?    // Array of ball positions
+  winner                String?  // 'white', 'black', or null
 }

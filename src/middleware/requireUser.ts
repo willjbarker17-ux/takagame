@@ -1,11 +1,12 @@
-import type { AuthenticatedRequest, RouteHandler } from "@/types";
+import type { AuthenticatedRequest } from "@/types";
 import { verifyToken } from "@/utils/tokens";
 import prisma from "@/database";
+import { asyncHandler } from "@/utils/asyncHandler";
 
 /**
  * Require a user to be authenticated and fetch their full profile
  */
-const requireUser: RouteHandler = async (req, res, next) => {
+const requireUser = asyncHandler(async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -48,6 +49,6 @@ const requireUser: RouteHandler = async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
-};
+});
 
 export default requireUser;
