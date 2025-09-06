@@ -67,142 +67,74 @@ const PlayPage: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Guest authentication and socket initialization  
+  // Guest authentication and socket initialization
   useEffect(() => {
-    if (initializedRef.current) return;
-    
-    const initializeGame = async () => {
+    if (initializedRef.current || auth.isLoading) {
+      return;
+    }
+
+    const initialize = async () => {
+      initializedRef.current = true;
+      setIsLoading(true);
+
       try {
-        console.log("Play page initialization - Auth check:", {
-          hasValidAuth: auth.hasValidAuth(),
-          isGuest: auth.isGuest,
-          hasGuestSession: !!auth.guestSession,
-          hasGuestUsername: !!auth.guestUsername,
-        });
-
-        // Case 1: Completely new user - no auth at all
-        if (!auth.hasValidAuth() && !auth.guestSession && !auth.guestUsername) {
-          console.log("Case 1: New user - creating guest login");
+        // If there's no valid auth (neither user nor guest), create a guest user.
+        if (!auth.isAuthenticated && !auth.isGuest) {
+          console.log("No valid auth, creating new guest user.");
           auth.loginAsGuest();
+          // The effect will re-run once auth state is updated.
+          initializedRef.current = false;
           return;
         }
 
-        // Case 2: Guest user with session restored (page reload) - ready to connect
-        if (auth.hasValidAuth() && auth.isGuest && auth.guestSession && auth.guestUsername) {
-          console.log("Case 2: Existing guest with session - ready to connect");
-          // Continue with initialization below
-        }
-
-        // Case 3: Guest user with username but no session (partial restoration or username-only storage)
-        else if (auth.hasValidAuth() && auth.isGuest && !auth.guestSession && auth.guestUsername) {
-          console.log("Case 3: Guest with username only - will create new session");
-          // Continue with initialization below - socket will create new session
-        }
-
-        // Case 4: Auth restoration still in progress - wait
-        else if (!auth.hasValidAuth() && (auth.guestSession || auth.guestUsername)) {
-          console.log("Case 4: Auth restoration in progress - waiting...");
-          setTimeout(() => initializeGame(), 100);
-          return;
-        }
-
-        // Case 5: Authenticated user (not guest)
-        else if (auth.hasValidAuth() && !auth.isGuest) {
-          console.log("Case 5: Authenticated user");
-          // Continue with initialization below
-        }
-
-        // Unknown case - log and fallback
-        else {
-          console.log("Unknown auth case - falling back to guest login");
-          auth.loginAsGuest();
-          return;
-        }
-
-        initializedRef.current = true;
-
-        // Initialize socket client for guest user - use existing session if available
-        console.log("Auth state on page load:", {
-          hasValidAuth: auth.hasValidAuth(),
+        console.log("Auth state is ready:", {
           isGuest: auth.isGuest,
           guestSession: auth.guestSession,
           guestUsername: auth.guestUsername,
         });
 
-        // Debug localStorage contents directly
-        console.log("Direct localStorage check:", {
-          storedGuestSession: localStorage.getItem("taka_guest_session"),
-          storedGuestUsername: localStorage.getItem("taka_guest_username"),
-        });
-
+        // At this point, we have some form of auth. Initialize the socket.
         let client;
         if (auth.guestSession) {
-          // Use existing guest session when rejoining a game
-          console.log("Using existing guest session:", auth.guestSession);
           client = initializeGameClient({ guestSession: auth.guestSession });
+        } else if (auth.guestUsername) {
+          client = initializeGameClient({ guestUsername: auth.guestUsername });
         } else {
-          // Create new session for new games
-          const currentGuestUsername = auth.guestUsername || "Player" + Math.floor(Math.random() * 10000);
-          console.log("Creating new guest session with username:", currentGuestUsername);
-          client = initializeGameClient({ guestUsername: currentGuestUsername });
+          // Fallback for new guest users if somehow no username is set yet
+          client = initializeGameClient({ guestUsername: `Player${Math.floor(Math.random() * 10000)}` });
         }
-        
-        // Set up guest session handler before connecting
+
         client.setOnGuestSessionCreated((session) => {
           console.log("Received guest session from server:", session);
-          auth.setGuestSession(session);
+          if (!auth.guestSession || auth.guestSession.sessionId !== session.sessionId) {
+            auth.setGuestSession(session);
+          }
         });
-        
+
         initializeSocketClient(client);
 
-        // Check URL for game ID
         const url = new URL(window.location.href);
         const gameIdFromUrl = url.searchParams.get("id");
 
         if (gameIdFromUrl) {
-          // Join existing game - ensure session is stored after connection
           await connectToGame(gameIdFromUrl);
-          
-          // Store the guest session that was created during connection
-          if (client.isGuestUser()) {
-            const guestSession = client.getGuestSession();
-            if (guestSession && !auth.guestSession) {
-              console.log("Storing guest session after game join:", guestSession);
-              auth.setGuestSession(guestSession);
-            }
-          }
         } else {
-          // Create new game - use existing username or generate one
-          const guestUsername = auth.guestUsername || "Player" + Math.floor(Math.random() * 10000);
-          const newGameId = await createMultiplayerGame(guestUsername);
-          
-          // Store guest session if created
-          if (client.isGuestUser()) {
-            const guestSession = client.getGuestSession();
-            if (guestSession) {
-              auth.setGuestSession(guestSession);
-            }
-          }
-          
-          // Update URL with new game ID
+          const newGameId = await createMultiplayerGame(auth.guestUsername!);
           const newUrl = new URL(window.location.href);
           newUrl.searchParams.set("id", newGameId);
           window.history.replaceState({}, "", newUrl.toString());
-          
-          // Join the created game
           await connectToGame(newGameId);
         }
-
-        setIsLoading(false);
       } catch (error) {
         console.error("Failed to initialize game:", error);
-        initializedRef.current = false; // Reset on error so we can retry
+        initializedRef.current = false; // Allow re-initialization on error
+      } finally {
         setIsLoading(false);
       }
     };
 
-    initializeGame();
-  }, [auth, auth.hasValidAuth, auth.guestUsername, auth.loginAsGuest, auth.setGuestSession]); // Only depend on stable values
+    initialize();
+  }, [auth, auth.isLoading, auth.loginAsGuest, auth.setGuestSession]); // Only depend on stable values
 
   // Cleanup effect - separate from initialization
   useEffect(() => {

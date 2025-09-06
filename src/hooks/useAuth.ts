@@ -33,7 +33,7 @@ export const useAuth = () => {
     isGuest: false,
     guestSession: null,
     guestUsername: null,
-    isLoading: false, // Start with loading false since we'll auto-login as guest
+    isLoading: true,
     error: null,
   });
 
