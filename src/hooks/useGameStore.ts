@@ -545,7 +545,7 @@ const handleEmptySquarePassTargetClick = (position: Position): void => {
  * @param destination Destination to pass ball to
  */
 const passBall = (origin: Position, destination: Position) => {
-  const { boardLayout } = useGameStore.getState();
+  const { boardLayout, balls } = useGameStore.getState();
 
   const originPiece = getPieceAtPosition(origin, boardLayout);
   const destinationPiece = getPieceAtPosition(destination, boardLayout);
@@ -580,6 +580,7 @@ const passBall = (origin: Position, destination: Position) => {
 
     useGameStore.setState({
       boardLayout: newBoard,
+      balls: [...balls, destination],
     });
   }
 };
