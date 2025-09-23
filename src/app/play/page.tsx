@@ -12,15 +12,7 @@ import {
 } from "@/hooks/useGameStore";
 import { useAuth } from "@/hooks/useAuth";
 import { initializeGameClient } from "@/services/socketService";
-import {
-  Clock,
-  Users,
-  Trophy,
-  Settings,
-  Wifi,
-  WifiOff,
-  UserPlus,
-} from "lucide-react";
+import { Clock, Users, Trophy, Wifi, WifiOff, UserPlus } from "lucide-react";
 
 const PlayPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -47,33 +39,6 @@ const PlayPage: React.FC = () => {
   React.useEffect(() => {
     console.log("Game state debug:", { winner, gameStatus, playerColor });
   }, [winner, gameStatus, playerColor]);
-
-  // Manual win trigger for testing
-  const triggerTestWin = (testWinner: "white" | "black") => {
-    // Dynamic import to avoid linting error
-    import("@/hooks/useGameStore").then(({ useGameStore }) => {
-      useGameStore.setState({
-        winner: testWinner,
-        gameStatus: "completed",
-      });
-    });
-  };
-
-  // Keyboard shortcuts for testing
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "1" && e.ctrlKey) {
-        e.preventDefault();
-        triggerTestWin("white");
-      } else if (e.key === "2" && e.ctrlKey) {
-        e.preventDefault();
-        triggerTestWin("black");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   // Guest authentication and socket initialization
   useEffect(() => {
@@ -296,25 +261,6 @@ const PlayPage: React.FC = () => {
               <div className="hidden text-xs text-gray-600 sm:text-sm md:block">
                 Game ID: <span className="font-mono">{gameId || "Local"}</span>
               </div>
-
-              {/* Test Win Buttons - Development Only */}
-              <button
-                onClick={() => triggerTestWin("white")}
-                className="flex items-center space-x-1 rounded-lg border border-green-300 bg-green-100 px-2 py-1.5 text-xs text-green-700 hover:bg-green-200 sm:px-3 sm:text-sm"
-              >
-                Test Win W
-              </button>
-              <button
-                onClick={() => triggerTestWin("black")}
-                className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-gray-100 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-200 sm:px-3 sm:text-sm"
-              >
-                Test Win B
-              </button>
-
-              <button className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-50 sm:px-3 sm:text-sm">
-                <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </button>
             </div>
           </div>
         </div>
