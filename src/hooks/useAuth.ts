@@ -44,7 +44,6 @@ export const useAuth = () => {
     const storedGuestSession = localStorage.getItem("taka_guest_session");
     const storedGuestUsername = localStorage.getItem("taka_guest_username");
 
-
     // Check for authenticated user first
     if (storedToken && storedUser) {
       try {
@@ -153,7 +152,8 @@ export const useAuth = () => {
 
       return { success: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Login failed";
+      const errorMessage =
+        error instanceof Error ? error.message : "Login failed";
       setAuthState((prev) => ({
         ...prev,
         isLoading: false,
@@ -169,7 +169,10 @@ export const useAuth = () => {
     try {
       // If we already have a guest session, don't clear it unless explicitly creating a new one
       const currentGuestSession = authState.guestSession;
-      const guestUsername = username || authState.guestUsername || `Player${Math.floor(Math.random() * 10000)}`;
+      const guestUsername =
+        username ||
+        authState.guestUsername ||
+        `Player${Math.floor(Math.random() * 10000)}`;
 
       // Clear any authenticated user data
       localStorage.removeItem("taka_access_token");
@@ -191,7 +194,8 @@ export const useAuth = () => {
 
       return { success: true, username: guestUsername };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Guest login failed";
+      const errorMessage =
+        error instanceof Error ? error.message : "Guest login failed";
       setAuthState((prev) => ({
         ...prev,
         isLoading: false,
@@ -240,7 +244,10 @@ export const useAuth = () => {
     return authState.isAuthenticated || authState.isGuest;
   }, [authState.isAuthenticated, authState.isGuest]);
 
-  const stableLoginAsGuest = useCallback(loginAsGuest, [authState.guestSession, authState.guestUsername]);
+  const stableLoginAsGuest = useCallback(loginAsGuest, [
+    authState.guestSession,
+    authState.guestUsername,
+  ]);
   const stableSetGuestSession = useCallback(setGuestSession, []);
 
   return {

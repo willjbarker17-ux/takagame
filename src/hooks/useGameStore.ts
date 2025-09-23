@@ -39,7 +39,6 @@ import {
 } from "@/services/game/gameValidation";
 import { GameClient } from "@/services/socketService";
 
-
 interface Player {
   id: string;
   username: string;
@@ -360,37 +359,38 @@ const endTurn = (): void => {
   const { socketClient, pieces, balls } = useGameStore.getState();
 
   if (socketClient) {
-    // Convert local game state to socket format, filtering out unactivated pieces
+    // Convert local game state to socket format, including unactivated pieces
     const socketGameState = {
-      pieces: pieces
-        .map((piece) => {
-          // Check if this is an unactivated goalie
-          let x: number | undefined;
-          let y: number | undefined;
-          
-          try {
-            const [row, col] = piece.getPositionOrThrowIfUnactivated().getPositionCoordinates();
-            x = col;
-            y = row;
-          } catch {
-            // This is an unactivated piece, don't include it
-            return null;
-          }
+      pieces: pieces.map((piece) => {
+        // Check if this is an unactivated goalie
+        let x: number | undefined;
+        let y: number | undefined;
 
-          return {
-            id: piece.getId(),
-            playerId:
-              piece.getColor() === "white"
-                ? "white_player_id"
-                : "black_player_id",
-            type: piece.getIsGoalie() ? "goalie" : "regular",
-            hasBall: piece.getHasBall(),
-            facingDirection: piece.getFacingDirection(),
-            x: x!,
-            y: y!,
-          };
-        })
-        .filter((piece) => piece !== null),
+        try {
+          const [row, col] = piece
+            .getPositionOrThrowIfUnactivated()
+            .getPositionCoordinates();
+          x = col;
+          y = row;
+        } catch {
+          // This is an unactivated piece, include it with undefined coordinates
+          x = undefined;
+          y = undefined;
+        }
+
+        return {
+          id: piece.getId(),
+          playerId:
+            piece.getColor() === "white"
+              ? "white_player_id"
+              : "black_player_id",
+          type: piece.getIsGoalie() ? "goalie" : "regular",
+          hasBall: piece.getHasBall(),
+          facingDirection: piece.getFacingDirection(),
+          x: x,
+          y: y,
+        };
+      }),
       ballPositions: balls.map((ball) => {
         const [row, col] = ball.getPositionCoordinates();
         return {
@@ -1200,16 +1200,21 @@ const updateGameStateFromSocket = (socketGameState: SocketGameState) => {
           : "black";
 
       // Handle unactivated goalies with null/undefined coordinates
-      const position = (socketPiece.x === undefined || socketPiece.y === undefined) 
-        ? (color === "white" ? "white_unactivated" : "black_unactivated")
-        : new Position(socketPiece.y!, socketPiece.x!);
+      const position =
+        socketPiece.x === undefined || socketPiece.y === undefined
+          ? color === "white"
+            ? "white_unactivated"
+            : "black_unactivated"
+          : new Position(socketPiece.y!, socketPiece.x!);
 
       return new Piece({
         id: socketPiece.id,
         color: color,
         position: position as PiecePositionType,
         hasBall: socketPiece.hasBall || false,
-        facingDirection: (socketPiece.facingDirection as FacingDirection) || (color === "white" ? "south" : "north"),
+        facingDirection:
+          (socketPiece.facingDirection as FacingDirection) ||
+          (color === "white" ? "south" : "north"),
         isGoalie: socketPiece.type === "goalie",
       });
     },
@@ -1281,35 +1286,36 @@ export const sendMoveToSocket = () => {
     return;
   }
 
-  // Convert local game state to socket format, filtering out unactivated pieces
+  // Convert local game state to socket format, including unactivated pieces
   const socketGameState = {
-    pieces: pieces
-      .map((piece) => {
-        // Check if this is an unactivated goalie
-        let x: number | undefined;
-        let y: number | undefined;
-        
-        try {
-          const [row, col] = piece.getPositionOrThrowIfUnactivated().getPositionCoordinates();
-          x = col;
-          y = row;
-        } catch {
-          // This is an unactivated piece, don't include it
-          return null;
-        }
+    pieces: pieces.map((piece) => {
+      // Check if this is an unactivated goalie
+      let x: number | undefined;
+      let y: number | undefined;
 
-        return {
-          id: piece.getId(),
-          playerId:
-            piece.getColor() === "white" ? "white_player_id" : "black_player_id", // TODO: Use actual player IDs
-          type: piece.getIsGoalie() ? "goalie" : "regular",
-          hasBall: piece.getHasBall(),
-          facingDirection: piece.getFacingDirection(),
-          x: x!,
-          y: y!,
-        };
-      })
-      .filter((piece) => piece !== null),
+      try {
+        const [row, col] = piece
+          .getPositionOrThrowIfUnactivated()
+          .getPositionCoordinates();
+        x = col;
+        y = row;
+      } catch {
+        // This is an unactivated piece, include it with undefined coordinates
+        x = undefined;
+        y = undefined;
+      }
+
+      return {
+        id: piece.getId(),
+        playerId:
+          piece.getColor() === "white" ? "white_player_id" : "black_player_id", // TODO: Use actual player IDs
+        type: piece.getIsGoalie() ? "goalie" : "regular",
+        hasBall: piece.getHasBall(),
+        facingDirection: piece.getFacingDirection(),
+        x: x,
+        y: y,
+      };
+    }),
     ballPositions: balls.map((ball) => ({
       x: ball.getPositionCoordinates()[0],
       y: ball.getPositionCoordinates()[1],

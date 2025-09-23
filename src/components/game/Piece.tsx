@@ -5,9 +5,7 @@ import {
   handleBallDragStart as handleTutorialBallDragStart,
   useTutorialBoard,
 } from "@/hooks/useTutorialStore";
-import {
-  handleBallDragStart as handleGameBallDragStart,
-} from "@/hooks/useGameStore";
+import { handleBallDragStart as handleGameBallDragStart } from "@/hooks/useGameStore";
 
 interface PieceProps {
   piece: PieceClass;
@@ -61,7 +59,7 @@ const Piece: React.FC<PieceProps> = ({
   const canBeTackled = false;
   const hasBall = piece.getHasBall();
   const tutorialState = useTutorialBoard();
-  
+
   // Only get currentStep if we're in tutorial mode
   const currentStep = mode === "tutorial" ? tutorialState.currentStep : null;
 

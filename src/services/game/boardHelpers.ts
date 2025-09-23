@@ -267,7 +267,7 @@ export const swapPiecePositions = (
     // Tackler moved south (toward white's goal, black's attack direction)
     newFacingDirection = tackler.getColor() === "white" ? "north" : "south";
   } else if (rowDiff < 0) {
-    // Tackler moved north (toward black's goal, white's attack direction)  
+    // Tackler moved north (toward black's goal, white's attack direction)
     newFacingDirection = tackler.getColor() === "white" ? "south" : "north";
   }
 

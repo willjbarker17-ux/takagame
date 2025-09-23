@@ -199,7 +199,7 @@ export const isPassChipPass = (
 
   // Get the distance
   const distance = Math.max(Math.abs(dRow), Math.abs(dCol));
-  
+
   // If adjacent (distance 1), it cannot be a chip pass
   if (distance <= 1) {
     return false;

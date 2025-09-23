@@ -6,8 +6,8 @@ import { io, Socket } from "socket.io-client";
 interface GamePiece {
   id: string;
   playerId: string;
-  x: number;
-  y: number;
+  x?: number; // Optional for unactivated goalies
+  y?: number; // Optional for unactivated goalies
   type?: string;
   hasBall?: boolean;
   facingDirection?: string;
@@ -31,23 +31,23 @@ interface Player {
 
 interface Game {
   id: string;
-  
+
   // Registered user players (optional)
   whitePlayerId: string | null;
   blackPlayerId: string | null;
-  
+
   // Guest player identifiers (alternative to registered users)
   whitePlayerGuestId: string | null;
   whitePlayerUsername: string | null;
   blackPlayerGuestId: string | null;
   blackPlayerUsername: string | null;
-  
+
   status: "waiting" | "active" | "completed";
   currentTurn: "white" | "black" | null;
   gameState: GameState | null;
   ballPositions: BallPosition[] | null;
   winner: "white" | "black" | null;
-  
+
   // These may be null for guest games
   whitePlayer: Player | null;
   blackPlayer: Player | null;
@@ -79,16 +79,31 @@ interface AuthConfig {
 
 // Event callback types
 type GameJoinedCallback = (data: { gameId: string; game: Game }) => void;
-type PlayerJoinedCallback = (data: { playerId: string; username: string; game: Game }) => void;
-type GameStateUpdatedCallback = (data: { game: Game; gameState: GameState; move: MoveData }) => void;
-type MoveConfirmedCallback = (data: { game: Game; gameState: GameState }) => void;
-type GameOverCallback = (data: { winner: string; winnerUsername: string; game: Game }) => void;
+type PlayerJoinedCallback = (data: {
+  playerId: string;
+  username: string;
+  game: Game;
+}) => void;
+type GameStateUpdatedCallback = (data: {
+  game: Game;
+  gameState: GameState;
+  move: MoveData;
+}) => void;
+type MoveConfirmedCallback = (data: {
+  game: Game;
+  gameState: GameState;
+}) => void;
+type GameOverCallback = (data: {
+  winner: string;
+  winnerUsername: string;
+  game: Game;
+}) => void;
 type ErrorCallback = (error: { message: string }) => void;
 type ConnectionCallback = () => void;
 type GuestSessionCreatedCallback = (session: GuestSession) => void;
 
 // Authentication method types
-type AuthMethod = 
+type AuthMethod =
   | { accessToken: string }
   | { guestUsername: string }
   | { guestSession: GuestSession };
@@ -191,48 +206,64 @@ export class GameClient {
       let authConfig: AuthConfig;
       if (this.isGuest) {
         if (this.guestSession) {
-          authConfig = { 
-            auth: { 
+          authConfig = {
+            auth: {
               guestSessionId: this.guestSession.sessionId,
-              guestUsername: this.guestSession.username // fallback
-            } 
+              guestUsername: this.guestSession.username, // fallback
+            },
           };
         } else if (this.guestUsername) {
-          authConfig = { 
-            auth: { 
-              guestUsername: this.guestUsername 
-            } 
+          authConfig = {
+            auth: {
+              guestUsername: this.guestUsername,
+            },
           };
         } else {
           // Fallback for new guest users
           const guestUsername = "Player" + Math.floor(Math.random() * 1000);
-          authConfig = { 
-            auth: { 
-              guestUsername: guestUsername 
-            } 
+          authConfig = {
+            auth: {
+              guestUsername: guestUsername,
+            },
           };
         }
       } else {
-        authConfig = { 
-          auth: { 
-            token: this.accessToken 
-          } 
+        authConfig = {
+          auth: {
+            token: this.accessToken,
+          },
         };
       }
 
-      const serverUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
-      console.log("Connecting to socket server:", serverUrl, "with auth:", authConfig.auth);
-      console.log("Socket auth debug - isGuest:", this.isGuest, "guestSession:", this.guestSession, "guestUsername:", this.guestUsername);
-      
+      const serverUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
+      console.log(
+        "Connecting to socket server:",
+        serverUrl,
+        "with auth:",
+        authConfig.auth,
+      );
+      console.log(
+        "Socket auth debug - isGuest:",
+        this.isGuest,
+        "guestSession:",
+        this.guestSession,
+        "guestUsername:",
+        this.guestUsername,
+      );
+
       this.socket = io(serverUrl, {
         ...authConfig,
         timeout: 10000,
-        transports: ['websocket', 'polling'], // Try websocket first, fallback to polling
+        transports: ["websocket", "polling"], // Try websocket first, fallback to polling
       });
 
       // Connection events
       this.socket.on("connect", () => {
-        console.log("Connected to game server as", this.isGuest ? "guest" : "authenticated user");
+        console.log(
+          "Connected to game server as",
+          this.isGuest ? "guest" : "authenticated user",
+        );
         this.isConnected = true;
         this.isConnecting = false;
         this.onConnect?.();
@@ -249,62 +280,83 @@ export class GameClient {
         console.error("Connection failed:", error.message);
         this.isConnecting = false;
         this.isConnected = false;
-        
+
         if (error.message.includes("Authentication required")) {
-          this.onError?.({ message: "Authentication failed. Please provide a username." });
+          this.onError?.({
+            message: "Authentication failed. Please provide a username.",
+          });
         } else if (error.message.includes("Invalid or expired guest session")) {
-          this.onError?.({ message: "Session expired. Please start a new game." });
+          this.onError?.({
+            message: "Session expired. Please start a new game.",
+          });
         } else if (error.message === "Access denied") {
-          this.onError?.({ message: "Access denied. You are not authorized to perform this action." });
+          this.onError?.({
+            message:
+              "Access denied. You are not authorized to perform this action.",
+          });
         } else {
           this.onError?.({ message: `Connection failed: ${error.message}` });
         }
-        
+
         reject(error);
       });
 
       // Game events
       this.socket.on("game-joined", this.handleGameJoined.bind(this));
       this.socket.on("player-joined", this.handlePlayerJoined.bind(this));
-      this.socket.on("game-state-updated", this.handleGameStateUpdated.bind(this));
+      this.socket.on(
+        "game-state-updated",
+        this.handleGameStateUpdated.bind(this),
+      );
       this.socket.on("move-confirmed", this.handleMoveConfirmed.bind(this));
       this.socket.on("game-over", this.handleGameOver.bind(this));
       this.socket.on("error", this.handleError.bind(this));
-      
+
       // Guest session events
-      this.socket.on("guest-session-created", this.handleGuestSessionCreated.bind(this));
+      this.socket.on(
+        "guest-session-created",
+        this.handleGuestSessionCreated.bind(this),
+      );
     });
   }
 
   async createGame(guestUsername?: string): Promise<string> {
     try {
       if (this.isGuest) {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000"}/games/create-guest`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000"}/games/create-guest`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              guestUsername: guestUsername,
+            }),
           },
-          body: JSON.stringify({
-            guestUsername: guestUsername,
-          }),
-        });
+        );
 
         if (!response.ok) {
-          throw new Error(`Failed to create guest game: ${response.statusText}`);
+          throw new Error(
+            `Failed to create guest game: ${response.statusText}`,
+          );
         }
 
         const data = await response.json();
         this.guestSession = data.guestSession; // Store session for reconnections
         return data.gameId;
       } else {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000"}/games/create`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${this.accessToken}`,
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000"}/games/create`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
           },
-          body: JSON.stringify({}),
-        });
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to create game: ${response.statusText}`);
@@ -321,12 +373,14 @@ export class GameClient {
 
   async getGame(gameId: string): Promise<Game> {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000"}/games/${gameId}`);
-      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000"}/games/${gameId}`,
+      );
+
       if (!response.ok) {
         throw new Error(`Failed to get game: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       return data.game;
     } catch (error) {
@@ -365,25 +419,40 @@ export class GameClient {
     this.onGameJoined?.(data);
   }
 
-  private handlePlayerJoined(data: { playerId: string; username: string; game: Game }): void {
+  private handlePlayerJoined(data: {
+    playerId: string;
+    username: string;
+    game: Game;
+  }): void {
     this.currentGame = data.game;
     console.log("Player joined:", data.username);
     this.onPlayerJoined?.(data);
   }
 
-  private handleGameStateUpdated(data: { game: Game; gameState: GameState; move: MoveData }): void {
+  private handleGameStateUpdated(data: {
+    game: Game;
+    gameState: GameState;
+    move: MoveData;
+  }): void {
     this.currentGame = data.game;
     console.log("Game state updated by:", data.move.username);
     this.onGameStateUpdated?.(data);
   }
 
-  private handleMoveConfirmed(data: { game: Game; gameState: GameState }): void {
+  private handleMoveConfirmed(data: {
+    game: Game;
+    gameState: GameState;
+  }): void {
     this.currentGame = data.game;
     console.log("Move confirmed");
     this.onMoveConfirmed?.(data);
   }
 
-  private handleGameOver(data: { winner: string; winnerUsername: string; game: Game }): void {
+  private handleGameOver(data: {
+    winner: string;
+    winnerUsername: string;
+    game: Game;
+  }): void {
     this.currentGame = data.game;
     console.log("Game over! Winner:", data.winnerUsername);
     this.onGameOver?.(data);
@@ -391,10 +460,13 @@ export class GameClient {
 
   private handleError(error: { message: string }): void {
     console.error("Game error:", error.message);
-    
+
     // Treat "Access denied" as a connection error
     if (error.message === "Access denied") {
-      this.onError?.({ message: "Access denied. You are not authorized to perform this action." });
+      this.onError?.({
+        message:
+          "Access denied. You are not authorized to perform this action.",
+      });
     } else {
       this.onError?.(error);
     }
@@ -471,4 +543,11 @@ export const destroyGameClient = (): void => {
 };
 
 // Export types for use in other components
-export type { Game, GameState, GamePiece, BallPosition, GuestSession, AuthMethod };
+export type {
+  Game,
+  GameState,
+  GamePiece,
+  BallPosition,
+  GuestSession,
+  AuthMethod,
+};

@@ -3,36 +3,44 @@
 import React, { useEffect, useState, useRef } from "react";
 import FullPageLoader from "@/components/FullPageLoader";
 import GameBoard from "@/components/game/GameBoard";
-import { 
-  useGameBoard, 
-  initializeSocketClient, 
-  connectToGame, 
-  createMultiplayerGame, 
-  disconnectFromGame 
+import {
+  useGameBoard,
+  initializeSocketClient,
+  connectToGame,
+  createMultiplayerGame,
+  disconnectFromGame,
 } from "@/hooks/useGameStore";
 import { useAuth } from "@/hooks/useAuth";
 import { initializeGameClient } from "@/services/socketService";
-import { Clock, Users, Trophy, Settings, Wifi, WifiOff, UserPlus } from "lucide-react";
+import {
+  Clock,
+  Users,
+  Trophy,
+  Settings,
+  Wifi,
+  WifiOff,
+  UserPlus,
+} from "lucide-react";
 
 const PlayPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [gameTime, setGameTime] = useState<number>(0);
   const initializedRef = useRef(false);
 
-  const { 
-    playerColor, 
-    playerTurn, 
+  const {
+    playerColor,
+    playerTurn,
     gameId,
-    isConnected, 
-    isConnecting, 
-    connectionError, 
+    isConnected,
+    isConnecting,
+    connectionError,
     gameStatus,
     whitePlayer,
     blackPlayer,
     waitingForOpponent,
-    winner
+    winner,
   } = useGameBoard();
-  
+
   const auth = useAuth();
 
   // Debug logging for winner state
@@ -46,7 +54,7 @@ const PlayPage: React.FC = () => {
     import("@/hooks/useGameStore").then(({ useGameStore }) => {
       useGameStore.setState({
         winner: testWinner,
-        gameStatus: "completed"
+        gameStatus: "completed",
       });
     });
   };
@@ -101,12 +109,17 @@ const PlayPage: React.FC = () => {
           client = initializeGameClient({ guestUsername: auth.guestUsername });
         } else {
           // Fallback for new guest users if somehow no username is set yet
-          client = initializeGameClient({ guestUsername: `Player${Math.floor(Math.random() * 10000)}` });
+          client = initializeGameClient({
+            guestUsername: `Player${Math.floor(Math.random() * 10000)}`,
+          });
         }
 
         client.setOnGuestSessionCreated((session) => {
           console.log("Received guest session from server:", session);
-          if (!auth.guestSession || auth.guestSession.sessionId !== session.sessionId) {
+          if (
+            !auth.guestSession ||
+            auth.guestSession.sessionId !== session.sessionId
+          ) {
             auth.setGuestSession(session);
           }
         });
@@ -148,7 +161,7 @@ const PlayPage: React.FC = () => {
   // Game timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    
+
     if (gameStatus === "active") {
       timer = setInterval(() => {
         setGameTime((prev) => prev + 1);
@@ -167,7 +180,8 @@ const PlayPage: React.FC = () => {
   };
 
   const getConnectionStatusIcon = () => {
-    if (isConnecting) return <Clock className="h-4 w-4 animate-spin text-yellow-600" />;
+    if (isConnecting)
+      return <Clock className="h-4 w-4 animate-spin text-yellow-600" />;
     if (isConnected) return <Wifi className="h-4 w-4 text-green-600" />;
     return <WifiOff className="h-4 w-4 text-red-600" />;
   };
@@ -214,9 +228,11 @@ const PlayPage: React.FC = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
         <div className="max-w-md rounded-lg border border-red-200 bg-white p-6 text-center shadow-lg">
-          <WifiOff className="mx-auto h-12 w-12 text-red-600 mb-4" />
-          <h1 className="text-lg font-semibold text-red-800 mb-2">Connection Error</h1>
-          <p className="text-red-600 mb-4">{connectionError}</p>
+          <WifiOff className="mx-auto mb-4 h-12 w-12 text-red-600" />
+          <h1 className="mb-2 text-lg font-semibold text-red-800">
+            Connection Error
+          </h1>
+          <p className="mb-4 text-red-600">{connectionError}</p>
           <button
             onClick={() => window.location.reload()}
             className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
@@ -253,14 +269,18 @@ const PlayPage: React.FC = () => {
 
               <div className="flex items-center space-x-2 text-xs text-gray-600 sm:text-sm">
                 {getConnectionStatusIcon()}
-                <span className="hidden sm:inline">{getConnectionStatusText()}</span>
+                <span className="hidden sm:inline">
+                  {getConnectionStatusText()}
+                </span>
               </div>
 
               <div className="hidden items-center space-x-2 text-sm text-gray-600 sm:flex">
                 {waitingForOpponent ? (
                   <>
                     <UserPlus className="h-4 w-4 text-orange-600" />
-                    <span className="text-orange-600">Waiting for opponent...</span>
+                    <span className="text-orange-600">
+                      Waiting for opponent...
+                    </span>
                   </>
                 ) : (
                   <>
@@ -278,19 +298,19 @@ const PlayPage: React.FC = () => {
               </div>
 
               {/* Test Win Buttons - Development Only */}
-              <button 
+              <button
                 onClick={() => triggerTestWin("white")}
                 className="flex items-center space-x-1 rounded-lg border border-green-300 bg-green-100 px-2 py-1.5 text-xs text-green-700 hover:bg-green-200 sm:px-3 sm:text-sm"
               >
                 Test Win W
               </button>
-              <button 
+              <button
                 onClick={() => triggerTestWin("black")}
                 className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-gray-100 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-200 sm:px-3 sm:text-sm"
               >
                 Test Win B
               </button>
-              
+
               <button className="flex items-center space-x-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-50 sm:px-3 sm:text-sm">
                 <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Settings</span>
@@ -325,9 +345,7 @@ const PlayPage: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>ELO:</span>
-                    <span className="font-medium">
-                      {currentPlayerInfo.elo}
-                    </span>
+                    <span className="font-medium">{currentPlayerInfo.elo}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Status:</span>
@@ -367,18 +385,18 @@ const PlayPage: React.FC = () => {
                     <span>Status:</span>
                     <span
                       className={`font-medium ${
-                        waitingForOpponent 
-                          ? "text-orange-600" 
-                          : playerTurn !== playerColor 
-                          ? "text-green-600" 
-                          : "text-gray-500"
+                        waitingForOpponent
+                          ? "text-orange-600"
+                          : playerTurn !== playerColor
+                            ? "text-green-600"
+                            : "text-gray-500"
                       }`}
                     >
-                      {waitingForOpponent 
-                        ? "Joining..." 
-                        : playerTurn !== playerColor 
-                        ? "Their Turn" 
-                        : "Waiting..."}
+                      {waitingForOpponent
+                        ? "Joining..."
+                        : playerTurn !== playerColor
+                          ? "Their Turn"
+                          : "Waiting..."}
                     </span>
                   </div>
                 </div>
@@ -502,18 +520,18 @@ const PlayPage: React.FC = () => {
                   <span>Status:</span>
                   <span
                     className={`font-medium ${
-                      waitingForOpponent 
-                        ? "text-orange-600" 
-                        : playerTurn !== playerColor 
-                        ? "text-green-600" 
-                        : "text-gray-500"
+                      waitingForOpponent
+                        ? "text-orange-600"
+                        : playerTurn !== playerColor
+                          ? "text-green-600"
+                          : "text-gray-500"
                     }`}
                   >
-                    {waitingForOpponent 
-                      ? "Joining..." 
-                      : playerTurn !== playerColor 
-                      ? "Their Turn" 
-                      : "Waiting..."}
+                    {waitingForOpponent
+                      ? "Joining..."
+                      : playerTurn !== playerColor
+                        ? "Their Turn"
+                        : "Waiting..."}
                   </span>
                 </div>
               </div>
@@ -568,7 +586,7 @@ const PlayPage: React.FC = () => {
 
       {/* Winning Animation Overlay */}
       {winner && gameStatus === "completed" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black backdrop-blur-sm">
           <div className="animate-bounce rounded-lg bg-white p-8 text-center shadow-2xl">
             <div className="mb-4">
               {winner === playerColor ? (
@@ -588,14 +606,15 @@ const PlayPage: React.FC = () => {
                     You Lost!
                   </h2>
                   <p className="text-lg text-gray-700">
-                    Better luck next time! Your opponent scored the winning goal.
+                    Better luck next time! Your opponent scored the winning
+                    goal.
                   </p>
                 </>
               )}
             </div>
             <div className="space-x-4">
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = "/")}
                 className="rounded-md bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
               >
                 New Game
