@@ -15,54 +15,82 @@ Core Concepts:
 This is a tactical laboratory, not a game engine.
 """
 
+from .pitch_geometry import (
+    Position,
+    Velocity,
+    PitchGeometry,
+    PITCH_LENGTH,
+    PITCH_WIDTH,
+    HALF_LENGTH,
+    HALF_WIDTH,
+)
 from .elimination import (
+    Player,
     EliminationCalculator,
     EliminationState,
+    EliminationResult,
     DefenderStatus,
 )
 from .defense_physics import (
     DefensiveForceModel,
     AttractionForce,
     DefensiveShape,
+    ForceType,
+    CoverShadowCalculator,
 )
 from .state_scoring import (
     GameStateEvaluator,
     GameState,
     StateScore,
+    ActionType,
+    ActionOption,
 )
 from .block_models import (
     DefensiveBlock,
     BlockType,
     BlockConfiguration,
-)
-from .pitch_geometry import (
-    PitchGeometry,
-    PITCH_LENGTH,
-    PITCH_WIDTH,
+    BlockTransitionManager,
+    LOW_BLOCK,
+    MID_BLOCK,
+    HIGH_BLOCK,
 )
 from .visualizer import DecisionEngineVisualizer
 
 __all__ = [
+    # Geometry
+    "Position",
+    "Velocity",
+    "PitchGeometry",
+    "PITCH_LENGTH",
+    "PITCH_WIDTH",
+    "HALF_LENGTH",
+    "HALF_WIDTH",
     # Elimination
+    "Player",
     "EliminationCalculator",
     "EliminationState",
+    "EliminationResult",
     "DefenderStatus",
     # Defense Physics
     "DefensiveForceModel",
     "AttractionForce",
     "DefensiveShape",
+    "ForceType",
+    "CoverShadowCalculator",
     # State Scoring
     "GameStateEvaluator",
     "GameState",
     "StateScore",
+    "ActionType",
+    "ActionOption",
     # Block Models
     "DefensiveBlock",
     "BlockType",
     "BlockConfiguration",
-    # Geometry
-    "PitchGeometry",
-    "PITCH_LENGTH",
-    "PITCH_WIDTH",
+    "BlockTransitionManager",
+    "LOW_BLOCK",
+    "MID_BLOCK",
+    "HIGH_BLOCK",
     # Visualization
     "DecisionEngineVisualizer",
 ]
