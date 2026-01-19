@@ -28,6 +28,95 @@ from flask import Flask, render_template, jsonify, request
 GT_CACHE: Dict[str, dict] = {}
 GT_CACHE_LOCK = threading.Lock()
 
+# ============================================================
+# Cloud Sync for GT Annotations (auto-upload to bucket)
+# ============================================================
+BUCKET_NAME = "gs://soccernet"
+SYNC_ENABLED = True
+_sync_pending = False
+_sync_lock = threading.Lock()
+
+def find_gcloud():
+    """Find gcloud CLI path."""
+    import shutil
+    # Check PATH first
+    gcloud = shutil.which('gcloud')
+    if gcloud:
+        return gcloud
+    # Check common locations
+    for path in [
+        os.path.expanduser('~/google-cloud-sdk/bin/gcloud'),
+        '/tmp/google-cloud-sdk/bin/gcloud',
+        '/usr/local/bin/gcloud',
+    ]:
+        if os.path.exists(path):
+            return path
+    return None
+
+def sync_gt_to_bucket():
+    """Sync GT annotations to cloud bucket (background task)."""
+    global _sync_pending
+
+    gcloud = find_gcloud()
+    if not gcloud:
+        print("[sync] gcloud CLI not found, skipping sync")
+        return False
+
+    try:
+        # Create archive of annotations
+        import tarfile
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(suffix='.tar.gz', delete=False) as tmp:
+            tmp_path = tmp.name
+
+        with tarfile.open(tmp_path, 'w:gz') as tar:
+            tar.add(str(ANNOTATIONS_DIR), arcname='annotations')
+
+        # Upload to bucket
+        result = subprocess.run(
+            [gcloud, 'storage', 'cp', tmp_path, f'{BUCKET_NAME}/training_data/gt_annotations.tar.gz'],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        # Clean up
+        os.unlink(tmp_path)
+
+        if result.returncode == 0:
+            print(f"[sync] GT annotations synced to bucket")
+            return True
+        else:
+            print(f"[sync] Upload failed: {result.stderr}")
+            return False
+
+    except Exception as e:
+        print(f"[sync] Error: {e}")
+        return False
+
+def schedule_sync():
+    """Schedule a background sync (debounced - waits 5s for more changes)."""
+    global _sync_pending
+
+    if not SYNC_ENABLED:
+        return
+
+    with _sync_lock:
+        if _sync_pending:
+            return  # Already scheduled
+        _sync_pending = True
+
+    def delayed_sync():
+        global _sync_pending
+        time.sleep(5)  # Wait for more potential changes
+        with _sync_lock:
+            _sync_pending = False
+        sync_gt_to_bucket()
+
+    thread = threading.Thread(target=delayed_sync, daemon=True)
+    thread.start()
+
 def load_gt_cache():
     """Load GT annotations into cache - only keeps the LATEST labeled points per video.
 
@@ -137,6 +226,9 @@ def _update_gt_cache(video_name: str, frame_num: int, annotations: list):
             'all_points': new_points
         }
         print(f"✓ GT Cache OVERRIDE: {video_name} frame {frame_num} (new points replace all old)")
+
+    # Auto-sync GT annotations to cloud bucket
+    schedule_sync()
 
 
 def start_background_training():
@@ -938,6 +1030,9 @@ def api_delete_gt_frame():
         # Update GT cache
         load_gt_cache()
 
+        # Sync to cloud
+        schedule_sync()
+
         return jsonify({
             'status': 'success',
             'message': f'Deleted GT from {video_name} frame {frame_num}'
@@ -1695,6 +1790,14 @@ if __name__ == '__main__':
     print("  - Auto-learns when you save GT annotations")
     print("  - Database refreshes on startup")
     print("  - KNN similarity matching for initial field position")
+
+    if SYNC_ENABLED and find_gcloud():
+        print("\n✓ CLOUD SYNC ENABLED:")
+        print(f"  - Auto-uploads GT to {BUCKET_NAME}")
+        print("  - Syncs 5s after each GT save (debounced)")
+        print("  - Your friend can download with: ./scripts/download_gt_data.sh")
+    else:
+        print("\n⚠ Cloud sync disabled (gcloud not found)")
 
     print("\nAnnotations will 'stick' to field positions across frames\n")
     app.run(debug=True, host='0.0.0.0', port=5050)
