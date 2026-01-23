@@ -109,13 +109,13 @@ Currently this is manual assembly from multiple sources. The system does it auto
 
 ## The Vision
 
-Most college programs rely entirely on Wyscout for match data. That's a baseline — everyone has it.
+Most college programs rely entirely on Wyscout for analytics. That's a baseline — everyone has it.
 
 What separates elite programs analytically is **proprietary data** — metrics and insights competitors can't access because they don't have the system to generate them.
 
-Part 2 builds that system. Computer vision tracking from our match video, generating data that goes beyond what Wyscout provides, then feeding it into Part 1's intelligence system.
+This builds that system. Computer vision tracking from our match video, generating data that goes beyond what Wyscout provides, which can then be fed into Part 1's intelligence system.
 
-This is how we become more analytical than everyone else in the country.
+This is how we can have an analytical edge over everyone else in the country.
 
 ---
 
@@ -162,7 +162,7 @@ The engine is built around two fundamental ideas:
 
 A defender is "eliminated" when:
 1. The ball is past them (positionally, toward goal)
-2. They can't reach an intervention point before the attacker achieves a more dangerous outcome
+2. They can't reach an intervention point before the attacker reaches a shooting point.
 
 This isn't about who's ball-side or goal-side on paper. It's about who can actually affect the play. A defender who's technically goal-side but can't intervene in time is eliminated.
 
@@ -201,17 +201,6 @@ The equilibrium of these forces determines where defenders should be. When they'
 | Compactness | Defensive structure integrity |
 | Action availability | Forward passing options |
 
-### Defensive Block Analysis
-
-The engine models three primary block configurations:
-
-| Block | Line Height | Characteristics |
-|-------|-------------|-----------------|
-| **Low** | ~12m from goal | Compact, protective, minimal pressing |
-| **Mid** | ~22m from goal | Balanced, controls midfield space |
-| **High** | Near halfway | Aggressive, traps opponents in their half |
-
-We can measure: Are we maintaining the block we want? When do we break shape? What triggers the breakdowns?
 
 ### The Philosophy: Structure Before Talent
 
