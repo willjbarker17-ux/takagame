@@ -107,67 +107,97 @@ Currently this is manual assembly from multiple sources. The system does it auto
 
 # Part 2: Tracking & Decision Engine
 
-## What It Is
+## The Vision
 
-Computer vision system that extracts player positions and tactical data from match video.
+Most college programs rely entirely on Wyscout for match data. That's a baseline — everyone has it.
 
-This is longer-term development that eventually feeds richer data into Part 1.
+What separates elite programs analytically is **proprietary data** — metrics and insights competitors can't access because they don't have the system to generate them.
+
+Part 2 builds that system. Computer vision tracking from your own match video, generating data that goes beyond what Wyscout provides, then feeding it into Part 1's intelligence system.
+
+This is how you become more analytical than everyone else in your conference.
 
 ---
 
-## Current Status
+## Where We Are Now
+
+The foundation is built:
 
 | Component | Status |
 |-----------|--------|
 | Player detection | Working |
 | Ball detection | Working |
 | Manual pitch calibration | Working |
-| Automatic pitch calibration | Code exists, needs training |
-| Basic tracking | Working (limitations in complex scenarios) |
+| Basic tracking | Working |
 | Physical metrics from video | Working |
-| Decision engine code | Exists, needs validated tracking data |
+
+What needs work:
+- **Automatic pitch calibration** — code exists, needs training data to work reliably
+- **Complex scenario tracking** — occlusions, camera cuts, crowded situations
+- **Validation** — verify our numbers match GPS ground truth
 
 ---
 
-## What It Will Enable (Future)
+## What Tracking Enables
 
-Once tracking is reliable:
-- Physical metrics from video (when GPS isn't available)
-- Possession and field tilt statistics
-- Formation shape analysis
-- Eventually: Game Model principle measurement
+**Immediate value once tracking is solid:**
+- Physical metrics from video when GPS isn't available (opponent analysis)
+- Possession statistics, field tilt, territorial control
+- Formation shape and spacing analysis
+- Pressing triggers and defensive line positions
+
+**This fills the gap Wyscout can't** — Wyscout gives you events (passes, shots, fouls) but not the continuous spatial data between events. Tracking gives you the full picture.
+
+---
+
+## The Game Decision Engine
+
+This is the ambitious part.
+
+Once we have reliable tracking data, we can build toward measuring your Game Model principles automatically. Did we win the second ball? How quickly did we transition? Were we compact in our defensive shape?
+
+The code framework exists. But making it accurate requires:
+1. Validated tracking data (no garbage in, garbage out)
+2. Precise definitions of each principle
+3. Testing against film to confirm it matches what coaches see
+
+**Realistic expectation:** Tracking delivers value by spring. Decision engine is a fall project — the kind of thing that could genuinely change how you prepare for matches, but needs time to get right.
 
 ---
 
 ## Development Timeline
 
-| Phase | Timeframe | Goal |
-|-------|-----------|------|
-| Automatic Calibration | Months 1-2 | Process video without manual setup |
-| Tracking Improvements | Months 3-4 | Handle occlusions, camera movement |
-| Validation | Months 5-6 | Verify accuracy against GPS |
-| Integration | Month 6+ | Tracking data flows into Part 1 |
+| Phase | Timeframe | Outcome |
+|-------|-----------|---------|
+| Calibration training | Month 1 | Process any video without manual setup |
+| Tracking refinement | Month 2 | Handle real match conditions reliably |
+| Validation against GPS | Month 3 | Confirm accuracy, ready for use |
+| Decision engine v1 | Months 4-5 | First Game Model metrics automated |
+
+**Spring:** Tracking integrated with Part 1 — you can ask questions that combine Wyscout events with our spatial data.
+
+**Fall:** Decision engine measuring tactical principles. This is where it gets powerful.
 
 ---
 
 # How They Work Together
 
 ```
-Part 1 (Marshall AI) - Immediate Value
+Part 1 (Marshall AI) - Working in Weeks
 ───────────────────────────────────────
-Week 1:     Data ingestion
+Week 1:     Data ingestion (Wyscout, GPS, meetings)
 Week 2:     Core system working         ← Value starts here
 Week 3:     Alerts + auto-prep
 
 
-Part 2 (Tracking) - Background Development
+Part 2 (Tracking) - Developing in Parallel
 ───────────────────────────────────────
-Month 1-2:  Automatic calibration
-Month 3-4:  Tracking improvements
-Month 5-6:  Validation + integration    ← Feeds into Part 1
+Month 1-2:  Calibration + tracking refinement
+Month 3:    Validation, integration     ← Feeds into Part 1
+Month 4-5:  Decision engine v1          ← Game Model automation
 ```
 
-Part 1 delivers value in 2-3 weeks. Part 2 makes it more powerful over months.
+Part 1 delivers value in weeks. Part 2 compounds it over months — and creates the analytical edge no one else has.
 
 ---
 
@@ -186,6 +216,6 @@ Part 1 delivers value in 2-3 weeks. Part 2 makes it more powerful over months.
 
 **Part 1:** Connect your scattered data (Wyscout, GPS, meetings, recruitment) into one queryable system. Surface patterns across sources, preserve institutional knowledge, track recruitment outcomes, get proactive alerts, and auto-generate match prep. Working in 2-3 weeks.
 
-**Part 2:** Computer vision tracking from match video. Develops in background, eventually feeds richer data into Part 1.
+**Part 2:** Computer vision tracking that goes beyond Wyscout — proprietary spatial data, then automated Game Model measurement. Tracking ready by spring, decision engine by fall.
 
-**The key insight:** You already have valuable data — it's just scattered and disconnected. This system links it together and makes it work for you.
+**The key insight:** Everyone in your conference has Wyscout. This system connects your scattered data, then builds proprietary analytics on top. That's how you become more analytical than everyone else.
