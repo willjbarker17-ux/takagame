@@ -53,15 +53,15 @@ The value is **surfacing the right context at the right time** — connections y
 
 ---
 
-### 2. Institutional Memory
+### 2. Institutional Memory & Staff Alignment
 
 This is the biggest value.
 
 Every program accumulates knowledge through discussions — why certain decisions were made, what concerns existed about players before signing, what tactical adjustments worked against specific opponents, how the coaching philosophy has evolved.
 
-Right now, that knowledge lives in people's heads. When staff turn over, it's gone. When you revisit a decision from last season, you're starting from scratch.
+Right now, that knowledge lives in people's heads. Not everyone was in every meeting. When you revisit a decision from last season, you're starting from scratch.
 
-The system preserves it. Every meeting discussion becomes searchable. The reasoning behind decisions is captured, not just the outcomes. New staff can access years of context instead of starting blind. Past lessons don't get forgotten and repeated.
+The system preserves it. Every meeting discussion becomes searchable. The reasoning behind decisions is captured, not just the outcomes. Any staff member can access the full context — what was discussed, what was decided, what the thinking was. Everyone works from the same information. Past lessons don't get forgotten and repeated.
 
 ---
 
