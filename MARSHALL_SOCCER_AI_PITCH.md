@@ -154,9 +154,11 @@ Wyscout gives us events (passes, shots, fouls). Tracking gives us the full pictu
 
 This is the ambitious part — and what makes the whole system unique. The code framework already exists. Over 36,000 lines written, with the core modules built.
 
-### The Core Concept: Elimination
+### The Core Concept: Elimination & High xG Zones
 
-The engine is built around a fundamental idea — **elimination** as the primary tactical currency.
+The engine is built around two fundamental ideas:
+
+**1. Elimination as tactical currency**
 
 A defender is "eliminated" when:
 1. The ball is past them (positionally, toward goal)
@@ -165,6 +167,14 @@ A defender is "eliminated" when:
 This isn't about who's ball-side or goal-side on paper. It's about who can actually affect the play. A defender who's technically goal-side but can't intervene in time is eliminated.
 
 **Every attacking action can be evaluated by how many defenders it eliminates.** A pass that takes out three defenders is more valuable than one that takes out one. The engine quantifies this frame-by-frame.
+
+**2. Getting into high xG zones**
+
+Elimination matters because of where it leads. The goal is getting the ball into positions where expected goals (xG) is highest — central areas close to goal with time and angle to shoot.
+
+The engine connects these: How many defenders did we eliminate to get there? What was the path? Which actions created the dangerous position?
+
+This lets us measure attacking quality beyond just "did we score" — we can see whether we're consistently creating high-value chances and how we're getting there.
 
 ### Football as Physics
 
