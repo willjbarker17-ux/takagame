@@ -113,9 +113,9 @@ Most college programs rely entirely on Wyscout for match data. That's a baseline
 
 What separates elite programs analytically is **proprietary data** — metrics and insights competitors can't access because they don't have the system to generate them.
 
-Part 2 builds that system. Computer vision tracking from your own match video, generating data that goes beyond what Wyscout provides, then feeding it into Part 1's intelligence system.
+Part 2 builds that system. Computer vision tracking from match video, generating data that goes beyond what Wyscout provides, then feeding it into Part 1's intelligence system.
 
-This is how you become more analytical than everyone else in your conference.
+This is how we can become more analytical than everyone else in the country.
 
 ---
 
