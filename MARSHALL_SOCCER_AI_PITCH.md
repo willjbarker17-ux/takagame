@@ -43,51 +43,35 @@ Not a chatbot. Not a replacement for Wyscout. **It's the connective tissue betwe
 
 ### 1. Cross-Source Pattern Recognition
 
-Connecting meetings to data lets you find patterns:
+Right now, your data lives in separate systems. Wyscout doesn't know about GPS load. GPS doesn't know about meeting discussions. Recruitment notes don't connect to player outcomes.
 
-- "What did we discuss about opponents who press high? Pull up those meetings alongside our results against them."
-- "Show me every time we talked about Player X's development — what did we say, and how do his GPS numbers compare now?"
-- "What load patterns came before injuries? What did we say about those players before they got hurt?"
+The system links everything together. When you're preparing for an opponent, you see not just their Wyscout tendencies but what your staff discussed about them last time, how your players performed physically against similar teams, and what adjustments worked.
 
-The value isn't answering complex tactical questions automatically — it's **surfacing the right context** when you need it.
+When you're evaluating a player's development, you see their GPS trends alongside the development goals you set in meetings months ago.
+
+The value is **surfacing the right context at the right time** — connections you wouldn't manually make across separate systems.
 
 ---
 
 ### 2. Institutional Memory
 
-This is the biggest value. Knowledge that currently gets lost:
+This is the biggest value.
 
-**Decisions and reasoning:**
-- "Why did we change our pressing triggers against Team Y?"
-- "What were the concerns about Recruit Z before we signed him? Were they valid?"
-- "What adjustments did we discuss at halftime in the games we were losing?"
+Every program accumulates knowledge through discussions — why certain decisions were made, what concerns existed about players before signing, what tactical adjustments worked against specific opponents, how the coaching philosophy has evolved.
 
-**Player context:**
-- "What development priorities did we set for Player X in September?"
-- "When did we first talk about moving Player Y to a new position?"
+Right now, that knowledge lives in people's heads. When staff turn over, it's gone. When you revisit a decision from last season, you're starting from scratch.
 
-**Opponent history:**
-- "What did we say about Team X last time we played them? What worked?"
-- "Show me the meeting where we broke down their set pieces"
-
-**System explanations:**
-- "When a new player asks about our defensive transition principles, what's the explanation we've given before?"
-- "Play the clip where we explained the difference between overlaps and underlaps"
-
-Without this, every conversation starts from scratch. New staff have no context. Past lessons get forgotten and repeated.
+The system preserves it. Every meeting discussion becomes searchable. The reasoning behind decisions is captured, not just the outcomes. New staff can access years of context instead of starting blind. Past lessons don't get forgotten and repeated.
 
 ---
 
 ### 3. Recruitment Intelligence
 
-Connect recruitment discussions to outcomes:
+Recruitment decisions happen through discussions — staff watch film, share observations, debate concerns, reach conclusions. Those discussions contain valuable evaluation signals, but they're never connected back to outcomes.
 
-- "What did we say about recruits similar to Player X before we signed them? How did they turn out?"
-- "Pull up all discussions about fullback prospects this year"
-- "What concerns came up about Recruit Y's positioning? Show me the meeting clips"
-- "Which recruiting channels have produced players who succeeded in our system?"
+The system links what you said about prospects to how they actually performed after signing. Over time, you learn which evaluation signals mattered and which didn't. You can identify what successful players in your system had in common during the recruiting process.
 
-The system connects what you said about prospects to how they actually performed — so you learn what evaluation signals mattered.
+This turns recruitment from isolated decisions into a learning system.
 
 ---
 
