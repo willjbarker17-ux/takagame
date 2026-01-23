@@ -154,6 +154,17 @@ Wyscout gives us events (passes, shots, fouls). Tracking gives us the full pictu
 
 This is the ambitious part — and what makes the whole system unique. The code framework already exists. Over 36,000 lines written, with the core modules built.
 
+### What It Is
+
+The decision engine is software that takes player positions and evaluates the tactical state of the game. Given where everyone is on the pitch and where the ball is, it calculates:
+
+- How dangerous is this situation for the attacking/defending team?
+- Which defenders can actually affect the play and which are eliminated?
+- Are we in the shape we want to be in?
+- What are the best options from this position?
+
+It turns tactical analysis from subjective ("we looked stretched") into objective measurement ("our lines were 28m apart when our target is 20m").
+
 ### The Core Concept: Elimination & High xG Zones
 
 The engine is built around two fundamental ideas:
@@ -228,34 +239,34 @@ The decision engine sits at the end of the tracking pipeline. It takes coordinat
 
 **Opponent scouting:** Apply the same engine to opponent film. Model their defensive block, find where they're vulnerable, identify what triggers their breakdowns.
 
-### Two Modes of Operation
+**Training design:** Simulate scenarios to test. Design exercises around elimination concepts. Show players exactly what "compact" means in measurable terms.
 
-**1. Standalone Simulation Mode**
+### Evaluating Our Games
 
-The engine can run without any video input. We define a scenario — place players on the pitch, set a ball position — and the engine calculates:
+Once tracking is working, we feed match coordinates into the engine. For any moment in a match, we can measure:
 
-- Highest xg available actions (pass options, dribble lanes)
-- What the optimal defensive positioning should be (based on the force model)
-- Game state score for the attacking team
-
-The engine becomes a tactical sandbox. We can test ideas computationally and see the best way to win
-
-**2. Real Match Analysis Mode**
-
-Once tracking is validated, we feed actual match coordinates into the engine. Now we're not simulating — we're measuring what actually happened.
-
-For any moment in a match:
-- Did our player choose the highest xg option?
+- How many defenders were eliminated on that play?
+- Were we in our intended shape? What was the gap between where we were and where we should have been?
+- Did we get into high xG zones? What was the path?
+- Which specific players were out of position?
+- What was the highest xG action available? Did we take it?
 - Where was the opponent's most effective point of attack?
-- Did we get into high xG zones? What path did we take?
 
+This adds a layer on top of film review. Instead of watching and subjectively noting "we looked stretched there," we have objective numbers: our lines were 28m apart when our target is 20m, here's the exact moment it happened, here's who drifted.
 
-**How They Connect**
+Over a season, we build a dataset. Are we getting more compact? Are we eliminating more defenders per attack? Which opponents gave us the most trouble structurally? Are there fatigue patterns where execution drops late in matches?
 
-The standalone mode establishes baselines and targets. The real match mode measures against them.
+### Simulating What Could Have Happened
 
-Example: In simulation, we determine that against a 4-1-4-1 press, this is the best pattern to find a free 10. In real matches, the engine measures whether we achieved that. The gap between target and reality becomes the coaching focus.
+The engine can also run "what if" scenarios on real match situations.
 
+We concede a goal. The engine shows us the moment of breakdown — which defenders were eliminated, where the structure failed. Then we can simulate: if Player X had been 3 meters deeper, would they still have been eliminated? If we'd been in a mid-block instead of high press at that moment, how would the situation score differently?
+
+This turns post-match review into something actionable. We're not just identifying that something went wrong — we're testing what would have fixed it, with numbers attached.
+
+It also works for preparation. Set up the opponent's typical shape, run simulations of different responses. Example: against a 4-1-4-1 press, what's the best pattern to find a free 10? The engine calculates it. In real matches, we measure whether we achieved it. The gap between target and reality becomes the coaching focus.
+
+The engine becomes a tactical sandbox — we can test ideas computationally and see the best way to win before we get on the field.
 
 ### Current State
 
