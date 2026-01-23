@@ -152,16 +152,58 @@ Wyscout gives us events (passes, shots, fouls). Tracking gives us the full pictu
 
 ## The Game Decision Engine
 
-This is the ambitious part.
+This is the ambitious part — and what makes the whole system unique.
 
-Once we have reliable tracking data, we can build toward measuring our Game Model principles automatically. Did we win the second ball? How quickly did we transition? Were we compact in our defensive shape?
+### What It Does
 
-The code framework exists. But making it accurate requires:
-1. Validated tracking data (no garbage in, garbage out)
-2. Precise definitions of each principle
-3. Testing against film to confirm it matches what coaches see
+The decision engine takes our tracking data and measures whether we're executing our Game Model principles. Not subjective film review — objective, frame-by-frame measurement.
 
-**Realistic expectation:** Tracking delivers value by spring. Decision engine is a fall project — the kind of thing that could genuinely change how we prepare for matches, but needs time to get right.
+**Examples of what it can measure:**
+- **Transition speed:** How many seconds from winning possession to penetrating their half? How does that compare to our target?
+- **Defensive compactness:** Distance between our lines when defending. Are we staying connected or getting stretched?
+- **Pressing triggers:** When we lose the ball, how quickly do we engage? Who's pressing and who's covering?
+- **Second ball wins:** After long balls or aerial duels, are we positioned to collect?
+- **Width in possession:** Are our wingers providing proper width? How does spacing change by phase?
+- **Recovery runs:** When we lose possession, are players tracking back at the right intensity?
+
+### How It Works
+
+The engine builds on two layers:
+
+1. **Wyscout events** — passes, shots, duels, set pieces. This is the "what happened."
+2. **Our tracking data** — continuous player positions between events. This is the "how it happened."
+
+By combining them, we can answer questions Wyscout alone can't: We completed 85% of our passes, but were we playing through the lines or going sideways? We won 60% of aerial duels, but were we positioned to win the second balls?
+
+### Development Process
+
+This isn't plug-and-play. Building it right requires:
+
+1. **Define each principle precisely** — "Compact defensive shape" needs to be translated into measurable terms. What's the maximum distance between lines? What triggers an alert?
+
+2. **Calibrate against film** — Run the engine on matches we've already analyzed manually. Does it flag the same moments coaches identified? If not, refine.
+
+3. **Iterate with feedback** — The first version won't be perfect. We run it, coaches review outputs, we adjust thresholds and definitions.
+
+This is collaborative work between the technical side and coaching staff. The goal is a system that reflects how we actually think about the game.
+
+### What It Enables
+
+**Post-match:** Instead of watching full film to find breakdowns, the engine flags specific moments where principles weren't executed. Review becomes targeted.
+
+**Over time:** We build a dataset of principle execution across the season. We can see trends — are we getting more compact? Is transition speed improving? Are there fatigue patterns where execution drops?
+
+**Opponent analysis:** Apply the same engine to opponent film. Identify their principles, find where they break down, prepare to exploit it.
+
+**Recruitment:** Evaluate prospects not just on Wyscout stats but on whether their playing style fits our principles.
+
+### Why This Takes Time
+
+The tracking must be accurate first. If player positions are wrong, every principle measurement is garbage. That's why tracking validation comes before decision engine development.
+
+Then the definitions need refinement. "Compactness" is intuitive when watching film but requires precise parameters for automated measurement. Getting those parameters right takes iteration with coaching staff.
+
+**Realistic expectation:** Tracking delivers value by spring. Decision engine v1 by fall — and it keeps improving as we refine definitions and add more principles.
 
 ---
 
