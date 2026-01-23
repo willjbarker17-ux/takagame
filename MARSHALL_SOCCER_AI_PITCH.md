@@ -230,6 +230,44 @@ The decision engine sits at the end of the tracking pipeline. It takes coordinat
 
 **Training design:** Simulate scenarios to test. Design exercises around elimination concepts. Show players exactly what "compact" means in measurable terms.
 
+### Two Modes of Operation
+
+**1. Standalone Simulation Mode**
+
+The engine can run without any video input. We define a scenario — place players on the pitch, set a ball position — and the engine calculates:
+
+- Which defenders are eliminated from that position
+- What the optimal defensive positioning should be (based on the force model)
+- Game state score for the attacking team
+- Best available actions (pass options, dribble lanes)
+
+This is useful for:
+- **Session planning:** Set up a shape we want to train, see where vulnerabilities exist before we even get on the field
+- **Tactical experiments:** "What if we shift the block 5 meters higher?" — run it through the engine and see how elimination zones change
+- **Teaching tool:** Show players on a board exactly why certain positions matter, with numbers attached
+
+The engine becomes a tactical sandbox. We can test ideas computationally before spending training time on them.
+
+**2. Real Match Analysis Mode**
+
+Once tracking is validated, we feed actual match coordinates into the engine. Now we're not simulating — we're measuring what actually happened.
+
+For any moment in a match:
+- How many defenders were eliminated?
+- Were we in our intended block shape? If not, what was the gap?
+- Did we get into high xG zones? What path did we take?
+- Which players were out of position relative to the force model?
+
+This creates a layer on top of film review. Instead of watching and subjectively noting "we looked stretched there," we have objective measurement: "Our defensive lines were 28m apart when our target is 20m. Here's the exact moment it happened, here's who drifted."
+
+**How They Connect**
+
+The standalone mode establishes baselines and targets. The real match mode measures against them.
+
+Example: In simulation, we determine that against a 4-3-3 high press, our mid-block should have lines at specific distances to avoid elimination. In real matches, the engine measures whether we achieved that. The gap between target and reality becomes the coaching focus.
+
+Over a season, we build a picture: Are we getting closer to our targets? Which situations cause the biggest gaps? Is it fatigue, specific opponents, or certain phases of play?
+
 ### Current State
 
 The core modules are built:
