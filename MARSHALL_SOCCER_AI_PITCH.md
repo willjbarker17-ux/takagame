@@ -4,9 +4,9 @@
 
 We're proposing a two-part system that grows with the program:
 
-**Part 1: Marshall-Specific AI** — A knowledge system trained on all Marshall data (Wyscout, GPS, game plans, meeting recordings, recruitment, financials). Delivers value immediately using data you already have.
+**Part 1: Marshall-Specific AI** — A knowledge system built on Marshall data. The key is capturing and connecting meeting discussions with your existing data (Wyscout, GPS, recruitment). Delivers value immediately.
 
-**Part 2: Tracking & Decision Engine** — Computer vision system to extract player positions and tactical analysis from match video. Develops in the background over months, eventually feeding richer data into Part 1.
+**Part 2: Tracking & Decision Engine** — Computer vision to extract tactical data from match video. Develops in background, eventually feeds into Part 1.
 
 **Key insight:** Part 1 works now. Part 2 makes it better over time.
 
@@ -14,189 +14,92 @@ We're proposing a two-part system that grows with the program:
 
 # Part 1: Marshall-Specific AI
 
-## What It Is
+## The Core Idea
 
-A system that connects all your program data and makes it searchable, queryable, and actionable.
+Meetings are where the real knowledge lives — the reasoning behind decisions, the context around players, the adjustments discussed but never written down.
 
-Not a chatbot. Not a replacement for Wyscout.
+Right now that knowledge disappears. It lives in memory, scattered notes, or nowhere.
 
-**It's the connective tissue between everything** — the thing that lets you ask questions across systems that don't talk to each other today.
+**The system captures meetings (video + audio + transcripts) and connects them to your structured data (Wyscout, GPS, recruitment).** This creates something none of your current tools can provide: searchable institutional memory with context.
 
 ---
 
-## What Data It Uses
+## What Data It Connects
 
 | Source | What It Contains |
 |--------|------------------|
+| Meeting Recordings | Discussions, decisions, reasoning, clips shown, context |
 | Wyscout | Match events, opponent tendencies, player stats |
-| GPS | Training load, distances, sprints, fatigue patterns |
+| GPS | Training load, distances, sprints |
 | Game Plans | Tactical documents, scouting reports |
-| Meeting Recordings | Discussions, decisions, context (transcribed + video) |
-| Recruitment | Prospect notes, evaluations, portal tracking |
-| Financials | Budget, scholarships, travel costs |
-| Medical | Injury history, return-to-play |
-| NCAA Rules | Compliance deadlines, limits |
-| Schedule | Matches, travel, recovery windows |
-
-**You already have this data.** It's just scattered across systems.
+| Recruitment | Prospect notes, evaluations |
+| Medical | Injury history |
 
 ---
 
-## Why It's Valuable
+## Why This Matters
 
-### Questions No Single Tool Can Answer
+### 1. Cross-Source Pattern Recognition
 
-**Game Model & Tactical:**
-- "When we play against a 4-3-3 high press, how often do we successfully build out of the SGZ?"
-- "Which opponents forced us out of positional possession and into counter-attack situations?"
-- "What's our success rate executing the counter-press after losses in the BGZ vs FGZ?"
-- "Against teams that sit in a low block, how many times did we find +1 situations in the half-spaces?"
+Connecting meetings to data lets you find patterns:
 
-**Performance & Load:**
-- "When we play high-press teams, do our midfielders fatigue more in the second half? Does our pressing intensity drop?"
-- "What training week structure preceded our best performances in terms of field tilt and possession?"
-- "Which players sustain high-speed running output across 90 minutes vs which ones drop off after 60?"
-- "What load patterns came before soft tissue injuries?"
+- "What did we discuss about opponents who press high? Pull up those meetings alongside our results against them."
+- "Show me every time we talked about Player X's development — what did we say, and how do his GPS numbers compare now?"
+- "What load patterns came before injuries? What did we say about those players before they got hurt?"
 
-**Patterns Across Games:**
-- "Against teams that press our CBs, how often do our pivots successfully drop to create the +1 to break the first line?"
-- "When opponents switch to man-marking in transition, which of our players get eliminated most often?"
-- "What adjustments did we make at halftime in games we were losing? Which ones worked?"
-
-**Recruitment:**
-- "Which recruits have profiles similar to players who succeeded in our system?"
-- "What physical benchmarks do our successful fullbacks share?"
+The value isn't answering complex tactical questions automatically — it's **surfacing the right context** when you need it.
 
 ---
 
-### Institutional Memory
+### 2. Institutional Memory
 
-Knowledge that lives in discussions and disappears when context is lost:
+This is the biggest value. Knowledge that currently gets lost:
 
-**Game Model Evolution:**
-- "Why did we switch from 0-press to 1x-press triggers against Team Y last year? What was the reasoning?"
-- "When did we decide to change how the wingers defend in transition — tracking FBs vs staying high?"
-- "What were the specific concerns about our set piece defending in September and what did we adjust?"
+**Decisions and reasoning:**
+- "Why did we change our pressing triggers against Team Y?"
+- "What were the concerns about Recruit Z before we signed him? Were they valid?"
+- "What adjustments did we discuss at halftime in the games we were losing?"
 
-**Player Development:**
-- "What did we identify as Player X's development priorities at the start of the season? How has he progressed?"
-- "When did we first discuss moving Player Y into the pivot role? What made us think he could do it?"
-- "What were the concerns about Recruit Z's positioning before signing? Were they valid after a season?"
+**Player context:**
+- "What development priorities did we set for Player X in September?"
+- "When did we first talk about moving Player Y to a new position?"
 
-**Opponent Patterns:**
-- "What worked against Team X's 4-4-2 mid-block last time we played them?"
-- "How did we plan to exploit Team Y's high line? Did it work?"
-- "What set piece adjustments did we make for Team Z's zonal marking?"
+**Opponent history:**
+- "What did we say about Team X last time we played them? What worked?"
+- "Show me the meeting where we broke down their set pieces"
 
-**System & Philosophy:**
-- "What's the reasoning behind our exchange policy in defensive transition?"
-- "When a new player asks about De Bruyne runs vs Channel runs, what's the explanation we've given?"
-- "What have we said about when to play vertical vs when to keep possession?"
+**System explanations:**
+- "When a new player asks about our defensive transition principles, what's the explanation we've given before?"
+- "Play the clip where we explained the difference between overlaps and underlaps"
 
-The system remembers what the program has learned — and why.
+Without this, every conversation starts from scratch. New staff have no context. Past lessons get forgotten and repeated.
 
 ---
 
-### Preparation That Writes Itself
+### 3. Recruitment Intelligence
 
-Before a match, auto-generate one document that pulls:
-- Opponent scouting brief (Wyscout) — formation tendencies, set pieces, key players
-- What we discussed about them last time (meeting transcripts)
-- How they play against our style — do they press? Sit deep? Man-mark in transition?
-- Physical state of our squad (GPS + medical)
-- Historical results and what tactical adjustments worked
-- Suggested rhythm level based on opponent's defensive structure
+Connect recruitment discussions to outcomes:
 
-Currently this is manual assembly from multiple places.
+- "What did we say about recruits similar to Player X before we signed them? How did they turn out?"
+- "Pull up all discussions about fullback prospects this year"
+- "What concerns came up about Recruit Y's positioning? Show me the meeting clips"
+- "Which recruiting channels have produced players who succeeded in our system?"
 
----
-
-### Proactive Alerts
-
-The system watches and tells you — you don't have to ask:
-
-- "Player X's load pattern matches the profile before his last hamstring issue"
-- "Player Y's high-speed running has dropped 15% over the last 3 weeks"
-- "Opponent Z changed their corner routine since you last scouted them — they're now attacking near post"
-- "Recruit A just entered transfer portal — profile matches the fullback characteristics you've been looking for"
-- "Team B (upcoming opponent) lost their starting CB to injury last match"
+The system connects what you said about prospects to how they actually performed — so you learn what evaluation signals mattered.
 
 ---
 
-### Meeting Intelligence
+## Meeting Capture Setup
 
-Every meeting recorded, transcribed, and searchable:
-
-**Find past decisions:**
-- "What did we say about Player X's positioning in September?"
-- "When did we decide to change the set piece routine?"
-- "What were the concerns about Recruit Y?"
-
-**Track outcomes:**
-- "We decided X. Did it work?"
-- Which types of decisions led to good outcomes?
-
-**Onboard new staff:**
-- Search "what's our philosophy on high press" and get actual discussions, not just a document
-
----
-
-### Recruitment Intelligence
-
-- "Find prospects whose profile matches players who succeeded here"
-- "What's our conversion rate from ID camps to signed players?"
-- "Which recruiting channels produced our best players?"
-- "What did we say about Recruit Z six months ago? How does current video compare?"
-
----
-
-## Meeting Capture
-
-### The Setup
-
-Meetings often show content on TV (Wyscout clips, presentations, tactical boards). We capture everything.
-
-**Basic Setup ($30):**
+**Basic Setup (~$50):**
 - HDMI capture dongle between laptop and TV
-- Phone on tripod for audio
-- Transcription with free AI (Whisper)
+- Phone for audio backup
+- Free transcription (Whisper AI)
 
-**What Gets Captured:**
-- Everything shown on screen (Wyscout clips, slides, drawings)
-- Full audio transcribed and searchable
-- Linked together: "Show me when we discussed Team X's press" → returns video + transcript
-
----
-
-## Example Queries
-
-**Opponent Prep:**
-- "How does Team X build out of the back? Do they play through or go long under pressure?"
-- "What are Team X's corner tendencies — near post, far post, or short?"
-- "Show me when we discussed Team X in meetings this season"
-- "What rhythm level should we play against Team X's 4-4-2 mid-block?"
-- "What worked last time we played a team that man-marked our pivots?"
-
-**Tactical Review:**
-- "In games where we struggled to break the first line, what adjustments did we make?"
-- "When have we used overload right vs overload left structures this season?"
-- "Show me the clip where we discussed the change to our counter-press triggers"
-
-**Performance:**
-- "Which players have highest training load this week?"
-- "Who's showing signs of fatigue based on load trends?"
-- "How has Player Y's sprint output changed since September?"
-- "Which players maintain pressing intensity in the final 20 minutes?"
-
-**Recruitment:**
-- "List fullback prospects who fit our attacking FB profile — need to join the attack, comfortable 1v1"
-- "What did we say about Recruit X's tactical awareness in the last meeting?"
-- "Find wingers in the portal who can play inverted and make De Bruyne-type runs"
-
-**Institutional Knowledge:**
-- "What's our philosophy on when FBs should overlap vs underlap?"
-- "Play the clip where we explained the Bell run to the team"
-- "What did we decide about defensive shape against 4-3-3 teams?"
+**What gets captured:**
+- Everything shown on screen (Wyscout clips, tactical diagrams)
+- Full audio → transcribed and searchable
+- Linked together: "Show me when we discussed Team X" → returns video + transcript
 
 ---
 
@@ -205,11 +108,10 @@ Meetings often show content on TV (Wyscout clips, presentations, tactical boards
 | Phase | Timeframe | What You Get |
 |-------|-----------|--------------|
 | Data Ingestion | Weeks 1-3 | All data connected and indexed |
-| Core System | Weeks 4-6 | Can ask questions, get sourced answers |
-| Specialized Tools | Weeks 7-10 | Opponent scouting assistant, load dashboard, meeting search |
-| Refinement | Weeks 11-12 | Feedback loop, improved accuracy |
+| Core System | Weeks 4-6 | Can search across meetings + data |
+| Refinement | Weeks 7-12 | Improved accuracy, feedback loop |
 
-**Week 6: Staff can start asking questions and getting useful answers.**
+**Week 6: Staff can start searching meetings and connecting them to data.**
 
 ---
 
@@ -219,11 +121,11 @@ Meetings often show content on TV (Wyscout clips, presentations, tactical boards
 
 Computer vision system that extracts player positions and tactical data from match video.
 
-This is the longer-term development that eventually feeds richer data into Part 1.
+This is longer-term development that eventually feeds richer data into Part 1.
 
 ---
 
-## What We Have Today
+## Current Status
 
 | Component | Status |
 |-----------|--------|
@@ -231,7 +133,7 @@ This is the longer-term development that eventually feeds richer data into Part 
 | Ball detection | Working |
 | Manual pitch calibration | Working |
 | Automatic pitch calibration | Code exists, needs training |
-| Basic tracking | Working (loses players in complex scenarios) |
+| Basic tracking | Working (limitations in complex scenarios) |
 | Physical metrics from video | Working |
 | Decision engine code | Exists, needs validated tracking data |
 
@@ -243,9 +145,7 @@ Once tracking is reliable:
 - Physical metrics from video (when GPS isn't available)
 - Possession and field tilt statistics
 - Formation shape analysis
-- Game Model principle measurement
-- Pressing trigger detection
-- Named run classification (De Bruyne, Bell, etc.)
+- Eventually: Game Model principle measurement
 
 ---
 
@@ -258,8 +158,6 @@ Once tracking is reliable:
 | Validation | Months 5-6 | Verify accuracy against GPS |
 | Integration | Month 6+ | Tracking data flows into Part 1 |
 
-**This develops in parallel with Part 1.** Part 1 works without it, but gets better when Part 2 is ready.
-
 ---
 
 # How They Work Together
@@ -268,50 +166,37 @@ Once tracking is reliable:
 Part 1 (Marshall AI) - Immediate Value
 ───────────────────────────────────────
 Week 1-3:   Data ingestion
-Week 4-6:   System answering questions     ← Value starts here
-Week 7-12:  Specialized tools + refinement
+Week 4-6:   System working              ← Value starts here
+Week 7-12:  Refinement
 
 
 Part 2 (Tracking) - Background Development
 ───────────────────────────────────────
 Month 1-2:  Automatic calibration
 Month 3-4:  Tracking improvements
-Month 5-6:  Validation + integration       ← Feeds into Part 1
+Month 5-6:  Validation + integration    ← Feeds into Part 1
 ```
 
-Part 1 delivers value immediately with existing data.
-
-Part 2 develops in background and eventually makes Part 1 even more powerful.
+Part 1 delivers value immediately. Part 2 makes it more powerful over time.
 
 ---
 
-# What We Need From Marshall
+# What We Need
 
 ### Data Access
+- Permission to record and transcribe meetings
 - Wyscout export or API access
 - GPS data exports
+- Recruitment tracking
 - Game plans and scouting documents
-- Permission to record and transcribe meetings
-- Recruitment tracking (even spreadsheets)
-- Budget information
 
-### Equipment (One-Time, ~$50)
-- HDMI capture dongle for meeting recording
+### Equipment (~$50)
+- HDMI capture dongle
 - Phone tripod
-
-### Feedback
-- Which questions matter most?
-- What outputs are useful vs noise?
-- Validation that answers make sense
 
 ---
 
 # Cost Estimate
-
-## One-Time Setup
-- Meeting capture equipment: ~$50
-
-## Monthly Operating
 
 | Usage Level | Monthly Cost |
 |-------------|--------------|
@@ -319,24 +204,14 @@ Part 2 develops in background and eventually makes Part 1 even more powerful.
 | Moderate | $150-200 |
 | Heavy | $300-400 |
 
-Main cost driver is LLM API usage (scales with query volume).
-
-Storage is minimal — text and transcripts are small. Can use university Google Drive.
+Main cost is LLM API usage. Storage is minimal.
 
 ---
 
 # Summary
 
-**Part 1 (Marshall AI):**
-- Uses data you already have
-- Connects siloed systems
-- Answers questions across sources
-- Preserves institutional memory
-- Delivers value in weeks
+**Part 1:** Capture meetings, connect them to your data, build searchable institutional memory. Value in weeks.
 
-**Part 2 (Tracking):**
-- Develops in background
-- Eventually adds match video analysis
-- Makes Part 1 more powerful over time
+**Part 2:** Tracking and tactical analysis from video. Develops in background over months.
 
-**The approach:** Start getting value now, grow capabilities over time.
+**The key insight:** The most valuable data you have is in your discussions — and right now it disappears. This system keeps it.
