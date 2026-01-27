@@ -196,11 +196,10 @@ The engine connects these: How many defenders did we eliminate to get there? Wha
 
 This lets us measure attacking quality beyond just "did we score" — we can see whether we're consistently creating high-value chances and how we're getting there.
 
-### Football as Physics
+### The Defensive Model: Theory That Adapts to Reality
 
-The engine models football as a dynamic spatial system governed by forces:
+The engine starts with a theoretical model of optimal defensive positioning based on attraction forces:
 
-**Defensive positioning** is modeled through attraction forces:
 | Force | Effect |
 |-------|--------|
 | Ball attraction | Creates pressing behavior |
@@ -209,7 +208,13 @@ The engine models football as a dynamic spatial system governed by forces:
 | Teammate repulsion | Maintains spacing |
 | Line attraction | Maintains compactness |
 
-The equilibrium of these forces determines where defenders should be. When they're not there, we can measure the gap between actual and optimal.
+The equilibrium of these forces shows where defenders *theoretically* should be. But here's what makes it useful: **the force weights are adjustable**.
+
+Different teams defend differently. Some prioritize ball pressure (high ball attraction). Some sit deep and protect the goal (high goal attraction). Some mark tightly (high opponent attraction). Some stay compact (high line attraction).
+
+When we analyze an opponent, we can tune the model to match how they actually defend. Watch their film, adjust the weights until the model matches their positioning patterns. Now we have a mathematical representation of their defensive tendencies — and we can simulate where they'll be in different situations before we play them.
+
+For our own team, we define our target weights based on how we want to defend. Then we measure actual matches against those targets. The gap between model and reality shows exactly where and when we're breaking from our principles.
 
 **Game state scoring** evaluates every moment:
 | Component | What It Measures |
