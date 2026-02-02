@@ -131,7 +131,7 @@ Tracking produces coordinates. The engine turns those coordinates into tactical 
 
 **The goal:** An engine that can look at any moment in a match and understand what's happening tactically — who's in good positions, what options are available, what the best decision would be.
 
-**The problem:** Right now, it can do math (calculate distances, angles, who can reach where in time) but it doesn't actually know what works in football. It can't reliably identify the best option because it hasn't learned what "best" means from real game outcomes.
+**The problem:** The goal is to get players into higher xG shooting positions — but the engine doesn't know the best ways to do that yet. It can do math (calculate distances, angles, who can reach where in time) but it hasn't learned what actually works in football. It can't reliably identify the best option because it hasn't seen enough real game outcomes to understand what "best" means.
 
 **How we get there:** Train it on Marshall games. Feed it tracking data from our matches, label the moments according to our game model (this is a BGZ buildup, this is a High Loss counter-press), and connect those moments to outcomes. Over time, it learns what positioning and decisions actually lead to good results — not from theory, but from watching us play.
 
