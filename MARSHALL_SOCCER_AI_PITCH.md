@@ -158,7 +158,17 @@ The core modules are built: `elimination.py`, `defense_physics.py`, `state_scori
 
 **Recruitment evaluation:** Run a prospect's film through the engine. Extract physical metrics from video — sprint patterns, recovery runs, work rate — without needing their GPS data. More importantly, analyze their decision-making: Did they choose the highest-xG option? Did their passes eliminate defenders or just move the ball sideways? How do their numbers compare to our current players at that position? This turns recruitment film sessions into objective evaluation, not just "he looks good."
 
-**Player profiles:** Over time, the engine builds profiles for each player — our guys and opponents. We can see a player's tendencies: does he switch early or hold too long? Does he press aggressively or sit off? Then we can match strengths to weaknesses: "Our #10 creates +0.15 xG when switching against compact defenses. Their left back struggles to recover when switched on — he's been eliminated 3x more than their right back in these situations." This is how we find specific mismatches to exploit, not just general game plans.
+**Player profiles:** Over time, the engine builds comprehensive profiles for each player — our guys, recruits, and opponents. Not just tendencies, but measurable attributes:
+
+*Physical:* Top speed, acceleration, turning speed, recovery run intensity, distance covered, sprint frequency, work rate with and without the ball.
+
+*Technical:* Pass speed and accuracy, dribble success rate, first touch quality under pressure, ball retention in tight spaces.
+
+*Decision-making:* How often they choose the highest-xG option, average xG added per action, defenders eliminated per pass, tendency to switch vs hold, pressing trigger timing.
+
+As the system improves, these profiles get richer. We can compare a recruit's profile directly against our current starter: "He's faster but his pass accuracy under pressure is 12% lower. His xG-added per action is similar, but he creates it through dribbling not passing."
+
+Then we can match profiles to opponents: "Our #10 creates +0.15 xG when switching against compact defenses. Their left back has the slowest recovery speed in their back line and gets eliminated 3x more when the ball switches." This is how we find specific mismatches to exploit — not general game plans, but targeted advantages based on actual numbers.
 
 ---
 
