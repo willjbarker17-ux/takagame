@@ -129,13 +129,26 @@ Tracking is only useful if it's accurate under real match conditions. That's why
 
 Tracking produces coordinates. The engine turns those coordinates into tactical analysis.
 
-**The goal:** An engine that can look at any moment in a match and understand what's happening tactically — who's in good positions, what options are available, what the best decision would be.
+**What it can do now:**
 
-**The problem:** The goal is to get players into higher xG shooting positions — but the engine doesn't know the best ways to do that yet. It can do math (calculate distances, angles, who can reach where in time) but it hasn't learned what actually works in football. It can't reliably identify the best option because it hasn't seen enough real game outcomes to understand what "best" means.
+There's a working interactive tactical board. You can drag players, move the ball, and the engine analyzes the situation in real time:
 
-**How we get there:** Train it on Marshall games. Feed it tracking data from our matches, label the moments according to our game model (this is a BGZ buildup, this is a High Loss counter-press), and connect those moments to outcomes. Over time, it learns what positioning and decisions actually lead to good results — not from theory, but from watching us play.
+- **Calculates xG from any position** — Based on distance, angle, and whether defenders block the shot path
+- **Evaluates every option** — For the player on the ball: pass to each teammate, dribble forward, or shoot. Each option gets an expected value.
+- **Finds gaps in defensive lines** — Identifies spaces between defenders and whether they're exploitable (can we get there before they close it?)
+- **Detects through ball opportunities** — Where can attackers run? Can the ball reach the space before defenders intercept?
+- **Ranks options** — HIGH_VALUE, SAFE, MODERATE, AVOID. Shows the best action and why.
+- **Simulates actions** — Click "play" on an option, watch positions update, see the new situation.
 
-The code foundation exists (~3,000 lines). What's missing is the training — the engine seeing enough real football to understand what's effective.
+The physics are calibrated to real player data: sprint acceleration (0-10m in 1.8s), top speed (8.33 m/s), reaction time (0.3s), ball deceleration on grass. When it calculates whether a defender can intercept a pass, it's using actual time-to-position math, not guesses.
+
+**What it can't do yet:**
+
+The engine evaluates based on physics and geometry — who can reach where in time, what creates xG. But it doesn't know what *actually works* in real football. The math says a through ball is available, but in reality that pass might get cut out 80% of the time because of how defenders read it.
+
+**Where we are now:** The engine can analyze any position you set up manually. What's missing is the connection to real game footage — feeding it tracking data from actual matches, labeling moments according to our game model, and letting it learn which options actually lead to good outcomes vs which just look good on paper.
+
+**How we get there:** Train it on Marshall games. The tracking layer produces coordinates from video. We label moments (BGZ buildup, High Loss counter-press, etc.). The engine watches what we chose and what happened. Over time, it learns the difference between what physics says is possible and what actually works for Marshall.
 
 ---
 
