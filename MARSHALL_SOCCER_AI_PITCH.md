@@ -228,4 +228,4 @@ The Hub isn't just "organized information." It becomes a system that can learn a
 
 ---
 
-*For technical details on the decision engine architecture, see: DECISION_ENGINE_TECHNICAL_BRIEF.md*
+*For technical details on the full system architecture, see: TECHNICAL_BRIEF.md*
