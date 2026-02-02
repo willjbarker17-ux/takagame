@@ -1,351 +1,227 @@
-# Marshall Men's Soccer - Program Intelligence Platform
+# Marshall Men's Soccer – Program Intelligence Platform
 
-## Summary
+## The idea in one line
 
-A two-part system that grows with the program:
-
-**Part 1: Marshall-Specific AI** — A knowledge system built on our data. Captures and connects meeting discussions with existing data (Wyscout, GPS, recruitment). Delivers value immediately.
-
-**Part 2: Tracking & Decision Engine** — Computer vision to extract tactical data from match video. Develops in background, eventually feeds into Part 1.
-
-**Key insight:** Part 1 works now. Part 2 makes it better over time.
+A two-part system that aligns us operationally now and builds a proprietary tactical edge over time.
 
 ---
 
-# Part 1: Marshall-Specific AI
+**Part 1: Marshall Intelligence Hub** — A Marshall-specific knowledge system that connects our existing data and discussions into one searchable, queryable program brain. Delivers value in weeks.
 
-## The Core Idea
+**Part 2: Tracking + Decision Engine** — Computer vision generates proprietary spatial data from match video; a decision engine converts that data into objective measurements of our game model. Develops over months.
 
-A system that connects all our program data and makes it searchable and queryable.
-
-Not a chatbot. Not a replacement for Wyscout. **It's the connective tissue between everything** — letting us ask questions across systems that don't talk to each other today.
+**Key point:** Part 1 works now. Part 2 upgrades it into something no one else in college soccer has.
 
 ---
 
-## What Data It Connects
+# Part 1: Marshall Intelligence Hub
+
+## What It Is
+
+Not a chatbot. Not a Wyscout replacement.
+
+It's the connective tissue across everything we already produce — data, documents, and conversations — so the program operates from one shared base of truth.
+
+## What It Connects
 
 | Source | What It Contains |
 |--------|------------------|
 | Wyscout | Match events, opponent tendencies, player stats |
 | GPS | Training load, distances, sprints, fatigue patterns |
 | Game Plans | Tactical documents, scouting reports |
-| Meeting Recordings | Discussions, decisions, context (transcribed + video) |
+| Meeting Recordings | Discussions, decisions, context (transcribed) |
 | Recruitment | Prospect notes, evaluations, portal tracking |
 | Financials | Budget, scholarships, travel costs |
 | Medical | Injury history, return-to-play |
 | Schedule | Matches, travel, recovery windows |
 
-**We already have this data.** It's just scattered across systems.
+**We already have this data.** It's just scattered across systems that don't talk to each other.
 
 ---
 
-## Why This Matters
+## Why It Matters
 
-### 1. Cross-Source Pattern Recognition
+### 1. Staff Alignment Becomes Structural, Not Fragile
 
-Right now, our data lives in separate systems. Wyscout doesn't know about GPS load. GPS doesn't know about meeting discussions. Recruitment notes don't connect to player outcomes.
+Right now, alignment relies on memory, repetition, and who was in which room. The Hub makes alignment persistent:
 
-The system links everything together. When preparing for an opponent, we see not just their Wyscout tendencies but what staff discussed about them last time, how our players performed physically against similar teams, and what adjustments worked.
+- The logic behind decisions is captured
+- The context stays attached to outcomes
+- Discussions don't evaporate after the week ends
 
-When evaluating a player's development, we see their GPS trends alongside the development goals set in meetings months ago.
+We stop constantly re-deriving what we believe, what we saw, and why we chose a path.
 
-The value is **surfacing the right context at the right time** — connections we wouldn't manually make across separate systems.
+### 2. Pattern Recognition Across Systems We Can't Mentally Integrate
 
----
+This is the real advantage.
 
-### 2. Institutional Memory & Staff Alignment
+We already have meaningful signals in separate places — Wyscout, GPS, notes, meetings — but no human can reliably combine them across time (months/years), modalities (numbers + video + language), and volume (every session, every match, every discussion).
 
-This is the biggest value.
+The Hub creates value by linking and surfacing relationships we can't comprehend manually. Not "more data." More intelligence from the data we already have.
 
-Every program accumulates knowledge through discussions — why certain decisions were made, what concerns existed about players before signing, what tactical adjustments worked against specific opponents, how the coaching philosophy has evolved.
+We stop treating information as isolated events and start treating it as a connected system that reveals:
+- Recurring themes in what we say vs what happens
+- Trends that only appear when multiple sources are viewed together
+- What actually correlates with outcomes in our environment
 
-Right now, that knowledge lives in people's heads. Not everyone was in every meeting. When revisiting a decision from last season, we're starting from scratch.
+### 3. Institutional Knowledge Becomes Cumulative
 
-The system preserves it. Every meeting discussion becomes searchable. The reasoning behind decisions is captured, not just the outcomes. Any staff member can access the full context — what was discussed, what was decided, what the thinking was. Everyone works from the same information. Past lessons don't get forgotten and repeated.
+The program should compound. Right now, it resets more than it should because reasoning and context aren't stored in a way we can query later.
 
----
-
-### 3. Recruitment Intelligence
-
-Recruitment decisions happen through discussions — staff watch film, share observations, debate concerns, reach conclusions. Those discussions contain valuable evaluation signals, but they're never connected back to outcomes.
-
-The system links what we said about prospects to how they actually performed after signing. Over time, we learn which evaluation signals mattered and which didn't. We can identify what successful players in our system had in common during the recruiting process.
-
-This turns recruitment from isolated decisions into a learning system.
+The Hub turns our weekly thinking into an asset we can leverage repeatedly, rather than re-create.
 
 ---
 
-### 4. Proactive Alerts
+## What Success Looks Like
 
-The system watches our data and flags things without anyone asking.
-
-Instead of manually checking load reports, scouting updates, or portal activity, the system monitors patterns and surfaces what matters: a player's load trending toward injury risk, an opponent changing their set piece routines since we last scouted them, a recruit entering the portal who matches what we're looking for.
-
-We don't have to remember to check. It tells us.
-
----
-
-### 5. Auto-Generated Prep
-
-Before a match, the system pulls together everything relevant into one place: opponent tendencies from Wyscout, what staff discussed about them last time we played, how the squad is physically, what adjustments worked historically against similar teams.
-
-Currently this is manual assembly from multiple sources. The system does it automatically, so prep starts from context instead of from scratch.
+- We move faster because we start from context, not from scratch
+- We're aligned because decisions and rationale are visible and consistent
+- We get smarter over time because the system learns across seasons of our own behavior and outcomes
 
 ---
 
 ## Timeline
 
 | Phase | Timeframe | What We Get |
-|-------|-----------|--------------|
-| Data Ingestion | Week 1 | All data connected and indexed |
-| Core System | Week 2 | Can query across all data sources |
-| Alerts & Prep | Week 3 | Proactive alerts, auto-generated prep docs |
+|-------|-----------|-------------|
+| Data Ingestion | Week 1 | Highest-signal sources connected (docs, meetings, Wyscout) |
+| Core System | Week 2 | Working Hub, staff can start querying |
+| Expansion | Week 3+ | GPS, recruitment, continuous improvement |
 
-**Week 2: Staff can start querying. Week 3: Full system working.**
-
----
-
-# Part 2: Tracking & Decision Engine
-
-## The Vision
-
-Most college programs rely entirely on Wyscout for analytics. That's a baseline — everyone has it.
-
-What separates elite programs analytically is **proprietary data** — metrics and insights competitors can't access because they don't have the system to generate them.
-
-This builds that system. Computer vision tracking from our match video, generating data that goes beyond what Wyscout provides, which can then be fed into Part 1's intelligence system.
-
-This is how we can have an analytical edge over everyone else in the country.
+The point is adoption and compounding, not claiming perfection on Day 21.
 
 ---
 
-## Where We Are Now
+# Part 2: Tracking + Decision Engine
 
-**Over 36,000 lines of code already written.** The foundation is built:
+## Why Part 2 Exists
 
-| Component | Status |
-|-----------|--------|
-| Player detection | Working |
-| Ball detection | Working |
-| Manual pitch calibration | Working |
-| Basic tracking | Working |
-| Physical metrics from video | Working |
+Everyone has baseline analytics. If we want a real analytical edge, we need proprietary data and a proprietary model.
 
-What needs work:
-- **Automatic pitch calibration** — code exists, needs training data to work reliably
-- **Complex scenario tracking** — occlusions, camera cuts, crowded situations
-- **Validation** — verify our numbers match GPS ground truth
+Wyscout is events. Tracking is continuous reality: shape, spacing, timing, and what happens between events.
+
+But the real differentiator isn't just tracking — it's what we do with it.
+
+Part 2 is two layers:
+1. **Tracking Layer** (data creation): coordinates from video
+2. **Decision Engine Layer** (interpretation): converts coordinates into game-model measurements
 
 ---
 
-## What Tracking Enables
+## Layer 1: Tracking
 
-**Immediate value once tracking is solid:**
-- Physical metrics from video when GPS isn't available (opponent analysis)
-- Formation shape and spacing analysis
-- Pressing triggers and defensive line positions
-- Continuous spatial data between events — what Wyscout doesn't capture
+From our match video, we extract:
+- Player + ball trajectories (x,y over time)
+- Team structure over time (lines, spacing, compactness)
+- Physical proxies from video when GPS isn't available
 
-Wyscout gives us events (passes, shots, fouls). Tracking gives us the full picture of what happens between those events.
+**Current state:** Over 36,000 lines of code written. Player detection, ball detection, manual calibration, and basic tracking are working. What needs work: automatic calibration, complex scenarios (occlusion, camera cuts), and validation against GPS ground truth.
 
----
-
-## The Game Decision Engine
-
-This is the ambitious part — and what makes the whole system unique. The code framework already exists. Over 36,000 lines written, with the core modules built.
-
-### What It Is
-
-The decision engine is software that takes player coordinates and produces tactical analysis. It's built around three core modules:
-
-**1. Elimination Calculator** — For each defender, calculates whether they can actually intervene in time. Uses time-to-position math accounting for player speed, reaction time, and current momentum. A defender who's technically goal-side but can't reach the intervention point before the attacker progresses is marked as eliminated.
-
-**2. Defensive Force Model** — Models where defenders *should* be based on attraction physics. Each defender experiences pulls toward the ball (pressing), toward goal (protection), toward assigned zones (structure), toward opponents (marking), and repulsion from teammates (spacing). The equilibrium of these forces shows optimal positioning — when actual positions differ, we can measure exactly how far out of shape we are.
-
-**3. Game State Evaluator** — Scores any moment in the match using six weighted components:
-- Elimination (defenders taken out of play)
-- Proximity (distance to goal)
-- Angle (shooting angle available)
-- Density (space around the ball)
-- Compactness (defensive structure integrity)
-- Action availability (forward passing options)
-
-This produces an objective score for any position. We can compare moments, rank ball locations, and identify why certain attacks succeeded while others stalled.
-
-It turns tactical analysis from subjective ("we looked stretched") into objective measurement ("our lines were 28m apart, 3 defenders eliminated, game state score 0.72").
-
-### The Core Concept: Elimination & High xG Zones
-
-The engine is built around two fundamental ideas:
-
-**1. Elimination as tactical currency**
-
-A defender is "eliminated" when:
-1. The ball is past them (positionally, toward goal)
-2. They can't reach an intervention point before the attacker reaches a shooting point.
-
-This isn't about who's ball-side or goal-side on paper. It's about who can actually affect the play. A defender who's technically goal-side but can't intervene in time is eliminated.
-
-**Every attacking action can be evaluated by how many defenders it eliminates.** A pass that takes out three defenders is more valuable than one that takes out one. The engine quantifies this frame-by-frame.
-
-**2. Getting into high xG zones**
-
-Elimination matters because of where it leads. The goal is getting the ball into positions where expected goals (xG) is highest — central areas close to goal with time and angle to shoot.
-
-The engine connects these: How many defenders did we eliminate to get there? What was the path? Which actions created the dangerous position?
-
-This lets us measure attacking quality beyond just "did we score" — we can see whether we're consistently creating high-value chances and how we're getting there.
-
-### The Defensive Model: Theory That Adapts to Reality
-
-The engine starts with a theoretical model of optimal defensive positioning based on attraction forces:
-
-| Force | Effect |
-|-------|--------|
-| Ball attraction | Creates pressing behavior |
-| Goal attraction | Creates protective depth |
-| Opponent attraction | Creates marking |
-| Teammate repulsion | Maintains spacing |
-| Line attraction | Maintains compactness |
-| xG path blocking | Cuts off highest-value passing lanes |
-
-The model also calculates the ball's highest xG path to goal at any moment — the sequence of passes or carries that would create the most dangerous chance. Good defensive positioning blocks these paths. When defenders drift out of the xG lanes, they leave the door open even if they look like they're in position.
-
-The equilibrium of these forces shows where defenders *theoretically* should be. But here's what makes it useful: **the force weights are adjustable**.
-
-Different teams defend differently. Some prioritize ball pressure (high ball attraction). Some sit deep and protect the goal (high goal attraction). Some mark tightly (high opponent attraction). Some stay compact (high line attraction).
-
-When we analyze an opponent, we can tune the model to match how they actually defend. Watch their film, adjust the weights until the model matches their positioning patterns. Now we have a mathematical representation of their defensive tendencies — and we can simulate where they'll be in different situations before we play them.
-
-For our own team, we define our target weights based on how we want to defend. Then we measure actual matches against those targets. The gap between model and reality shows exactly where and when we're breaking from our principles.
-
-**Game state scoring** evaluates every moment:
-| Component | What It Measures |
-|-----------|------------------|
-| Elimination | Defenders taken out of the play |
-| Proximity | Distance to goal |
-| Angle | Shooting angle available |
-| Density | Space around the ball |
-| Compactness | Defensive structure integrity |
-| Action availability | Forward passing options |
-
-
-### The Philosophy: Structure Before Talent
-
-The base model treats all players as physically equal — same speed, same reaction time. This is intentional.
-
-**We understand structure before we layer in talent.** If our positioning fails when everyone's equal, it will fail when talent is added. Talent becomes a modifier on top of sound structure, not a replacement for it.
-
-This is how we identify whether breakdowns are positional (fixable through coaching) or physical (need different personnel).
-
-### The Pipeline
-
-```
-Video → Detection → Tracking → Coordinates → Decision Engine → Analysis
-        (YOLO)    (ByteTrack) (Calibration)   (Elimination,    (Insights)
-                                               Forces, Scoring)
-```
-
-The decision engine sits at the end of the tracking pipeline. It takes coordinate data and produces tactical analysis.
-
-### What It Enables
-
-**Post-match:** The engine flags specific moments where structure failed — which defenders got eliminated, where the block broke, what triggered it.
-
-**Trends over time:** We build a dataset across the season. Is our compactness improving? Are we eliminating more defenders per attack? Are there fatigue patterns where execution drops?
-
-**Opponent scouting:** Apply the same engine to opponent film. Model their defensive block, find where they're vulnerable, identify what triggers their breakdowns.
-
-**Training design:** Simulate scenarios to test. Design exercises around elimination concepts. Show players exactly what "compact" means in measurable terms.
-
-### Evaluating Our Games
-
-Once tracking is working, we feed match coordinates into the engine. For any moment in a match, we can measure:
-
-- How many defenders were eliminated on that play?
-- Were we in our intended shape? What was the gap between where we were and where we should have been?
-- Did we get into high xG zones? What was the path?
-- Which specific players were out of position?
-- What was the highest xG action available? Did we take it?
-- Where was the opponent's most effective point of attack?
-
-This adds a layer on top of film review. Instead of watching and subjectively noting "we looked stretched there," we have objective numbers: our lines were 28m apart when our target is 20m, here's the exact moment it happened, here's who drifted.
-
-Over a season, we build a dataset. Are we getting more compact? Are we eliminating more defenders per attack? Which opponents gave us the most trouble structurally? Are there fatigue patterns where execution drops late in matches?
-
-### Simulating What Could Have Happened
-
-The engine can also run "what if" scenarios on real match situations.
-
-We concede a goal. The engine shows us the moment of breakdown — which defenders were eliminated, where the structure failed. Then we can simulate: if Player X had been 3 meters deeper, would they still have been eliminated? If we'd been in a mid-block instead of high press at that moment, how would the situation score differently?
-
-This turns post-match review into something actionable. We're not just identifying that something went wrong — we're testing what would have fixed it, with numbers attached.
-
-It also works for preparation. Set up the opponent's typical shape, run simulations of different responses. Example: against a 4-1-4-1 press, what's the best pattern to find a free 10? The engine calculates it. In real matches, we measure whether we achieved it. The gap between target and reality becomes the coaching focus.
-
-The engine becomes a tactical sandbox — we can test ideas computationally and see the best way to win before we get on the field.
-
-### Current State
-
-The core modules are built:
-- `elimination.py` — Core elimination logic
-- `defense_physics.py` — Attraction-based positioning model
-- `state_scoring.py` — Game state evaluation
-- `block_models.py` — Defensive block configurations
-- `visualizer.py` — Tactical board output
-
-What remains is **calibration against real match data** — running it on our film, refining thresholds, confirming it flags the moments coaches identify.
-
-### Why This Takes Time
-
-The tracking must be accurate first. If player positions are wrong, every elimination calculation is garbage. That's why tracking validation comes before decision engine deployment.
-
-Then the parameters need tuning. How much should ball attraction outweigh goal attraction? What's the threshold for "eliminated"? These require iteration with coaching staff watching outputs and refining.
-
-**Realistic expectation:** Tracking delivers value by spring. Decision engine v1 by fall — starting with elimination metrics and block analysis, then expanding as we validate.
+Tracking is only useful if it's accurate under real match conditions. That's why validation is the gate.
 
 ---
 
-## Development Timeline
+## Layer 2: Decision Engine
+
+Tracking produces coordinates. The engine turns those coordinates into objective tactical information.
+
+It's built around three measurable primitives:
+
+**1. Elimination**
+Not "goal-side" in theory — who can actually affect the play in time. A defender who looks close enough but can't intervene before the attacker progresses is eliminated. This quantifies what coaches see intuitively.
+
+**2. Structure Integrity**
+Compactness, line spacing, block stability, xG path coverage, and the precise moments structure breaks. Includes a defensive model with adjustable parameters — we can tune it to match how opponents actually defend, or measure ourselves against our own targets.
+
+**3. Game-State Scoring**
+A consistent score for any moment based on elimination, proximity, angle, density, compactness, and action availability. This lets us compare situations objectively, not by vibe.
+
+This is how we turn "we looked stretched" into "lines separated by 28m, 3 defenders eliminated, breakdown triggered at 23:41."
+
+The core modules are built: `elimination.py`, `defense_physics.py`, `state_scoring.py`, `block_models.py`, `visualizer.py`. What remains is calibration against real match data.
+
+---
+
+## What It Enables
+
+**Evaluating our games:** For any moment, measure defenders eliminated, shape vs intended shape, xG zones reached, specific players out of position.
+
+**Simulating alternatives:** After a goal conceded, test what positioning would have prevented it. Before a match, simulate responses to opponent shapes.
+
+**Opponent scouting:** Model their defensive tendencies mathematically, find where they break down.
+
+**Trends over time:** Track whether we're getting more compact, eliminating more defenders, where fatigue affects execution.
+
+---
+
+## Sequenced Scope
+
+| Stage | Focus | Outcome |
+|-------|-------|---------|
+| A | Tracking outputs | Shape, spacing, baseline structure metrics |
+| B | Decision Engine v1 | Elimination + compactness/block measurements |
+| C | Engine expansion | Richer scoring, scenario simulation |
+
+We do not pretend the full engine is useful before tracking is trustworthy.
+
+---
+
+## Timeline
 
 | Phase | Timeframe | Outcome |
 |-------|-----------|---------|
-| Calibration training | Month 1 | Process any video without manual setup |
-| Tracking refinement | Month 2 | Handle real match conditions reliably |
-| Validation against GPS | Month 3 | Confirm accuracy, ready for use |
-| Decision engine v1 | Months 4-5 | First Game Model metrics automated |
+| Calibration training | Month 1 | Process video without manual setup |
+| Tracking refinement | Month 2 | Handle real match conditions |
+| Validation | Month 3 | Confirm accuracy against GPS |
+| Decision Engine v1 | Months 4-5 | First game model metrics automated |
 
-**Spring:** Tracking integrated with Part 1 — we can ask questions that combine Wyscout events with our spatial data.
+**Spring:** Tracking integrated with Hub — query across Wyscout events and our spatial data.
 
 **Fall:** Decision engine measuring tactical principles. This is where it gets powerful.
+
+---
+
+## Definition of Done
+
+Part 2 is "real" when:
+- Calibration is consistent without heroic manual setup
+- Tracking accuracy is validated against GPS where possible
+- The engine flags the same moments coaches identify on film (face validity)
+- Outputs are stable enough to compare across matches (repeatability)
 
 ---
 
 # How They Work Together
 
 ```
-Part 1 (Marshall AI) - Working in Weeks
-───────────────────────────────────────
-Week 1:     Data ingestion (Wyscout, GPS, meetings)
-Week 2:     Core system working         ← Value starts here
-Week 3:     Alerts + auto-prep
+Part 1 (Hub) - Working in Weeks
+───────────────────────────────
+Week 1:     Data ingestion
+Week 2:     Core system working    ← Value starts here
+Week 3+:    Expansion, adoption
 
 
-Part 2 (Tracking) - Developing in Parallel
-───────────────────────────────────────
-Month 1-2:  Calibration + tracking refinement
-Month 3:    Validation, integration     ← Feeds into Part 1
-Month 4-5:  Decision engine v1          ← Game Model automation
+Part 2 (Tracking + Engine) - Developing in Parallel
+───────────────────────────────────────────────────
+Month 1-2:  Calibration + tracking
+Month 3:    Validation             ← Feeds into Hub
+Month 4-5:  Decision engine v1     ← Game model automation
 ```
 
-Part 1 delivers value in weeks. Part 2 compounds it over months — and creates the analytical edge no one else has.
+Part 1 makes everything searchable and connected. Part 2 adds a new class of proprietary evidence inside that system — continuous tactical reality and objective measurements of our principles.
+
+The Hub isn't just "organized information." It becomes a system that can learn and surface truths from our games in ways competitors can't reproduce.
 
 ---
 
 # Summary
 
-**Part 1:** Connect our scattered data (Wyscout, GPS, meetings, recruitment) into one queryable system. Surface patterns across sources, preserve institutional knowledge, track recruitment outcomes, get proactive alerts, and auto-generate match prep. Working in 2-3 weeks.
+**Part 1:** Connect our scattered data into one queryable system. Staff alignment becomes structural. Pattern recognition across sources we can't mentally integrate. Institutional knowledge compounds instead of resetting. Working in 2-3 weeks.
 
-**Part 2:** Computer vision tracking that goes beyond Wyscout — proprietary spatial data, then automated Game Model measurement. Over 36,000 lines already written. Tracking ready by spring, decision engine by fall.
+**Part 2:** Proprietary tracking + decision engine that measures our game model objectively. 36,000+ lines already written. Tracking by spring, decision engine by fall.
 
 **The key insight:** Everyone has Wyscout. This system connects our scattered data, then builds proprietary analytics on top. That's how we become more analytical than everyone else in the country.
+
+---
+
+*For technical details on the decision engine architecture, see: DECISION_ENGINE_TECHNICAL_BRIEF.md*
