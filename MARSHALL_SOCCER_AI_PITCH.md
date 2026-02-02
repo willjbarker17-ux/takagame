@@ -207,6 +207,9 @@ The engine starts with a theoretical model of optimal defensive positioning base
 | Opponent attraction | Creates marking |
 | Teammate repulsion | Maintains spacing |
 | Line attraction | Maintains compactness |
+| xG path blocking | Cuts off highest-value passing lanes |
+
+The model also calculates the ball's highest xG path to goal at any moment — the sequence of passes or carries that would create the most dangerous chance. Good defensive positioning blocks these paths. When defenders drift out of the xG lanes, they leave the door open even if they look like they're in position.
 
 The equilibrium of these forces shows where defenders *theoretically* should be. But here's what makes it useful: **the force weights are adjustable**.
 
