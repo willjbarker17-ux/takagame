@@ -146,6 +146,62 @@ The core modules are built: `elimination.py`, `defense_physics.py`, `state_scori
 
 ---
 
+## Making It Marshall-Specific: Game Model Integration
+
+The engine becomes truly powerful when we encode Marshall's game model into it — not as a document we read, but as measurable targets the system uses.
+
+**Step 1: Define principles as parameters**
+
+Marshall's philosophy gets translated into specific, measurable targets:
+
+| Principle | Measurable Target |
+|-----------|-------------------|
+| "Press high when ball is in their third" | Defensive line > 35m when opponent in back third |
+| "Compact shape" | <18m between defensive and midfield lines |
+| "Switch quickly against compact defenses" | Switch within 3 passes when facing 8+ defenders in ball-side half |
+| "Win second balls" | 60%+ of our players within 10m of aerial duel landing zone |
+| "Quick transitions" | Ball in opponent half within 6 seconds of winning possession |
+
+These aren't aspirational — they're the benchmarks the engine measures against every frame.
+
+**Step 2: Measure execution**
+
+After each match, the engine reports:
+- "We achieved our pressing height target 71% of the time"
+- "Our lines were compact 84% of defensive phases"
+- "We switched within target 45% of opportunities — below our 60% goal"
+- "Transition speed averaged 7.2 seconds — 1.2s slower than target"
+
+Now we know exactly where we're executing the game model and where we're not.
+
+**Step 3: Build team play profiles**
+
+From tracking + Wyscout data, the engine builds a "play style profile" for any team — us or opponents:
+
+*Defensive profile:* Force model weights (how much they press vs protect), block type tendencies, pressing triggers, recovery patterns, where they get stretched.
+
+*Attacking profile:* Progression patterns (through middle vs wide), switch frequency, transition speed, where they create high-xG chances, decision tendencies under pressure.
+
+*Formation dynamics:* How their shape changes in/out of possession, where players drift, spacing tendencies.
+
+**Step 4: Simulate matchups**
+
+This is where it gets powerful. Before a match, we can run simulations:
+
+"If Marshall plays our game model against Kentucky's defensive profile, where do we create advantages?"
+
+The engine shows: Kentucky's left side collapses when pressed — their LB and LCM leave a gap. Our quick switches exploit this. Their CBs are slow to recover when we play direct. Our pressing triggers should focus on their right-sided buildup because their RB takes extra touches.
+
+We can visualize this — see our intended movements against their likely responses. Test different approaches before kickoff.
+
+**Step 5: Continuous learning**
+
+After we play Kentucky, their profile updates. Did they adjust from what we expected? Where did our game model succeed and fail against their actual play? The engine learns, and next time we face a similar profile, we're smarter.
+
+This is how the engine becomes Marshall-specific: it knows what we want to do, measures whether we're doing it, and helps us find where our style creates advantages against specific opponents.
+
+---
+
 ## What It Enables
 
 **Decision clarity:** For any moment in a match, see what the highest-value action was and compare it to what we actually did. Not "we should've done better" — specific alternatives with specific xG values attached.
