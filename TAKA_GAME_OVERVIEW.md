@@ -6,6 +6,8 @@
 
 Unlike real-time football games that test reflexes, Taka rewards strategic thinking, spatial awareness, and the ability to plan multiple moves ahead. It's football distilled into its purest tactical form.
 
+**The Twist:** Each team has their own ball. Both teams are simultaneously on offense and defense, creating a unique dual-threat dynamic where you must balance attacking with your ball while defending against your opponent's.
+
 ---
 
 ## The Playing Field
@@ -40,6 +42,12 @@ Each team consists of **11 pieces**:
 **Team Colors:**
 - **White:** Starts at the bottom (rows 1-4), faces North
 - **Black:** Starts at the top (rows 11-14), faces South
+
+**Starting Balls:**
+- Each team begins with **one ball** held by a designated piece
+- White's ball starts with piece at F3
+- Black's ball starts with piece at E12
+- Both balls are in play simultaneously throughout the game
 
 ---
 
@@ -90,11 +98,22 @@ Turning is strategically crucial for:
 
 ## Ball Mechanics
 
+### The Two-Ball System
+
+Taka's most distinctive feature is its **two-ball system**. Each team has their own ball, meaning:
+
+- **Simultaneous offense and defense:** You're always attacking with your ball while defending against your opponent's
+- **No possesion battles:** You don't fight over the same ball—you fight to score with yours first
+- **Parallel threats:** Every turn involves decisions about advancing your attack AND blocking theirs
+- **Tackling steals the opponent's ball:** When you tackle, you take their ball from them
+
+This creates a fundamentally different dynamic than traditional single-ball football. You can't simply "park the bus" on defense—you must advance your own ball to win.
+
 ### Ball Possession
 
-- A piece **automatically picks up** the ball when it moves onto the ball's square
-- Only **one piece can hold the ball** at a time
-- The ball can exist **independently** on the field (loose ball)
+- A piece **automatically picks up** a ball when it moves onto the ball's square
+- Only **one piece can hold a ball** at a time (but two different pieces can each hold their team's ball)
+- Balls can exist **independently** on the field (loose balls)
 
 ### Passing System
 
@@ -142,7 +161,7 @@ After making a pass, you can immediately select the receiving piece and pass aga
 
 ## Tackling
 
-Tackles are how you win the ball from opponents.
+Tackles are how you steal the opponent's ball and disrupt their attack.
 
 ### Tackle Rules
 
@@ -150,15 +169,16 @@ Tackles are how you win the ball from opponents.
 2. **Facing Restriction:** **Cannot tackle** an opponent who is facing away from you
 3. **Result:** On successful tackle:
    - The tackler and target **swap positions**
-   - The tackler gains **ball possession**
+   - The tackler **steals the opponent's ball**
    - The tackler's facing direction changes toward the tackled piece's original position
 
 ### Tackle Strategy
 
-Understanding the facing restriction is key:
-- Position pieces to face away from dangerous opponents
+In a two-ball game, tackling is primarily **defensive**—you're stopping the opponent's attack by stealing their ball:
+- Position pieces to face away from dangerous opponents (protect your ball carrier)
 - Set up tackles by maneuvering to an opponent's "blind side"
 - Use the position swap to penetrate defensive lines
+- A successful tackle can completely derail an opponent's offensive push
 
 ---
 
@@ -195,10 +215,10 @@ This adds another strategic layer: when to commit your goalie to the field.
 ## Scoring
 
 A goal is scored when:
-1. A piece with the ball **enters the opponent's goal area**, OR
-2. The ball is **passed into the opponent's goal area**
+1. A piece with a ball **enters the opponent's goal area**, OR
+2. A ball is **passed into the opponent's goal area**
 
-The game ends immediately when a goal is scored.
+**First to score wins.** Since both teams have a ball, it's a race—whoever gets their ball into the opponent's goal first wins the game. This creates constant tension: do you commit resources to attack faster, or hold back to defend?
 
 ---
 
@@ -269,6 +289,17 @@ Jump into games without creating an account. Guest players can:
 
 ## Strategic Concepts
 
+### The Two-Ball Dilemma
+
+The fundamental strategic question in Taka: **attack or defend?**
+
+With two balls in play, you must constantly balance:
+- **Pushing your attack:** Moving your ball toward the opponent's goal
+- **Slowing their attack:** Positioning pieces to tackle or block their ball carrier
+- **Tempo control:** Sometimes it's better to consolidate position than rush forward
+
+The best players find ways to do both—advancing their ball while simultaneously threatening the opponent's ball carrier.
+
 ### Controlling Space
 
 Like real football, controlling the midfield and key passing lanes is crucial. Use your facing directions to create passing networks that opponents can't easily intercept.
@@ -320,22 +351,25 @@ You must be in the shooting zone to score. This creates natural bottlenecks and 
 
 ## What Makes Taka Unique
 
-1. **Turn-Based Football:** Removes reflexes from the equation, pure tactical thinking
-2. **Facing Direction System:** Adds a chess-like element of controlling attack angles
-3. **Consecutive Passing:** Enables combination play rarely seen in board games
-4. **Realistic Rules:** Offside, tackling restrictions, and shooting zones mirror real football
-5. **Accessible Yet Deep:** Easy to learn movement, lifetime to master positioning
-6. **Real-Time Multiplayer:** Competitive play with skill-based matchmaking
-7. **Passwordless Auth:** Frictionless access via magic links
+1. **Two-Ball System:** Each team has their own ball—simultaneous offense and defense creates a race to score first
+2. **Turn-Based Football:** Removes reflexes from the equation, pure tactical thinking
+3. **Facing Direction System:** Adds a chess-like element of controlling attack angles
+4. **Consecutive Passing:** Enables combination play rarely seen in board games
+5. **Realistic Rules:** Offside, tackling restrictions, and shooting zones mirror real football
+6. **Accessible Yet Deep:** Easy to learn movement, lifetime to master positioning
+7. **Real-Time Multiplayer:** Competitive play with skill-based matchmaking
+8. **Passwordless Auth:** Frictionless access via magic links
 
 ---
 
 ## Conclusion
 
-Taka transforms football into a thoughtful, strategic experience where every piece's position and facing direction matters. Whether you're executing a brilliant through-ball, setting up an impenetrable defense, or threading passes through the opponent's lines, Taka rewards the patient tactician who can see three moves ahead.
+Taka transforms football into a thoughtful, strategic experience where every piece's position and facing direction matters. The two-ball system creates a constant tension between attack and defense—you can never fully commit to one without risking the other.
 
-It's football as a game of perfect information—no luck, no reflexes, just pure strategy.
+Whether you're racing your ball toward the goal, tackling to steal your opponent's ball, or setting up a devastating consecutive passing sequence, Taka rewards the player who can balance aggression with caution and see three moves ahead on both ends of the field.
+
+It's football as a game of perfect information—no luck, no reflexes, just pure strategy and the eternal question: attack or defend?
 
 ---
 
-*Welcome to Taka. Think twice. Pass once. Score.*
+*Welcome to Taka. Two balls. One goal. First to score wins.*
