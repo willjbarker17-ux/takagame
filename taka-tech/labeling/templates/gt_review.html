@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Review - Football Labeling</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            background: #1a1a2e;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            color: #00ff88;
+        }
+        .header .stats {
+            color: #888;
+        }
+        .header a {
+            color: #4a9eff;
+            text-decoration: none;
+        }
+        .controls {
+            background: #151525;
+            padding: 10px 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .controls button.nav {
+            background: #333;
+            color: #fff;
+        }
+        .controls button.nav:hover {
+            background: #444;
+        }
+        .controls button.fix {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+        }
+        .controls button.fix:hover {
+            transform: scale(1.05);
+        }
+        .controls button.delete {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+        .controls button.delete:hover {
+            transform: scale(1.05);
+        }
+        .controls .counter {
+            font-size: 1.2rem;
+            color: #00ff88;
+            min-width: 100px;
+            text-align: center;
+        }
+        .controls .info {
+            flex: 1;
+            color: #888;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .viewer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: calc(100vh - 140px);
+        }
+        .frame-container {
+            position: relative;
+            max-width: 95vw;
+            max-height: calc(100vh - 180px);
+        }
+        .frame-container canvas {
+            max-width: 100%;
+            max-height: calc(100vh - 180px);
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #888;
+            font-size: 1.2rem;
+        }
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .keyboard-hint kbd {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 2px;
+        }
+        .thumbnail-strip {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 90vw;
+            overflow-x: auto;
+        }
+        .thumbnail {
+            width: 80px;
+            height: 45px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+        .thumbnail:hover {
+            opacity: 1;
+            border-color: #666;
+        }
+        .thumbnail.active {
+            opacity: 1;
+            border-color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>GT Review</h1>
+        <span class="stats" id="stats">Loading...</span>
+        <a href="/">Back to Labeling</a>
+    </div>
+
+    <div class="controls">
+        <button class="nav" id="prevBtn" title="Previous (Left Arrow)">← Prev</button>
+        <span class="counter" id="counter">0 / 0</span>
+        <button class="nav" id="nextBtn" title="Next (Right Arrow)">Next →</button>
+        <span class="info" id="frameInfo">-</span>
+        <button class="nav" id="zoomOutBtn" title="Zoom out to see full template">Zoom -</button>
+        <button class="nav" id="zoomInBtn" title="Zoom in">Zoom +</button>
+        <button class="nav" id="zoomResetBtn" title="Reset zoom">1:1</button>
+        <button class="fix" id="fixBtn" title="Open in labeling tool to fix (F)">Fix</button>
+        <button class="delete" id="deleteBtn" title="Delete this GT annotation (D)">Delete</button>
+    </div>
+
+    <div class="viewer">
+        <div class="frame-container">
+            <canvas id="canvas"></canvas>
+            <div class="loading" id="loading">Loading GT frames...</div>
+        </div>
+    </div>
+
+    <div class="keyboard-hint">
+        <kbd>←</kbd> <kbd>→</kbd> Navigate &nbsp;|&nbsp; <kbd>F</kbd> Fix &nbsp;|&nbsp; <kbd>D</kbd> Delete &nbsp;|&nbsp; <kbd>-</kbd> <kbd>+</kbd> Zoom
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const loading = document.getElementById('loading');
+        const counter = document.getElementById('counter');
+        const frameInfo = document.getElementById('frameInfo');
+        const stats = document.getElementById('stats');
+
+        let gtFrames = [];
+        let currentIndex = 0;
+        let currentImage = null;
+        let zoom = 1.0;
+        let panX = 0, panY = 0;
+
+        // Load GT frame list
+        async function loadGTList() {
+            try {
+                const resp = await fetch('/api/gt/list');
+                const data = await resp.json();
+                gtFrames = data.gt_frames;
+                stats.textContent = `${data.total} GT frames`;
+
+                if (gtFrames.length > 0) {
+                    loading.style.display = 'none';
+                    showFrame(0);
+                } else {
+                    loading.textContent = 'No GT frames found';
+                }
+            } catch (e) {
+                loading.textContent = 'Error loading GT list: ' + e.message;
+            }
+        }
+
+        // Show a specific frame
+        async function showFrame(index) {
+            if (index < 0 || index >= gtFrames.length) return;
+
+            currentIndex = index;
+            const gt = gtFrames[index];
+
+            counter.textContent = `${index + 1} / ${gtFrames.length}`;
+            frameInfo.textContent = `${gt.video} - Frame ${gt.frame}`;
+
+            loading.style.display = 'block';
+            loading.textContent = 'Loading frame...';
+
+            try {
+                // Fetch frame image
+                const resp = await fetch(`/api/video/${encodeURIComponent(gt.video)}/frame/${gt.frame}`);
+                const data = await resp.json();
+
+                if (!data.frame) {
+                    throw new Error('No frame data');
+                }
+
+                // Load image
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    drawFrame(gt);
+                    loading.style.display = 'none';
+                };
+                img.onerror = () => {
+                    loading.textContent = 'Failed to load image';
+                };
+                img.src = 'data:image/jpeg;base64,' + data.frame;
+
+            } catch (e) {
+                loading.textContent = 'Error: ' + e.message;
+            }
+        }
+
+        // Draw frame with template overlay
+        function drawFrame(gt) {
+            if (!currentImage) return;
+
+            // Calculate canvas size based on zoom
+            const baseWidth = currentImage.width;
+            const baseHeight = currentImage.height;
+
+            // For zoom out, we need to show area outside the frame
+            // Calculate bounds that include all points
+            const points = gt.points || {};
+            let minX = 0, minY = 0, maxX = baseWidth, maxY = baseHeight;
+
+            for (const pt of Object.values(points)) {
+                if (pt) {
+                    minX = Math.min(minX, pt[0]);
+                    minY = Math.min(minY, pt[1]);
+                    maxX = Math.max(maxX, pt[0]);
+                    maxY = Math.max(maxY, pt[1]);
+                }
+            }
+
+            // Add padding
+            const padding = 100;
+            minX -= padding;
+            minY -= padding;
+            maxX += padding;
+            maxY += padding;
+
+            const contentWidth = maxX - minX;
+            const contentHeight = maxY - minY;
+
+            // Set canvas size
+            canvas.width = contentWidth * zoom;
+            canvas.height = contentHeight * zoom;
+
+            // Clear with dark background
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Apply zoom transform
+            ctx.save();
+            ctx.scale(zoom, zoom);
+            ctx.translate(-minX, -minY);
+
+            // Draw image
+            ctx.drawImage(currentImage, 0, 0);
+
+            // Draw frame border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, baseWidth, baseHeight);
+
+            // Check if we have all 4 corners
+            const cornerOrder = ['corner_tl', 'corner_tr', 'corner_br', 'corner_bl'];
+            const hasAllCorners = cornerOrder.every(name => points[name]);
+
+            // Draw quadrilateral if we have all 4 corners
+            if (hasAllCorners) {
+                const cornerPts = cornerOrder.map(name => points[name]);
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(cornerPts[0][0], cornerPts[0][1]);
+                for (let i = 1; i < 4; i++) {
+                    ctx.lineTo(cornerPts[i][0], cornerPts[i][1]);
+                }
+                ctx.closePath();
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(0, 255, 136, 0.1)';
+                ctx.fill();
+            }
+
+            // Draw lines connecting top points if available
+            const topPoints = ['corner_tl', 'center_top', 'corner_tr'];
+            const hasTopLine = topPoints.every(name => points[name]);
+            if (hasTopLine) {
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(points['corner_tl'][0], points['corner_tl'][1]);
+                ctx.lineTo(points['center_top'][0], points['center_top'][1]);
+                ctx.lineTo(points['corner_tr'][0], points['corner_tr'][1]);
+                ctx.stroke();
+            }
+
+            // Draw ALL points from the annotation
+            for (const [name, pt] of Object.entries(points)) {
+                if (!pt) continue;
+
+                const x = pt[0], y = pt[1];
+
+                // Color based on whether point is inside frame
+                const isInFrame = x >= 0 && x <= baseWidth && y >= 0 && y <= baseHeight;
+                const color = isInFrame ? '#00ff88' : '#ff4444';
+
+                // Point circle
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Label
+                const label = name.replace('corner_', 'C_').replace('center_', 'CTR_').replace('penalty_', 'PEN_').toUpperCase();
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 12px monospace';
+                ctx.fillText(label, x + 14, y + 4);
+            }
+
+            // Info overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+            ctx.fillRect(10, 10, 250, 80);
+
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 18px monospace';
+            ctx.fillText(`#${currentIndex + 1}`, 20, 35);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px monospace';
+            ctx.fillText(`Points: ${gt.num_points}`, 80, 35);
+
+            // Warning if incomplete
+            if (!hasAllCorners) {
+                ctx.fillStyle = '#ff4444';
+                ctx.fillText('INCOMPLETE - missing corners!', 20, 55);
+            } else {
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText('Has all 4 corners', 20, 55);
+            }
+
+            ctx.fillStyle = '#888';
+            ctx.fillText(`Names: ${gt.point_names?.join(', ') || 'none'}`, 20, 75);
+
+            ctx.restore();
+        }
+
+        // Navigation
+        function nextFrame() {
+            if (currentIndex < gtFrames.length - 1) {
+                showFrame(currentIndex + 1);
+            }
+        }
+
+        function prevFrame() {
+            if (currentIndex > 0) {
+                showFrame(currentIndex - 1);
+            }
+        }
+
+        function fixFrame() {
+            if (gtFrames.length === 0) return;
+            const gt = gtFrames[currentIndex];
+            // Open main labeling tool with this video and frame
+            window.open(`/?video=${encodeURIComponent(gt.video)}&frame=${gt.frame}`, '_blank');
+        }
+
+        async function deleteFrame() {
+            if (gtFrames.length === 0) return;
+            const gt = gtFrames[currentIndex];
+
+            if (!confirm(`Delete GT annotation from:\n${gt.video}\nFrame ${gt.frame}?`)) {
+                return;
+            }
+
+            try {
+                const resp = await fetch('/api/gt/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ video: gt.video, frame: gt.frame })
+                });
+
+                const result = await resp.json();
+
+                if (result.status === 'success') {
+                    // Remove from list and show next
+                    gtFrames.splice(currentIndex, 1);
+                    stats.textContent = `${gtFrames.length} GT frames`;
+
+                    if (gtFrames.length === 0) {
+                        loading.textContent = 'All GT frames reviewed!';
+                        loading.style.display = 'block';
+                        counter.textContent = '0 / 0';
+                    } else if (currentIndex >= gtFrames.length) {
+                        showFrame(gtFrames.length - 1);
+                    } else {
+                        showFrame(currentIndex);
+                    }
+                } else {
+                    alert('Delete failed: ' + result.message);
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function zoomIn() {
+            zoom = Math.min(zoom * 1.25, 3.0);
+            if (currentImage && gtFrames.length > 0) {
+                drawFrame(gtFrames[currentIndex]);
+            }
+        }
+
+        function zoomOut() {
+            zoom = Math.max(zoom / 1.25, 0.2);
+            if (currentImage && gtFrames.length > 0) {
+                drawFrame(gtFrames[currentIndex]);
+            }
+        }
+
+        function zoomReset() {
+            zoom = 1.0;
+            if (currentImage && gtFrames.length > 0) {
+                drawFrame(gtFrames[currentIndex]);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('nextBtn').onclick = nextFrame;
+        document.getElementById('prevBtn').onclick = prevFrame;
+        document.getElementById('fixBtn').onclick = fixFrame;
+        document.getElementById('deleteBtn').onclick = deleteFrame;
+        document.getElementById('zoomInBtn').onclick = zoomIn;
+        document.getElementById('zoomOutBtn').onclick = zoomOut;
+        document.getElementById('zoomResetBtn').onclick = zoomReset;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextFrame();
+            else if (e.key === 'ArrowLeft') prevFrame();
+            else if (e.key === 'f' || e.key === 'F') fixFrame();
+            else if (e.key === 'd' || e.key === 'D') deleteFrame();
+            else if (e.key === '=' || e.key === '+') zoomIn();
+            else if (e.key === '-' || e.key === '_') zoomOut();
+            else if (e.key === '0') zoomReset();
+        });
+
+        // Start
+        loadGTList();
+    </script>
+</body>
+</html>

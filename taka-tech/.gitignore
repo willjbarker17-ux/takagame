@@ -1,0 +1,55 @@
+__pycache__/
+*.pyc
+*.pyo
+.Python
+env/
+venv/
+.env
+
+# Large files - download from bucket instead
+*.pth
+*.pt
+*.onnx
+*.tflite
+
+# Video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Image files (large)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+
+# Labeling cache
+labeling/video_cache/
+labeling/gt_review/
+
+# Model checkpoints
+training/models/
+models/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+/tmp/
+*.tmp
+
+# Test outputs
+test_output/
