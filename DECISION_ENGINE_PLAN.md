@@ -4,7 +4,7 @@
 
 Build a system that answers: **"Given this situation, what has historically worked best?"**
 
-Using tracking data and event data, analyze patterns of successful build-ups and chance creation. When presented with a game situation (ball position, defensive setup, context), retrieve similar historical situations and identify which attacking actions led to success.
+Using tracking data and event data, analyze what attacking actions succeeded against specific defensive setups. When presented with a game situation, find the most similar historical situations and identify which actions led to success.
 
 ---
 
@@ -13,10 +13,19 @@ Using tracking data and event data, analyze patterns of successful build-ups and
 ### What We're Building
 
 A **similarity-based retrieval system** that:
-1. Takes a current game situation as input
-2. Finds the most similar historical situations from our database
-3. Returns what actions worked best in those situations
-4. Provides actionable insight to coaches
+1. Encodes game situations as continuous feature vectors (not discrete categories)
+2. Uses similarity algorithms to find matching historical situations
+3. Analyzes what actions worked in those similar situations
+4. Returns actionable insights to coaches
+
+### Key Design Decisions
+
+| Decision | What We Chose | Why |
+|----------|---------------|-----|
+| Situation matching | Similarity algorithm on continuous features | Hard categories (zones, formation labels) lose nuance and create arbitrary boundaries |
+| Defensive encoding | Behavioral features measured from tracking | Formation labels are imprecise - "4-4-2" means many different things |
+| Ball position | Continuous coordinates | Zone boundaries are arbitrary - similarity handles "closeness" naturally |
+| Skill imbalance | Address in Phase 3 | Build core system first, validate concept, then add complexity |
 
 ### Why This Approach
 
@@ -24,13 +33,15 @@ A **similarity-based retrieval system** that:
 |-------------|---------|
 | Pure RL/Simulation | No evidence of real-world tactical transfer (Google Football failed) |
 | Board game abstraction | Unvalidated - no proof simplified rules capture real tactics |
-| Formation labels only | Too imprecise - "4-4-2" means many different things |
+| Formation labels | Too imprecise - same label describes very different defensive behaviors |
+| Discrete zone categories | Arbitrary boundaries - play 1m apart gets different category |
 | Exact position matching | No matches - football state space too large |
 
 **This approach is grounded in:**
 - Real tracking data (not simulation)
 - Proven methodology (similar to TacticAI retrieval)
-- Measurable features (not subjective labels)
+- Continuous features that capture actual defensive behavior
+- Similarity algorithms that find meaningful matches without arbitrary categorization
 
 ---
 
@@ -56,97 +67,100 @@ A **similarity-based retrieval system** that:
 
 ## Situation Encoding
 
-### Ball Position (Zone-Based)
+### Ball Position (Continuous)
 
-Divide pitch into 5x5 grid (25 zones):
+**NOT discrete zones.** Instead, continuous features:
 
-```
-     Left   Left-Center   Center   Right-Center   Right
-    ┌───────┬───────┬───────┬───────┬───────┐
-    │  A5   │  B5   │  C5   │  D5   │  E5   │  Attacking Third
-    ├───────┼───────┼───────┼───────┼───────┤
-    │  A4   │  B4   │  C4   │  D4   │  E4   │  Attacking Mid
-    ├───────┼───────┼───────┼───────┼───────┤
-    │  A3   │  B3   │  C3   │  D3   │  E3   │  Middle Third
-    ├───────┼───────┼───────┼───────┼───────┤
-    │  A2   │  B2   │  C2   │  D2   │  E2   │  Defensive Mid
-    ├───────┼───────┼───────┼───────┼───────┤
-    │  A1   │  B1   │  C1   │  D1   │  E1   │  Defensive Third
-    └───────┴───────┴───────┴───────┴───────┘
-         ← Own Goal                    Opponent Goal →
-```
+| Feature | Description | Unit |
+|---------|-------------|------|
+| `ball_x` | Horizontal position on pitch | Meters from left touchline |
+| `ball_y` | Vertical position (depth) | Meters from own goal line |
+| `ball_distance_to_goal` | Direct distance to opponent goal center | Meters |
+| `ball_angle_to_goal` | Angle to goal from ball position | Degrees |
+
+The similarity algorithm handles "closeness" - situations with ball at 35m and 36m will naturally be similar without needing to define zone boundaries.
 
 ### Defensive Features (Behavioral, Not Labels)
 
-Instead of formation names, measure actual defensive behavior:
+**NO formation labels.** Instead, measure actual defensive behavior from tracking data:
+
+#### Core Features (Phase 1)
 
 | Feature | Description | How to Measure |
 |---------|-------------|----------------|
 | `line_height` | How high/deep is the defensive line | Average Y-coordinate of back 4 (meters from own goal) |
-| `compactness_vertical` | Vertical distance between defensive lines | Distance from deepest defender to highest midfielder |
-| `compactness_horizontal` | Width of defensive shape | Distance between widest defenders |
-| `press_intensity` | How aggressively do they close down | Average closing speed when ball is received (m/s) |
-| `pressure_on_ball` | Immediate pressure | Distance of nearest defender to ball carrier |
-| `players_behind_ball` | Defensive commitment | Count of defenders behind ball line |
+| `compactness_vertical` | Vertical distance between defensive lines | Distance from deepest defender to highest midfielder (meters) |
+| `compactness_horizontal` | Width of defensive shape | Distance between widest defenders (meters) |
+| `press_intensity` | How aggressively they close down | Average closing speed when ball is received (m/s) |
+| `pressure_on_ball` | Immediate pressure on ball carrier | Distance of nearest defender to ball (meters) |
+| `players_behind_ball` | Defensive commitment | Count of defenders goal-side of ball |
 
-#### Phase 2 Features (Add After Validation)
+#### Extended Features (Phase 2 - After Validation)
 
 | Feature | Description | How to Measure |
 |---------|-------------|----------------|
-| `marking_style` | Man-oriented vs zonal | Correlation between defender and nearest attacker movement |
-| `shift_speed` | Defensive reaction time | Time for shape to adjust after ball movement |
-| `recovery_tendency` | Counter-press vs drop | Movement direction after possession loss |
+| `marking_style` | Man-oriented vs zonal | Correlation coefficient between defender movement and nearest attacker movement over possession |
+| `shift_speed` | Defensive reaction time | Average time for defensive shape centroid to adjust after ball movement (seconds) |
+| `recovery_tendency` | Counter-press vs drop | Average movement direction (toward/away from ball) in first 2s after possession loss |
+| `defensive_width_ratio` | Shape relative to ball | Defensive width divided by distance from ball to goal |
 
-### Attacking Features
+### Attacking Features (Continuous)
 
-| Feature | Description |
-|---------|-------------|
-| `attackers_ahead_of_ball` | Players in advanced positions |
-| `passing_options` | Number of viable passing lanes |
-| `space_ahead` | Open space in direction of attack |
-| `possession_phase` | Build-up / Progression / Final third |
+| Feature | Description | How to Measure |
+|---------|-------------|----------------|
+| `attackers_ahead_of_ball` | Offensive presence | Count of attacking players with higher Y than ball |
+| `attacking_width` | Spread of attack | Horizontal distance between widest attackers (meters) |
+| `players_in_box` | Penalty area threat | Count of attackers in opponent's 18-yard box |
+| `central_overload` | Middle congestion | Density of players in central channel |
+| `space_ahead` | Room to progress | Nearest defender distance in direction of goal |
 
 ### Context Features
 
-| Feature | Description |
-|---------|-------------|
-| `score_state` | Winning / Drawing / Losing |
-| `time_bucket` | 0-15, 15-30, 30-45, 45-60, 60-75, 75-90 |
-| `possession_duration` | Seconds since possession started |
+| Feature | Description | Values |
+|---------|-------------|--------|
+| `score_differential` | Current advantage/disadvantage | Integer (..., -2, -1, 0, +1, +2, ...) |
+| `match_time` | Minutes played | 0-90+ (continuous) |
+| `possession_duration` | Time on ball | Seconds since possession started |
 
 ---
 
 ## Similarity Matching
 
-### Approach
+### How It Works
 
-1. Encode each historical possession as a feature vector
-2. For a query situation, compute distance to all historical situations
-3. Return top-N most similar situations
-4. Analyze outcomes of those situations
+1. **Encode each historical situation** as a feature vector containing all features above
+2. **Normalize features** to same scale (z-score or min-max)
+3. **For a query situation**, compute similarity to all historical situations
+4. **Return top-N most similar** situations
+5. **Analyze outcomes** of actions taken in those situations
 
-### Distance Metric
+### Distance/Similarity Metric
 
 Weighted Euclidean distance across normalized features:
 
 ```
-distance = sqrt(
-    w1 * (line_height_diff)^2 +
-    w2 * (compactness_diff)^2 +
-    w3 * (pressure_diff)^2 +
+distance(A, B) = sqrt(
+    w1 * (A.line_height - B.line_height)² +
+    w2 * (A.compactness_vertical - B.compactness_vertical)² +
+    w3 * (A.pressure_on_ball - B.pressure_on_ball)² +
     ...
 )
+
+similarity = 1 / (1 + distance)
 ```
 
-Initial weights: Equal (1.0 for all features)
-Later: Learn weights from outcome prediction accuracy
+**Initial weights:** Equal (1.0 for all features)
 
-### Alternative: Learned Embeddings
+**Later:** Learn optimal weights by measuring which weighting best predicts similar outcomes for similar situations
 
-If hand-crafted features plateau, consider:
-- Graph Neural Network (GNN) encoding player positions as nodes
-- Let model learn what "similar" means
-- More complex but potentially more accurate
+### Why This Works Better Than Categories
+
+| Categories (5x5 zones + formation labels) | Similarity on Continuous Features |
+|-------------------------------------------|-----------------------------------|
+| Ball at 34m and 36m might be different zones | Ball at 34m and 36m are naturally similar |
+| "4-4-2" and "4-4-2 low block" same label | Actual line height distinguishes them |
+| Man-to-man and zonal can look identical | Marking correlation feature captures difference |
+| Fixed boundaries = arbitrary cutoffs | Similarity is continuous = no arbitrary lines |
 
 ---
 
@@ -161,12 +175,13 @@ If hand-crafted features plateau, consider:
 | `shot_generated` | Did possession result in shot | Chance creation |
 | `xG_of_shot` | If shot, what was its xG | Chance quality |
 
-### For Actions
+### For Evaluating the System
 
-| Metric | Definition |
-|--------|------------|
-| `action_success_rate` | % of times this action type succeeded in similar situations |
-| `action_xT_contribution` | Average xT added by this action in similar situations |
+| Metric | What It Measures |
+|--------|------------------|
+| Outcome consistency | Do similar situations (high similarity score) have similar outcomes? |
+| Coach relevance rating | Do coaches agree retrieved situations are tactically similar? |
+| Recommendation accuracy | Do higher-rated actions actually succeed more often? |
 
 ---
 
@@ -175,42 +190,45 @@ If hand-crafted features plateau, consider:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      DATA INGESTION                         │
-│  ├── Tracking data parser                                   │
-│  ├── Event data parser                                      │
-│  └── Data alignment (sync tracking + events)                │
+│  ├── Tracking data parser (positions at each frame)         │
+│  ├── Event data parser (actions and outcomes)               │
+│  └── Data alignment (sync tracking + events by timestamp)   │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    FEATURE EXTRACTION                       │
-│  ├── Ball zone classifier                                   │
-│  ├── Defensive feature calculator                           │
-│  ├── Attacking feature calculator                           │
-│  └── Context feature extractor                              │
+│  ├── Ball position features (continuous coordinates)        │
+│  ├── Defensive behavioral features (from player positions)  │
+│  ├── Attacking features (from player positions)             │
+│  └── Context features (score, time, etc.)                   │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                   SITUATION DATABASE                        │
 │  ├── Feature vectors for all historical possessions         │
-│  ├── Indexed for fast similarity search                     │
-│  └── Linked to outcomes (what happened next)                │
+│  ├── Normalized for similarity computation                  │
+│  ├── Indexed for fast nearest-neighbor search               │
+│  └── Linked to outcomes (what action was taken, did it work)│
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                   SIMILARITY ENGINE                         │
-│  ├── Query encoder                                          │
-│  ├── Nearest neighbor search                                │
-│  └── Result aggregation                                     │
+│  ├── Query encoder (same feature extraction)                │
+│  ├── Nearest neighbor search (find top-N similar)           │
+│  ├── Outcome aggregation (what worked in similar situations)│
+│  └── Confidence scoring (based on N and outcome variance)   │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                      OUTPUT LAYER                           │
 │  ├── "In similar situations, X worked Y% of the time"       │
-│  ├── Video clips of similar situations                      │
-│  └── Recommended actions ranked by success rate             │
+│  ├── Video clips of the most similar historical situations  │
+│  ├── Recommended actions ranked by historical success rate  │
+│  └── Confidence level based on sample size and consistency  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -220,71 +238,71 @@ If hand-crafted features plateau, consider:
 
 ### Phase 1: Foundation (Validate Core Concept)
 
-**Goal:** Does similarity matching find meaningful patterns at all?
+**Goal:** Does similarity matching on behavioral features find meaningful patterns?
 
 **Deliverables:**
 - [ ] Tracking data ingestion pipeline
-- [ ] Basic feature extraction (line height, compactness, pressure, ball zone)
+- [ ] Core feature extraction (line height, compactness, pressure, ball position)
 - [ ] Situation database with 1000+ possessions
-- [ ] Simple similarity search
-- [ ] Basic outcome analysis
+- [ ] Similarity search implementation
+- [ ] Basic outcome analysis ("what worked in similar situations")
 
-**Validation:**
-- Do similar situations have similar outcomes?
-- Can we distinguish high-success vs low-success patterns?
-- Does a coach find the retrieved situations relevant?
+**Validation Questions:**
+- Do situations with high similarity scores have similar outcomes?
+- Do coaches agree that retrieved situations are tactically relevant?
+- Can we distinguish what works vs what doesn't in similar situations?
 
-**Timeline:** 4-6 weeks
+**Success Criteria:**
+- Coaches rate retrieved situations as relevant >70% of the time
+- Outcome variance within similar situations is lower than random baseline
 
 ---
 
 ### Phase 2: Refinement (Improve Accuracy)
 
-**Goal:** Make recommendations more accurate and actionable
+**Goal:** Make similarity matching more accurate, add behavioral features
 
 **Deliverables:**
-- [ ] Expanded feature set (marking style, shift speed, etc.)
+- [ ] Extended feature set (marking style, shift speed, recovery tendency)
 - [ ] Learned feature weights (optimize for outcome prediction)
 - [ ] Action-level analysis (not just possession-level)
 - [ ] Confidence scores for recommendations
+- [ ] Feature importance analysis (which features matter most)
 
-**Validation:**
-- Does expanded feature set improve outcome prediction?
-- Do coaches prefer recommendations vs baseline?
-
-**Timeline:** 6-8 weeks
+**Validation Questions:**
+- Do extended features improve outcome consistency within similar situations?
+- Do learned weights outperform equal weights?
+- Do coaches prefer recommendations with confidence scores?
 
 ---
 
-### Phase 3: Skill Adjustment (Control for Player Quality)
+### Phase 3: Skill Adjustment
 
 **Goal:** Separate "this worked because it's good" from "good players executed it"
 
 **Deliverables:**
-- [ ] Player physical metrics integration
-- [ ] Historical performance baselines per player
+- [ ] Player physical metrics integration (speed, acceleration from tracking)
+- [ ] Historical performance baselines per player (pass completion rates, etc.)
 - [ ] Skill-adjusted success rates
-- [ ] Within-team variation analysis
+- [ ] Within-team variation analysis (same team, different choices, what worked)
 
-**Validation:**
-- Are patterns consistent across team quality tiers?
+**Validation Questions:**
+- Are patterns consistent when controlling for player/team quality?
 - Do skill-adjusted recommendations differ from raw recommendations?
-
-**Timeline:** 6-8 weeks
+- Does skill adjustment improve prediction accuracy?
 
 ---
 
-### Phase 4: Production (Scale and Polish)
+### Phase 4: Production
 
-**Goal:** System ready for regular use by coaching staff
+**Goal:** System ready for regular coaching staff use
 
 **Deliverables:**
-- [ ] Real-time query interface
+- [ ] Fast query interface (<1 second response)
 - [ ] Video clip retrieval for similar situations
-- [ ] Pre/post-match report generation
+- [ ] Pre-match report generation (opponent tendencies)
+- [ ] Post-match report generation (decision analysis)
 - [ ] API for integration with other tools
-
-**Timeline:** 8-12 weeks
 
 ---
 
@@ -292,35 +310,23 @@ If hand-crafted features plateau, consider:
 
 | Not Building | Reason |
 |--------------|--------|
+| Discrete zone categories | Similarity algorithm handles "closeness" better than arbitrary boundaries |
+| Formation classifier/labels | Behavioral features are more accurate than labels |
 | Full match simulation | Sim-to-real gap unsolved; no evidence of tactical transfer |
-| Formation classifier | Labels too imprecise; behavioral features are more accurate |
-| Real-time in-match recommendations | Data latency issues; validation harder; Phase 4+ at earliest |
-| Player-level decision scoring | Requires skill adjustment first; Phase 3+ |
-| Predictive model ("what will happen") | Starting with descriptive ("what has worked"); predictive is harder |
+| Board game abstraction | Unvalidated hypothesis; not grounded in real data |
+| Real-time in-match system | Validate offline system first; real-time adds complexity |
+| Predictive model ("what will happen") | Starting with descriptive ("what has worked"); easier to validate |
 
 ---
 
 ## Open Questions (To Resolve Empirically)
 
-1. **Zone granularity:** Is 5x5 right? Or should it be 4x4, 6x6, continuous?
-2. **Feature weights:** Which features matter most for similarity?
-3. **Sample size threshold:** How many similar situations needed for reliable insight?
-4. **Time window:** How much historical data is relevant? (1 season? 3 seasons?)
-5. **Cross-league validity:** Do patterns transfer across leagues/levels?
-
----
-
-## Success Criteria
-
-### Phase 1 Success
-- System retrieves situations that coaches agree are "similar"
-- Retrieved situations have outcome variance (not all succeed or all fail)
-- At least one actionable insight emerges from analysis
-
-### Overall Success
-- Coaches use the system regularly (weekly+)
-- Recommendations influence training or match preparation
-- Measurable improvement in identified metrics (xT, chance creation, etc.)
+1. **Feature weights:** Which features matter most for tactical similarity?
+2. **Similarity threshold:** How similar is "similar enough" to draw conclusions?
+3. **Sample size:** How many similar situations needed for reliable insight?
+4. **Time window:** How much historical data is relevant? (Does 3-year-old data still apply?)
+5. **Cross-league validity:** Do patterns transfer across leagues/competition levels?
+6. **Optimal N:** How many similar situations should we retrieve? (10? 50? 100?)
 
 ---
 
@@ -328,24 +334,24 @@ If hand-crafted features plateau, consider:
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| Features don't capture what matters | Medium | High | Start simple, validate with coaches, iterate |
-| Not enough data for statistical power | Medium | High | Start with coarser categories, expand data sources |
-| Coaches don't trust/use system | Medium | High | Involve coaches early, show video evidence |
-| Tracking data too expensive | Low | High | Start with available data, prove value, then expand |
-| Skill imbalance skews results | Medium | Medium | Address in Phase 3; be cautious with early conclusions |
+| Chosen features don't capture what matters | Medium | High | Start with core features, validate with coaches, iterate based on feedback |
+| Not enough similar situations in database | Medium | Medium | Cast wider similarity net; aggregate more data sources |
+| Coaches don't trust/use system | Medium | High | Involve coaches early; show video evidence alongside recommendations |
+| Tracking data too expensive | Low | High | Prove value with available data first, then justify expanded access |
+| Skill imbalance skews early results | Medium | Medium | Be explicit about limitation; address properly in Phase 3 |
 
 ---
 
 ## Next Steps
 
 1. **Secure tracking data access** - Required before anything else
-2. **Build data ingestion pipeline** - Parse tracking + events
-3. **Implement basic feature extraction** - Start with 4-5 core features
-4. **Create situation database** - 1000+ possessions minimum
-5. **Build simple similarity search** - Nearest neighbor on feature vectors
-6. **Validate with coach** - Are retrieved situations relevant?
+2. **Build data ingestion pipeline** - Parse tracking + events, align by timestamp
+3. **Implement core feature extraction** - Ball position, line height, compactness, pressure
+4. **Create situation database** - Store feature vectors for historical possessions
+5. **Build similarity search** - Nearest neighbor on normalized features
+6. **Validate with coach** - Are retrieved situations tactically relevant?
 
 ---
 
-*Document version: 1.0*
+*Document version: 2.0*
 *Last updated: February 2026*
