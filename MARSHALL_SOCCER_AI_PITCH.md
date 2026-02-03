@@ -86,11 +86,12 @@ The Hub turns our weekly thinking into an asset we can leverage repeatedly, rath
 
 | Phase | Timeframe | What We Get |
 |-------|-----------|-------------|
-| Data Ingestion | Week 1 | Highest-signal sources connected (docs, meetings, Wyscout) |
-| Core System | Week 2 | Working Hub, staff can start querying |
-| Expansion | Week 3+ | GPS, recruitment, continuous improvement |
+| Data Ingestion | Weeks 1-2 | Highest-signal sources connected (docs, meetings, Wyscout) |
+| Core System | Weeks 3-4 | Working Hub, staff can start querying |
+| Refinement | Weeks 5-6 | Iterate based on staff feedback, improve retrieval quality |
+| Expansion | Ongoing | GPS, recruitment, continuous improvement |
 
-The point is adoption and compounding, not claiming perfection on Day 21.
+The point is adoption and compounding, not claiming perfection on Day 30.
 
 ---
 
@@ -129,11 +130,11 @@ Tracking is only useful if it's accurate under real match conditions. That's why
 
 Tracking produces coordinates. The engine turns those coordinates into tactical intelligence.
 
-**The End Goal: A Football "Stockfish"**
+**The End Goal: A Football Simulation Engine**
 
-The vision is an engine that can analyze any game situation and find the optimal path to a scoring opportunity — not through designed rules, but by learning from thousands of real match situations what actually works.
+The vision is an engine that can simulate any game situation and find the optimal path to a scoring opportunity — not through designed rules, but by learning from thousands of real match situations what actually works.
 
-Like Stockfish in chess: given a position, explore possible action sequences, prune bad options, go deep on promising ones, and return the best path forward.
+Given a position, explore possible action sequences, prune bad options, go deep on promising ones, and return the best path forward.
 
 **The Approach: Learn From Reality, Then Simulate**
 
@@ -148,7 +149,7 @@ Phase 1-4: Learn from real matches
            ↓
 Phase 5:   Use learned patterns as simulation rules
            ↓
-           Search for optimal sequences (like Stockfish)
+           Search for optimal sequences through simulation
 ```
 
 **What we're building first:**
@@ -176,7 +177,7 @@ Connect to real game footage. Feed it tracking data from actual matches. Build a
 
 **The simulation goal (Phase 5):**
 
-Once we've learned enough patterns, we can search like Stockfish:
+Once we've learned enough patterns, we can run simulations:
 
 ```
 Ball reception moment
@@ -277,7 +278,7 @@ Track 3 matches from an opponent and we have preliminary patterns. Track a full 
 Every match we analyze adds to the database. The engine gets smarter over time:
 - More situations = better pattern matching
 - More outcomes = more accurate success predictions
-- Eventually = search for optimal sequences like Stockfish
+- Eventually = simulate and search for optimal sequences
 
 This is how it becomes Marshall-specific: it learns from our games, our players, our opponents. But the underlying engine works for any tactical philosophy.
 
@@ -351,9 +352,10 @@ Part 2 is "real" when:
 ```
 Part 1 (Hub) - Working in Weeks
 ───────────────────────────────
-Week 1:     Data ingestion
-Week 2:     Core system working    ← Value starts here
-Week 3+:    Expansion, adoption
+Weeks 1-2:  Data ingestion
+Weeks 3-4:  Core system working    ← Value starts here
+Weeks 5-6:  Refinement based on feedback
+Ongoing:    Expansion, adoption
 
 
 Part 2 (Tracking + Engine) - Developing in Parallel
@@ -371,9 +373,9 @@ The Hub isn't just "organized information." It becomes a system that can learn a
 
 # Summary
 
-**Part 1:** Connect our scattered data into one queryable system. Staff alignment becomes structural. Pattern recognition across sources we can't mentally integrate. Institutional knowledge compounds instead of resetting. Working in 2-3 weeks.
+**Part 1:** Connect our scattered data into one queryable system. Staff alignment becomes structural. Pattern recognition across sources we can't mentally integrate. Institutional knowledge compounds instead of resetting. Working in 4-6 weeks.
 
-**Part 2:** Proprietary tracking + decision engine. The end goal: a football "Stockfish" that finds optimal paths to scoring positions by learning from real match data — not designed rules that might be wrong. We learn what actually works from tracking data, then use that knowledge to search for the best decisions. 36,000+ lines already written. Tracking by spring, decision engine learning by fall, simulation search as it matures.
+**Part 2:** Proprietary tracking + decision engine. The end goal: a football simulation engine that finds optimal paths to scoring positions by learning from real match data — not designed rules that might be wrong. We learn what actually works from tracking data, then use that knowledge to simulate and search for the best decisions. 36,000+ lines already written. Tracking by spring, decision engine learning by fall, simulation as it matures.
 
 **The key insight:** Everyone has Wyscout. This system connects our scattered data, learns what actually works from our games, then builds a simulation grounded in reality. That's how we become more analytical than everyone else in the country — we're not guessing what should work, we know what does work.
 
