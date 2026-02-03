@@ -306,16 +306,66 @@ similarity = 1 / (1 + distance)
 
 ---
 
-## What We're NOT Building (And Why)
+### Phase 5: Simulation Engine (Future)
 
-| Not Building | Reason |
-|--------------|--------|
+**Goal:** Use learned patterns as simulation rules for multi-step search
+
+**Prerequisites:** Phases 1-4 complete and validated. Large database (5000+ possessions). Confirmed that similarity matching reliably predicts outcomes.
+
+**Concept:**
+
+Instead of designing simulation rules, use the similarity database AS the simulation:
+
+```
+Current State → Find Similar Historical States →
+  → What actions were taken? (action distribution)
+  → What happened? (outcome distribution)
+  → What did the next state look like? (transition distribution)
+```
+
+**How It Enables Search:**
+
+```
+Given current state:
+  1. Find similar situations
+  2. Get action distribution (what players typically do)
+  3. For each action, get outcome distribution (what typically happens)
+  4. For successful outcomes, get next-state distribution
+  5. Recursively search 2-3 steps ahead
+  6. Find highest expected value sequences
+```
+
+**What This Enables:**
+- **Counterfactual analysis:** "If you'd passed left, historical success rate was 15% higher"
+- **Multi-step reasoning:** "Through ball → cross → header has 0.18 xG based on similar sequences"
+- **Sequence discovery:** Find high-value action sequences that are rare but successful
+- **Opponent-specific search:** Filter to opponent's matches for targeted game plans
+
+**Why Wait:**
+- Need validated similarity matching first (Phases 1-2)
+- Need large enough database for coverage
+- Need confidence that retrieved situations are truly similar
+- Simulation compounds any errors in the foundation
+
+**Future Deliverables:**
+- [ ] Learned transition model from similarity database
+- [ ] Monte Carlo search using historical distributions
+- [ ] Sequence recommendation engine
+- [ ] "What if" scenario analysis tool
+
+---
+
+## What We're NOT Building Now (And Why)
+
+| Not Building Now | Reason |
+|------------------|--------|
 | Discrete zone categories | Similarity algorithm handles "closeness" better than arbitrary boundaries |
 | Formation classifier/labels | Behavioral features are more accurate than labels |
-| Full match simulation | Sim-to-real gap unsolved; no evidence of tactical transfer |
-| Board game abstraction | Unvalidated hypothesis; not grounded in real data |
+| Designed simulation rules | Learn transitions from data instead (Phase 5, after validation) |
+| Board game abstraction | Unvalidated hypothesis; similarity approach is grounded in real data |
 | Real-time in-match system | Validate offline system first; real-time adds complexity |
 | Predictive model ("what will happen") | Starting with descriptive ("what has worked"); easier to validate |
+| Multi-step search (initially) | Foundation must work first; simulation is Phase 5 |
 
 ---
 
