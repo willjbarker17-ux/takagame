@@ -230,14 +230,47 @@ Example: BGZ buildup at 34:22.
 
 This is player-level, moment-specific, grounded in what actually works — not what physics says should work.
 
-**Opponent analysis:**
+**Opponent analysis — finding exactly what works against specific teams:**
 
-Same approach applied to opponents:
-1. Build database of their matches
-2. Learn their patterns (how they defend, where they're vulnerable)
-3. Search for sequences that exploit their specific weaknesses
+This is where the system becomes a genuine competitive advantage.
 
-"Kentucky's left side is vulnerable when ball switches quickly — their LB takes 2.8s to recover vs. league average 2.1s."
+The same similarity database we build from our own games can be filtered to any opponent. Track their matches, and we learn exactly what works against them — not general tendencies, but specific, actionable patterns:
+
+| What We Learn | Example |
+|---------------|---------|
+| **Defensive weaknesses** | "Against quick switches, their LB takes 2.8s to recover vs. league average 2.1s — target that channel" |
+| **High-value actions** | "Through balls into their left channel succeed 55% vs. 35% on the right — their LCB is slow to drop" |
+| **Pressing triggers** | "They press when ball goes back to GK but leave massive gaps when ball goes wide" |
+| **Shape vulnerabilities** | "In their 4-4-2, the gap between CM and RB opens when ball is on opposite wing" |
+| **Recovery patterns** | "After losing possession, they take 4.2s to reform vs. average 3.1s — we have a window" |
+
+**How it works for game prep:**
+
+Before a match, we query the database: "Show me situations similar to how we want to play, but filtered to this opponent's defensive responses."
+
+The engine returns:
+- Situations where teams attacked their weaknesses successfully
+- What actions led to high-value outcomes against them specifically
+- Where their defensive shape breaks down most often
+- Which of our typical patterns would be most effective against their tendencies
+
+**Concrete example:**
+
+*Preparing for Kentucky:*
+
+Query: "Ball in BGZ, opponent in mid-block — what works against Kentucky?"
+
+Results from 8 Kentucky matches analyzed:
+- Switch to weak side: 65% progression rate (vs. 45% against average opponent)
+- Direct ball into channel: 52% success when their #4 is the nearest defender
+- Playing through central midfield: only 28% — their #6 intercepts well
+- Recommendation: Force play wide, exploit slow LB recovery, avoid central combinations
+
+This isn't generic scouting ("they defend deep"). It's specific: "In this exact situation, this specific action works X% of the time against them."
+
+**The database grows with every opponent:**
+
+Track 3 matches from an opponent and we have preliminary patterns. Track a full season and we know their tendencies better than they know themselves. Track multiple seasons and we see how they've evolved — and where old weaknesses remain.
 
 **The learning compounds:**
 
