@@ -180,83 +180,130 @@ This achieves:
 
 ## How the Products Connect
 
-Taka Game and Taka Tech are not "a game studio plus an analytics startup." They are two product lines building toward the same capability from different directions.
+Taka Game and Taka Tech are not "a game studio plus an analytics startup." They are two product lines building the same thing from different directions. To understand why, you have to understand what the simulation engine actually is.
 
-### The shared technical core
+### The simulation engine is a game tree search
 
-Both products operate on the same four primitives:
+The end goal of Taka Tech is a simulation engine that can take any football situation and find the optimal path to a scoring opportunity. Here is what that looks like computationally:
 
-| Primitive | Taka Game | Taka Tech / Sim |
-|-----------|-----------|-----------------|
-| **State** | Discrete grid + facing + possession + constraints | Continuous coordinates + pressure/shape features + context |
-| **Actions** | Move / turn / pass / tackle / shoot | Pass / dribble / shot / move / press (same categories, richer parameters) |
+```
+Ball reception moment
+    ├── Pass to Player A
+    │      ├── A shoots → evaluate xG         ← terminal, score it
+    │      ├── A passes to B → keep exploring
+    │      └── A loses ball → stop            ← terminal, score it
+    ├── Pass to Player B (promising) → go DEEP
+    ├── Dribble into pressure → PRUNE early
+    └── Shot → evaluate xG                    ← terminal, score it
+```
+
+This is tree search. Explore branches. Prune bad ones. Go deep on promising ones. Evaluate terminal states. Return the best path.
+
+This is also exactly what a game AI does. Chess engines, Go engines, and Taka Game AI all solve the same computational problem: given a state, search through possible action sequences to find the one with the highest expected value.
+
+The simulation engine IS a game engine. The difference is where the rules come from:
+
+| | Taka Game | Taka Sim |
+|---|-----------|----------|
+| **State** | Discrete grid + facing + possession | Continuous coordinates + pressure/shape features |
+| **Actions** | Move / turn / pass / tackle / shoot | Same categories, richer parameters |
 | **Transitions** | Hand-designed deterministic rules | Learned from real tracking data |
-| **Value** | Scoring / reaching advantageous positions | xT, xG, progression, retention, defensive stability |
+| **Value** | Scoring / reaching advantageous positions | xT, xG, progression, defensive stability |
+| **Search** | Tree search over game rules | Tree search over learned transition models |
 
-The relationship is not "board game vs analytics." It is low-fidelity decision engine vs high-fidelity decision engine.
+Same structure. Same algorithms. Different transition model underneath.
 
-### How Taka Game benefits Taka Sim (technically)
+### The core integration: Taka Game is the development environment for the search engine
 
-This is the critical linkage. It is real and defensible, but it does not overclaim.
+The simulation engine has two halves:
 
-**1. Scenario and explanation UX — solved in a live environment**
+1. **The learned model** (Phases 1-4): what actually happens in real football — pass success rates, defensive reactions, movement physics. This comes entirely from tracking data. The game does not contribute here.
 
-Taka Sim's success depends on interface questions that teams will not tolerate being figured out later:
-- How to present a situation quickly
-- How to show options and tradeoffs without overwhelming users
-- How to explain "why" an action is better (risk, confidence, downstream value)
-- How to let users explore alternatives ("what if I had passed here instead?")
+2. **The search engine** (Phase 5): given the learned model, explore action sequences to find optimal paths. This is tree search, position evaluation, branch pruning, multi-agent reasoning.
 
-The consumer game platform provides high-volume iteration on exactly these problems:
-- Scenario presentation formats
-- Recommendation explanations
-- "What-if" exploration tools
-- Tutoring and feedback loops
+The game directly develops half #2.
 
-This is direct technical leverage. It makes the simulation engine usable when it arrives.
+Building AI for Taka Game requires solving the same problems the simulation search engine needs:
 
-**2. A controlled evaluation harness for model iteration**
+**Tree search strategies.** How deep to search. When to prune a branch. How to allocate compute to promising lines vs exploring alternatives. Variable-depth search that goes deep on high-value branches and cuts bad ones early. These algorithms are identical whether the underlying state is a 14x10 grid or continuous pitch coordinates — you develop them on the game, then port them to the simulation.
 
-The engine needs continuous benchmarks. Waiting for real match cycles is too slow. The game supplies a stable testbed:
+**Position evaluation.** "How good is this state?" The game needs a function that scores any board position — are you in a strong attacking position? Is your defense exposed? Is this a winning state or a losing one? The simulation needs the exact same capability, just with different input features. The architecture of the evaluation system — how to combine spatial features into a single value score — transfers directly.
+
+**Action ranking and selection.** From any state, which actions are worth exploring? You can't search every possible branch — you need heuristics that identify the most promising options first. The game AI trains these ranking systems at scale: millions of positions, clear outcomes, fast iteration. The ranked action structures carry over to the simulation.
+
+**Multi-agent reasoning.** Both the game and the simulation involve two sides making decisions. What will the opponent do? How does that affect the value of my action? Modeling opponent responses is the same problem in both environments — the game lets you develop and test these models in a controlled setting.
+
+**Monte Carlo methods.** Both use Monte Carlo Tree Search (MCTS) or similar sampling-based approaches to handle the branching complexity. The game is where you tune rollout policies, exploration vs exploitation tradeoffs, and convergence criteria before applying them to the harder simulation problem.
+
+In concrete terms: you build a Taka Game AI that can search 10+ moves ahead, evaluate positions, prune intelligently, and reason about opponent responses. Then when the learned transition model from tracking data is ready, you plug it into the same search infrastructure. The search engine is already built and tested.
+
+This is not a loose analogy. It is the same codebase, the same algorithms, applied to a different transition model.
+
+### Additional technical benefits
+
+Beyond the search engine, Taka Game provides three more concrete advantages:
+
+**1. Controlled evaluation harness**
+
+The simulation engine needs continuous benchmarks. Waiting for real match cycles is too slow. The game supplies a stable testbed where you can measure progress:
 - Can the engine rank options in a way strong players agree with?
 - Does engine guidance measurably improve outcomes in standardized scenarios?
 - Can it detect and score decision quality reliably?
 - Do model changes improve or regress these metrics?
 
-This becomes an internal "unit test suite" for tactical reasoning — faster iteration cycles, measurable progress.
+Every change to the search algorithms or evaluation functions can be A/B tested in the game environment instantly. This is an internal "unit test suite" for tactical reasoning — faster iteration cycles, measurable progress.
 
-**3. Human decision data that improves search efficiency and content**
+**2. Human decision data that improves search efficiency**
 
 Gameplay generates large-scale labeled data on:
-- Which actions humans consider from a given state
-- Which lines humans perceive as high-value
-- Common tactical motifs that are teachable
-- Where humans consistently make suboptimal choices
+- Which actions humans consider from a given state (branch ordering priors)
+- Which lines humans perceive as high-value (search prioritization)
+- Common tactical motifs (scenario library design)
+- Where humans consistently make suboptimal choices (teaching content)
 
-This data helps:
-- Branch ordering heuristics in simulation search (what to explore first)
-- Scenario library design (which patterns are common, interesting, instructive)
-- Explanation and tutoring content refinement
+This data directly improves search efficiency in the simulation: if you know which branches humans typically consider first, you can order the simulation's search to explore those branches first, reaching good solutions faster.
 
-Important: tracking data remains the source of truth for success distributions and movement physics. Game data helps search efficiency, UX, and pedagogy — it does not replace real-match grounding.
+Important: tracking data remains the source of truth for success distributions and movement physics. Game data helps search efficiency and content — it does not replace real-match grounding.
+
+**3. Scenario and explanation UX — solved in a live environment**
+
+Taka Sim's success depends on interface questions:
+- How to present a situation quickly
+- How to show options and tradeoffs without overwhelming users
+- How to explain "why" an action is better (risk, confidence, downstream value)
+- How to let users explore alternatives ("what if I had passed here instead?")
+
+The game platform provides high-volume iteration on exactly these problems. This is direct product leverage — it makes the simulation engine usable when it arrives.
+
+### What this means concretely
+
+The development sequence looks like this:
+
+1. **Now:** Build Taka Game AI using tree search, position evaluation, MCTS. The game is simple enough to iterate quickly — deterministic rules, discrete state, fast computation.
+
+2. **In parallel:** Taka Tech learns football reality from tracking data (Phases 1-4). Pass success rates, defensive reactions, movement physics, state transitions — all measured from real matches.
+
+3. **Convergence:** The learned transition model plugs into the search infrastructure already developed and tested through the game. The simulation engine doesn't need to build search from scratch — it inherits a proven search system and just swaps the underlying model.
+
+This is why it's one company. Taka Game is not a side business that happens to share a brand. It is actively building half of the simulation engine's technical stack.
 
 ### The convergence point
 
-Convergence is defined precisely: it happens when the simulation engine's state model (how players move, how the ball travels, how actions succeed or fail) can drive a playable mode inside the consumer platform.
+Convergence is defined precisely: it happens when the simulation engine's learned state model (how players move, how the ball travels, how actions succeed or fail) can drive a playable mode inside the consumer platform — meaning the same search engine that powers team analysis also powers consumer scenario gameplay, just with different access and compute limits.
 
 At that point:
 - Taka Sim Mode becomes a consumer-facing scenario experience where ball and player dynamics are calibrated from real tracking data
 - The same engine powers both the consumer analysis mode and the team's professional tools
 - The difference is access and compute, not the underlying model
 
-Until convergence, the products operate independently and succeed on their own terms. Taka Game does not need Taka Sim to be fun and competitive. Taka Tech does not need Taka Game to deliver value to teams.
+Until convergence, the products operate independently and succeed on their own terms. Taka Game does not need Taka Sim to be fun and competitive. Taka Tech does not need Taka Game to deliver value to teams. But every improvement to the game AI is direct progress toward the simulation engine.
 
-### The flywheel (why this is one company)
+### The flywheel
 
-1. **Taka Game builds brand and distribution in the football world** — creates a football-native audience, community, and credibility. When approaching clubs, Taka is already a known entity.
-2. **Taka Tech builds proprietary capability** — tracking + learned models = compounding moat. Turns "Taka" from a concept into something teams rely on.
-3. **When the engine matures, it upgrades the game** — better AI, better realism, scenario analysis, training modes. Drives more paying users and more credibility.
-4. **Credibility and revenue support deeper tech** — more data, more teams, better models. Strengthens both sides.
+1. **Taka Game develops the search engine and builds brand** — tree search, evaluation, MCTS, plus a football-native audience and credibility in the football world.
+2. **Taka Tech develops the learned model** — tracking + similarity matching + outcome learning = the transition model that grounds the simulation in reality.
+3. **When both are ready, they combine** — the search engine (from Game) + the learned model (from Tech) = Taka Sim. Teams get the full engine. Consumers get a constrained version through premium modes.
+4. **Sim upgrades both products** — better AI opponents and analysis for the game, better decision intelligence for teams. Revenue and credibility compound on both sides.
 
 ---
 
