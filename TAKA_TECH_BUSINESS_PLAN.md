@@ -77,19 +77,23 @@ Given any game state — 22 players, a ball, a context — the engine:
 
 6. **Generates tactical plans** — "Against their low block, here's a 4-move sequence that creates a 2v1 on the weak side with 0.28 xG." Not general advice — specific action sequences with specific expected values for specific opponents.
 
-### How Search Works
+### The Simulation Engine: How Search Works
 
-Not fixed-depth lookahead. Variable-depth tree exploration:
+Football is continuous, but decisions happen at discrete moments — ball receipt, pressure arrival, space opening. We simulate state-to-state, not frame-to-frame.
+
+The core challenge: when we pass to Player B, what happens next? The defense reacts. We need to model that reaction, generate the next set of options, evaluate, and repeat — multiple actions deep.
+
+**The search algorithm:**
 
 ```
 Ball reception moment
      │
      ├── Pass to Player A
-     │      ├── A shoots → evaluate xG ← STOP
-     │      ├── A passes to B
-     │      │     ├── B shoots → evaluate xG ← STOP
-     │      │     └── B dribbles → keep exploring
-     │      └── A loses ball ← STOP
+     │      ├── Defense shifts → A shoots → evaluate xG ← STOP
+     │      ├── Defense shifts → A passes to B
+     │      │     ├── Defense shifts again → B shoots → evaluate xG ← STOP
+     │      │     └── Defense shifts again → B dribbles → keep exploring
+     │      └── Defender intercepts ← STOP
      │
      ├── Pass to Player B (promising)
      │      └── ... ← go DEEP on this branch
@@ -100,9 +104,110 @@ Ball reception moment
      └── Shot → evaluate xG ← STOP
 ```
 
-Smart allocation of compute: go deep on promising branches, prune bad ones early, stop when too far from known patterns. Return the path with highest expected value of reaching a scoring position.
+This is Monte Carlo Tree Search — the same approach behind AlphaGo — adapted for football's continuous state space. Smart allocation of compute: go deep on promising branches, prune bad ones early, stop when too far from known patterns. Depth: 3–5 actions ahead covers most attacking sequences.
 
-This is Monte Carlo Tree Search — the same approach behind AlphaGo — adapted for football's continuous state space.
+**Performance targets:**
+
+| Operation | Target |
+|-----------|--------|
+| Position evaluation | < 1ms |
+| Depth-3 action search | < 100ms |
+| Full game analysis | < 10 minutes |
+| Real-time suggestions | < 2 seconds |
+
+### The Defensive Response Model
+
+The most critical unsolved piece. When the ball moves, how does the defense react?
+
+- Who presses the ball?
+- How does the shape shift?
+- What passing lanes close?
+- What spaces open?
+
+Start simple: defenders move toward ball using the force model. Then learn from real data: how do actual defenses shift in response to specific actions? Tune per opponent: their specific reaction patterns. This is what makes the simulation realistic — not designed physics, but measured responses.
+
+### The Pattern Library
+
+Attacking patterns serve as the engine's opening book — don't search from scratch every time.
+
+```
+OVERLAP:
+  Trigger: FB has ball, winger drops inside
+  Sequence: FB plays inside → winger holds → FB overlaps → through ball
+  Creates: 2v1 on flank, crossing opportunity
+
+THIRD-MAN:
+  Trigger: Midfielder receives under pressure
+  Sequence: Lay off to #6 → #6 plays first-time to runner
+  Creates: Bypasses pressing player, progression into final third
+
+SWITCH:
+  Trigger: Defense overloaded to ball side
+  Sequence: Recycle to CB → diagonal to far FB → attack weak side
+  Creates: Time/space advantage on weak side
+
+UNDERLAP:
+  Trigger: Winger wide, FB in halfspace
+  Sequence: Winger holds width → FB runs inside → through ball
+  Creates: Penetration through halfspace
+
+GIVE-AND-GO:
+  Trigger: 1v1 in space
+  Sequence: Pass to teammate → immediate return → attacker behind defender
+  Creates: Elimination of direct marker
+```
+
+**Defensive structures to exploit:**
+
+```
+LOW BLOCK:
+  Weakness: Gaps open when ball moves quickly side-to-side
+  Exploit: Quick combinations, third-man runs, shots from edge of box
+
+HIGH LINE:
+  Weakness: Space behind defensive line
+  Exploit: Through balls, diagonal runs in channels behind FBs
+
+MAN-MARKING:
+  Weakness: Defenders pulled out of shape by movement
+  Exploit: Rotation, decoy runs, overloads in specific zones
+```
+
+When the engine recognizes a pattern trigger in the current game state, search prioritizes that sequence first. New patterns are discovered from successful sequences in real games and added to the library.
+
+### Player Profiles: Realistic Simulation Constraints
+
+Simulation accuracy depends on knowing what each player can actually do.
+
+| Category | Attributes | Source |
+|----------|-----------|--------|
+| Physical | Top speed, acceleration, stamina curve, aerial ability | Tracking data (directly measured) |
+| Technical | Pass completion by type, first touch under pressure, shot accuracy | Event data (success rates) |
+| Mental | Decision speed, off-ball movement quality, pressing discipline | Coaching assessment + tracking patterns |
+| Tendencies | Preferred foot, favorite moves, risk appetite | Aggregated from match data |
+
+This makes simulation realistic: "This through ball is only viable if the passer has the range." "This run requires 8.5 m/s; player max is 8.2 m/s." And it enables squad optimization: "Your midfield lacks a progressive carrier. Adding a player with X profile increases buildup success by Y%."
+
+### Opponent Modeling
+
+The engine's most commercially powerful capability:
+
+1. Feed it an opponent's recent matches
+2. Engine learns their specific patterns — defensive shape, pressing triggers, transition behavior, recovery tendencies
+3. Engine identifies vulnerabilities — "Their RCB is slow to cover the channel. Their #8 always plays safe under pressure. Their LB is aggressive — fake overlap then cut inside."
+4. Engine generates exploitation plans — specific sequences designed to attack those weaknesses, with expected values
+
+**Output:** A pre-match tactical plan generated by the engine, not just human analysis. Specific enough to train: "Against their low block, here's a 4-move sequence that creates a 2v1 on the weak side with 0.28 xG."
+
+### Self-Play and Discovery
+
+The final frontier. Once the engine can simulate realistically:
+
+- Engine plays games against itself
+- Discovers new patterns and sequences that no human coach has tried
+- Like AlphaGo finding moves that shocked professionals — attacking combinations that emerge from search, not from the pattern library
+
+This is how the engine moves beyond augmenting human analysis to generating genuinely novel tactical knowledge.
 
 ### Why This Is Different From Google Research Football (Which Failed)
 
@@ -128,109 +233,106 @@ Computer vision extracts player and ball coordinates from any video source — b
 For clubs that already have tracking data from Second Spectrum or SkillCorner, the engine ingests their data directly. The decision engine is data-source agnostic.
 
 **Layer 2: Decision Engine (Intelligence)**
-Converts coordinates into tactical intelligence through a modular system:
+Converts coordinates into tactical intelligence. The full architecture:
 
 ```
-COORDINATES (22 players + ball)
-     │
-     ▼
-┌──────────────────────────────────────────────┐
-│           FEATURE EXTRACTION                  │
-│  Defensive: line height, compactness,         │
-│    press intensity, marking style, shift      │
-│    speed, recovery tendency                   │
-│  Attacking: width, depth, box presence,       │
-│    central overload, space ahead              │
-│  Ball: continuous position, goal distance,    │
-│    goal angle                                 │
-│  Context: score, time, possession duration    │
-└──────────────────────────────────────────────┘
-     │
-     ▼
-┌──────────────────────────────────────────────┐
-│            DECISION ENGINE                    │
-│                                               │
-│  Elimination Calculator                       │
-│    Which defenders are functionally out of    │
-│    play — not just goal-side, but can they    │
-│    reach an intervention point in time?       │
-│    Physics: sprint speed, reaction time,      │
-│    momentum, distance.                        │
-│                                               │
-│  Defensive Force Model                        │
-│    Positioning as equilibrium of forces:      │
-│    ball attraction, goal protection, zone     │
-│    coverage, marking, spacing, compactness,   │
-│    xG path blocking. Tunable weights model    │
-│    any defensive style. Feed opponent data,   │
-│    match their patterns mathematically.       │
-│                                               │
-│  Game State Evaluator                         │
-│    Composite 0–1 score: elimination (25%),    │
-│    proximity (20%), angle (15%), density       │
-│    (15%), compactness (10%), actions (15%).    │
-│    Compare any two moments objectively.       │
-│                                               │
-│  Option Generator                             │
-│    Every pass, through ball, dribble, shot    │
-│    with interception probability and          │
-│    expected value. Ranked and explained.      │
-│                                               │
-│  Similarity Engine                            │
-│    Encode situations as continuous vectors.    │
-│    Find similar historical moments. Analyze   │
-│    what worked. Learn real success rates.      │
-│                                               │
-│  Simulation Search                            │
-│    MCTS: explore action sequences, prune      │
-│    bad branches, go deep on promising ones.   │
-│    Variable depth. Learned transitions.       │
-│    Find optimal paths to scoring positions.   │
-│                                               │
-│  Pattern Library                              │
-│    Overlap, underlap, third-man, switch,      │
-│    give-and-go. Low block exploits, high      │
-│    line exploits, man-marking exploits.       │
-│    Guide search toward known good sequences.  │
-│                                               │
-│  Player Profile Engine                        │
-│    Physical: speed, acceleration, stamina.    │
-│    Technical: pass range, first touch, shot.  │
-│    Mental: decision speed, off-ball IQ.       │
-│    Realistic simulation constraints.          │
-│                                               │
-│  Opponent Model                               │
-│    Learn their defensive patterns from        │
-│    match data. Pressing triggers, shape       │
-│    vulnerabilities, recovery weaknesses.      │
-│    Generate exploitation plans.               │
-└──────────────────────────────────────────────┘
-     │
-     ▼
-┌──────────────────────────────────────────────┐
-│              OUTPUTS                          │
-│                                               │
-│  Pre-match:  Opponent exploitation plans —    │
-│    specific sequences targeting specific      │
-│    weaknesses with expected values            │
-│                                               │
-│  Post-match: Decision analysis — every        │
-│    option at every moment, what was chosen    │
-│    vs what was optimal, player-by-player      │
-│                                               │
-│  Real-time:  Tactical suggestions — "they've  │
-│    shifted to 5-3-2, switch to wide           │
-│    overloads, EV increases 0.15 to 0.24"      │
-│                                               │
-│  Development: Decision quality scores per     │
-│    player tracked over time                   │
-│                                               │
-│  Scouting: Prospect decision quality and      │
-│    physical metrics extracted from video       │
-│                                               │
-│  Squad optimization: "With Player X at #8,    │
-│    buildup success increases 12%"             │
-└──────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         GAME STATE                                   │
+│  22 players (positions, velocities, profiles)                        │
+│  Ball state                                                          │
+│  Score, time, context                                                │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ACTION GENERATOR                                │
+│  For ball carrier: all passes, dribbles, shots                       │
+│  For off-ball attackers: all runs, movements                         │
+│  Outputs: Action[] with targets, trajectories, timing                │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SIMULATION ENGINE                                  │
+│                                                                      │
+│  For each candidate action:                                          │
+│    1. Apply action (ball moves, player positions update)             │
+│    2. Simulate defensive response (how will they shift?)             │
+│    3. Generate next action options                                   │
+│    4. Recurse to depth N                                             │
+│    5. Evaluate terminal positions                                    │
+│    6. Propagate values back up                                       │
+│                                                                      │
+│  Search strategies:                                                  │
+│    - Monte Carlo Tree Search (MCTS)                                  │
+│    - Alpha-beta with football-specific pruning                       │
+│    - Beam search on most promising lines                             │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                  DEFENSIVE RESPONSE MODEL                            │
+│                                                                      │
+│  Given action, predict how defense reacts:                           │
+│    - Who presses the ball?                                           │
+│    - How does the shape shift?                                       │
+│    - What passing lanes close?                                       │
+│    - What spaces open?                                               │
+│                                                                      │
+│  Learned from real game data, not designed physics                   │
+│  Tunable per opponent (their specific patterns)                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     PATTERN LIBRARY                                   │
+│                                                                      │
+│  Attacking: overlap, underlap, third-man, switch, give-and-go,       │
+│    diagonal runs behind                                              │
+│  Defensive vulnerabilities: gaps between CB/FB, high line space,     │
+│    weak-side isolation, pressing gaps, recovery windows              │
+│                                                                      │
+│  Patterns recognized → search prioritizes known good sequences       │
+│  New patterns discovered from successful real-game sequences         │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   PLAYER PROFILE ENGINE                               │
+│                                                                      │
+│  Physical: speed, acceleration, stamina curve                        │
+│  Technical: passing range, first touch, shooting accuracy            │
+│  Mental: decision speed, off-ball movement IQ, pressing triggers     │
+│  Tendencies: preferred foot, favorite moves, risk appetite           │
+│                                                                      │
+│  Used for: realistic simulation, squad optimization,                 │
+│  opponent modeling ("their #10 always does X in situation Y")        │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         OUTPUTS                                      │
+│                                                                      │
+│  TACTICAL PLANS:                                                     │
+│    "Against their low block, here's a 4-move sequence that creates   │
+│    a 2v1 on the weak side with 0.28 xG"                              │
+│                                                                      │
+│  OPPONENT EXPLOITATION:                                              │
+│    "Their RCB is slow to recover. Target that channel with           │
+│    diagonal runs from #9. Success rate: 40% progression"             │
+│                                                                      │
+│  SQUAD OPTIMIZATION:                                                 │
+│    "With Player X at #8 instead of Player Y, your buildup            │
+│    success rate increases 12% because of his carrying ability"       │
+│                                                                      │
+│  REAL-TIME SUGGESTIONS:                                              │
+│    During match: "They've shifted to 5-4-1, switch to wide           │
+│    overloads, expected value increases from 0.15 to 0.24"            │
+│                                                                      │
+│  DECISION QUALITY:                                                   │
+│    "Player A chose option B (0.08 xG). Option A was available        │
+│    (0.31 xG). Here's the sequence he should have played."            │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### The Learning Approach: Reality First, Then Simulate
@@ -536,6 +638,7 @@ By this point:
 | **Player profiles** | Physical, technical, mental attributes per player extracted from tracking | Realistic constraints — simulation knows what each player can actually do |
 | **Opponent modeling** | Feed opponent matches → learn their patterns → auto-generate exploitation plans | Pre-match intelligence that no manual analysis can match |
 | **Simulation engine** | Multi-step MCTS search; variable-depth tree exploration; learned transitions | **The Stockfish moment:** engine finds sequences humans haven't imagined |
+| **Learning loop** | Predictions vs. outcomes → update model → self-play discovery | Engine improves beyond human knowledge. Like AlphaGo — discovers tactics nobody has tried |
 
 ### How Each Phase Builds Toward Simulation
 
@@ -554,18 +657,17 @@ The simulation doesn't come from nowhere. Each phase produces specific knowledge
 
 ---
 
-## 10. Key Risks
+## 10. What's Hard — Honest Assessment
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| **Tracking accuracy insufficient** | Medium | High | Semi-manual fallback; accept tracking data from third parties; focus on key sequences not full 90' |
-| **Physics predictions don't match reality** | Medium | Medium | Expected and planned for — the entire outcome learning phase exists to close this gap |
-| **Professional clubs won't buy from a startup** | Medium | High | Marshall case study; pilot pricing; start with lower leagues and work up; coach advisory board |
-| **Coaches don't trust AI** | Low–Medium | High | Position as augmentation not replacement; show video evidence alongside every recommendation; face validity testing |
-| **Competitor builds similar system** | Low–Medium | Medium | First-mover; data flywheel; network effects in opponent database |
-| **Search complexity too high for real-time** | Medium | Medium | Pre-compute common situations; shallow search for real-time, deep search for pre-match; cloud GPU |
-| **Sales cycle too long** | Medium | Medium | Lead with immediate-value features; reduce buyer risk with pilot pricing |
-| **Key person risk** | High (early) | High | Documented architecture; modular codebase; hire ML engineer early |
+| Challenge | Why It's Hard | How We Approach It |
+|-----------|---------------|-------------------|
+| **Defensive response prediction** | Humans don't move deterministically. 22 agents with different tendencies, fatigue levels, and tactical instructions. | Probabilistic modeling. Learn response distributions from real data, not just physics. Tune per opponent from their match footage. Accept uncertainty — output probability ranges, not certainties. |
+| **Search complexity** | Football has more "moves" than chess at every decision point. 10 teammates as pass targets, dribble directions, shot angles — each branches into the opponent's response. | Aggressive pruning: don't simulate backward passes in the final third, don't explore low-percentage actions unless nothing better exists. Pattern-guided search: use the library to prioritize known good sequences. MCTS focuses compute on promising branches. |
+| **Real-time performance** | Deep search takes time. Coaches want suggestions during play. | Two-tier approach: pre-compute common situations for instant lookup; shallow search (depth 1–2) for real-time suggestions; deep search (depth 3–5) for pre-match analysis. Cloud GPU for heavy analysis. |
+| **Validation** | How do you know the engine is right? Football outcomes are noisy — the "wrong" decision sometimes works, the "right" decision sometimes fails. | Track prediction accuracy over hundreds of decisions, not individual outcomes. Coach face validity: does the engine flag the same moments they identify? A/B testing where possible. |
+| **Adoption** | Coaches trust their eyes and experience. AI recommendations feel threatening. | Position as augmentation, not replacement. Start with post-match analysis they already do (less threatening than real-time). Show video evidence alongside every recommendation. Prove value incrementally — earn trust over a season, not a single demo. |
+| **Tracking accuracy** | Video quality varies. Camera angles shift. Players occlude each other. | Semi-manual fallback for critical matches. Accept tracking data from third parties (Second Spectrum, SkillCorner). Focus on key sequences, not full 90 minutes. |
+| **Key person risk** | Early-stage, small team. Deep technical knowledge concentrated. | Documented architecture. Modular, well-structured codebase (36K+ lines). Hire ML engineer early. |
 
 ---
 
